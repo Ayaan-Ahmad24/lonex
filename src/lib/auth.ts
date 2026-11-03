@@ -41,6 +41,18 @@ export const auth = betterAuth({
     cookiePrefix: "lonex",
   },
 
+    // DB-backed counters so limits survive restarts and work across processes.
+  rateLimit: {
+    enabled: true,
+    storage: "database",
+    window: 60,
+    max: 100,
+    customRules: {
+      // Login throttling: 10 attempts per 5 minutes per client IP.
+      "/sign-in/email": { window: 300, max: 10 },
+    },
+  },
+  
   databaseHooks: {
     session: {
       create: {

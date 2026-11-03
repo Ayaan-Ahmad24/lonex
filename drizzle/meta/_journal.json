@@ -15,6 +15,13 @@
       "when": 1793701767327,
       "tag": "0001_better_auth_identity",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1793707902551,
+      "tag": "0002_cold_marrow",
+      "breakpoints": true
     }
   ]
 }
