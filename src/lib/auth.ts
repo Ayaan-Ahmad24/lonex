@@ -1,6 +1,8 @@
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
+import { user as userTable } from "@/db/schema";
 
 export const auth = betterAuth({
   appName: "LONEX Admin",
@@ -37,5 +39,24 @@ export const auth = betterAuth({
 
   advanced: {
     cookiePrefix: "lonex",
+  },
+
+  databaseHooks: {
+    session: {
+      create: {
+        // Inactive (or missing) users never get a session.
+        before: async (session) => {
+          const [row] = await db
+            .select({ isActive: userTable.isActive })
+            .from(userTable)
+            .where(eq(userTable.id, session.userId))
+            .limit(1);
+
+          if (!row || !row.isActive) {
+            return false;
+          }
+        },
+      },
+    },
   },
 });
