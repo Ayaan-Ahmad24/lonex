@@ -25,4 +25,17 @@ export const auth = betterAuth({
       },
     },
   },
+
+  // Session lifetimes are in seconds.
+  // cookieCache is intentionally NOT enabled: logout and isActive changes
+  // must take effect immediately (decision D-A4).
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60, // refresh at most once per hour
+    freshAge: 60 * 15, // 15 minutes for sensitive operations
+  },
+
+  advanced: {
+    cookiePrefix: "lonex",
+  },
 });
