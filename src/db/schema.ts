@@ -1,6 +1,4 @@
-
 import {
-  boolean,
   int,
   mysqlTable,
   primaryKey,
@@ -8,49 +6,24 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
+import { user } from "./auth-schema";
+
 /**
  * LONEX Reusable CMS
- * Phase 01: Core administrator and permission schema.
+ * Core schema: Better Auth identity tables + custom RBAC.
+ *
+ * Identity (user, session, account, verification) is defined in
+ * auth-schema.ts and re-exported here so Drizzle Kit and the db
+ * client see one complete schema.
  *
  * Client-specific modules will be added separately.
  */
 
-// --------------------------------------------------
-// 1. ADMINISTRATOR USERS
-// --------------------------------------------------
-
-export const adminUsers = mysqlTable("admin_users", {
-  id: int("id").autoincrement().primaryKey(),
-
-  name: varchar("name", {
-    length: 150,
-  }).notNull(),
-
-  email: varchar("email", {
-    length: 254,
-  }).notNull().unique(),
-
-  passwordHash: varchar("password_hash", {
-    length: 255,
-  }).notNull(),
-
-  isActive: boolean("is_active")
-    .notNull()
-    .default(true),
-
-  lastLoginAt: timestamp("last_login_at"),
-
-  createdAt: timestamp("created_at")
-    .notNull()
-    .defaultNow(),
-
-  updatedAt: timestamp("updated_at")
-    .notNull()
-    .defaultNow(),
-});
+// Better Auth identity tables.
+export * from "./auth-schema";
 
 // --------------------------------------------------
-// 2. ADMINISTRATOR ROLES
+// 1. ADMINISTRATOR ROLES
 // --------------------------------------------------
 
 export const adminRoles = mysqlTable("admin_roles", {
@@ -74,7 +47,7 @@ export const adminRoles = mysqlTable("admin_roles", {
 });
 
 // --------------------------------------------------
-// 3. ADMINISTRATOR PERMISSIONS
+// 2. ADMINISTRATOR PERMISSIONS
 // --------------------------------------------------
 
 export const adminPermissions = mysqlTable(
@@ -97,15 +70,16 @@ export const adminPermissions = mysqlTable(
 );
 
 // --------------------------------------------------
-// 4. USER TO ROLE ASSIGNMENTS
+// 3. USER TO ROLE ASSIGNMENTS
 // --------------------------------------------------
 
 export const adminUserRoles = mysqlTable(
   "admin_user_roles",
   {
-    userId: int("user_id")
+    // Better Auth user.id (varchar 36).
+    userId: varchar("user_id", { length: 36 })
       .notNull()
-      .references(() => adminUsers.id, {
+      .references(() => user.id, {
         onDelete: "cascade",
       }),
 
@@ -123,7 +97,7 @@ export const adminUserRoles = mysqlTable(
 );
 
 // --------------------------------------------------
-// 5. ROLE TO PERMISSION ASSIGNMENTS
+// 4. ROLE TO PERMISSION ASSIGNMENTS
 // --------------------------------------------------
 
 export const adminRolePermissions = mysqlTable(
@@ -152,9 +126,9 @@ export const adminRolePermissions = mysqlTable(
 // INFERRED TYPES
 // --------------------------------------------------
 
-export type AdminUser = typeof adminUsers.$inferSelect;
-export type NewAdminUser = typeof adminUsers.$inferInsert;
+export type AuthUser = typeof user.$inferSelect;
 
 export type AdminRole = typeof adminRoles.$inferSelect;
 export type AdminPermission =
   typeof adminPermissions.$inferSelect;
+  
