@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
+import { getUserPermissionCodes } from "@/lib/rbac";
 
 export async function GET() {
   const user = await getSessionUser();
@@ -11,8 +12,10 @@ export async function GET() {
     );
   }
 
+  const permissions = Array.from(await getUserPermissionCodes(user.id)).sort();
+
   return NextResponse.json(
-    { id: user.id, name: user.name, email: user.email },
+    { id: user.id, name: user.name, email: user.email, permissions },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
