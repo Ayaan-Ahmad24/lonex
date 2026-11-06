@@ -42,11 +42,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    /*
+     * Browser extensions (translation, recorder, colour picker, password
+     * managers) add attributes such as `cz-shortcut-listen` or
+     * `data-scribe-recorder-ready` to <html>/<body> before React hydrates.
+     * `suppressHydrationWarning` limits the warning to these two elements;
+     * mismatches inside the app tree are still reported.
+     */
     <html
       lang="en"
       className={`${poppins.variable} ${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-white">
+      <body
+        className="flex min-h-full flex-col bg-white"
+        suppressHydrationWarning
+      >
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
