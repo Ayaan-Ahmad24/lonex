@@ -86,41 +86,46 @@ function SetCustomCodeFormInner({
 }
 
 export function VerificationActions({ row }: { row: VerificationRow }) {
-  const hasCode = row.active !== null;
+  const registered = row.active !== null;
   const [assignMode, setAssignMode] = useState(false);
   const { showCode } = useVerificationCode();
 
   return (
     <div className="flex flex-wrap items-start gap-2">
-      <ActionForm
-        action={
-          row.active
-            ? deactivateVerificationAction
-            : activateVerificationAction
-        }
-        hiddenFields={{ productId: row.productId }}
-        toastSuccessTitle="Verification updated"
-      >
-        {row.active ? (
-          <ConfirmSubmitButton
-            label="Deactivate"
-            confirmTitle="Deactivate this code?"
-            confirmMessage="Public verification lookups for this model will fail until a new code is activated or set."
-            confirmLabel="Deactivate code"
-            pendingLabel="Deactivating..."
-          />
-        ) : (
-          <SubmitButton
-            label="Activate"
-            pendingLabel="Activating..."
-            variant="secondary"
-            size="sm"
-          />
-        )}
-      </ActionForm>
+      {/* Only a row that already has a code can be activated or deactivated. */}
+      {registered ? (
+        <ActionForm
+          key="status"
+          action={
+            row.active
+              ? deactivateVerificationAction
+              : activateVerificationAction
+          }
+          hiddenFields={{ productId: row.productId }}
+          toastSuccessTitle="Verification updated"
+        >
+          {row.active ? (
+            <ConfirmSubmitButton
+              label="Deactivate"
+              confirmTitle="Deactivate this code?"
+              confirmMessage="Public verification lookups for this model will fail until a new code is activated or set."
+              confirmLabel="Deactivate code"
+              pendingLabel="Deactivating..."
+            />
+          ) : (
+            <SubmitButton
+              label="Activate"
+              pendingLabel="Activating..."
+              variant="secondary"
+              size="sm"
+            />
+          )}
+        </ActionForm>
+      ) : null}
 
       {assignMode ? (
         <ActionForm
+          key="set-code"
           action={setVerificationCodeAction}
           hiddenFields={{ productId: row.productId }}
           className="w-full space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:w-auto"
@@ -140,29 +145,51 @@ export function VerificationActions({ row }: { row: VerificationRow }) {
         </ActionForm>
       ) : (
         <>
-          {!hasCode ? (
-            <ActionForm
-              action={generateVerificationAction}
-              hiddenFields={{ productId: row.productId }}
-              className="space-y-2"
-              toastSuccessTitle="Verification code generated"
-              onSuccess={(state) => {
-                if (state.code) {
-                  showCode(row.productId, state.code);
-                }
-              }}
-            >
-              <ConfirmSubmitButton
-                label="Generate code"
-                confirmTitle="Generate verification code?"
-                confirmMessage={`A new verification code will be generated for ${row.productName}. It will be shown once.`}
-                confirmLabel="Generate and show code"
-                pendingLabel="Generating..."
-              />
-            </ActionForm>
-          ) : null}
+          {/*
+           * Kept mounted for every row, including ones without a code.
+           * `generateVerificationAction` revalidates the route, and if this
+           * form were removed once the row became registered, React would
+           * unmount it before its success effect ran. The raw code and toast
+           * would then be lost. The label reflects that an existing code is
+           * being rotated rather than created.
+           */}
+          <ActionForm
+            key="generate"
+            action={generateVerificationAction}
+            hiddenFields={{ productId: row.productId }}
+            className="space-y-2"
+            toastSuccessTitle={
+              registered
+                ? "Verification code rotated"
+                : "Verification code generated"
+            }
+            onSuccess={(state) => {
+              if (state.code) {
+                showCode(row.productId, state.code);
+              }
+            }}
+          >
+            <ConfirmSubmitButton
+              label={registered ? "Rotate code" : "Generate code"}
+              confirmTitle={
+                registered
+                  ? "Rotate verification code?"
+                  : "Generate verification code?"
+              }
+              confirmMessage={
+                registered
+                  ? `The current code for ${row.productName} stops working immediately. The new code is shown once.`
+                  : `A new verification code will be generated for ${row.productName}. It will be shown once.`
+              }
+              confirmLabel={
+                registered ? "Rotate and show code" : "Generate and show code"
+              }
+              pendingLabel={registered ? "Rotating..." : "Generating..."}
+            />
+          </ActionForm>
 
           <button
+            key="custom-code"
             type="button"
             onClick={() => setAssignMode(true)}
             className="text-xs font-medium text-slate-600 underline hover:text-slate-900"

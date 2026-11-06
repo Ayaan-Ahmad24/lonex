@@ -10,7 +10,9 @@ import type { E2eFixtures } from "./fixtures";
 import {
   FIXTURE_FILE,
   createExtraUser,
+  createVerificationProduct,
   removeExtraUser,
+  removeVerificationProduct,
 } from "./fixtures";
 
 let fixtures: E2eFixtures;
@@ -69,6 +71,27 @@ function pngBuffer(): Buffer {
   buffer.writeUInt32BE(32, 20);
 
   return buffer;
+}
+
+/**
+ * Random Crockford-base32 code. Avoids four identical characters in a row,
+ * which the verification validator rejects.
+ */
+function randomVerificationCode(): string {
+  const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  let body = "";
+
+  while (body.length < 12) {
+    const char = alphabet[Math.floor(Math.random() * alphabet.length)];
+
+    if (body.length >= 3 && body.slice(-3) === char.repeat(3)) {
+      continue;
+    }
+
+    body += char;
+  }
+
+  return `LNX-${body.slice(0, 4)}-${body.slice(4, 8)}-${body.slice(8, 12)}`;
 }
 
 test("administrator dashboard shows authorized modules", async ({ page }) => {
@@ -265,13 +288,62 @@ test("deleting a user redirects to the list with a confirmation toast", async ({
   }
 });
 
+test("generating a verification code shows the raw code and a toast", async ({
+  page,
+}) => {
+  // A product with no code row starts on the "Generate code" path. Once the
+  // action revalidates the route the row becomes registered, so the action
+  // result must still be captured before/while the list updates.
+  const product = await createVerificationProduct("e2e-verify");
+
+  try {
+    await authenticate(page, adminCookies);
+    await page.goto("/admin/verification");
+
+    const row = page.getByRole("row").filter({ hasText: product.name });
+    await expect(row).toBeVisible();
+    await expect(row).toContainText("Not registered");
+
+    await row.getByRole("button", { name: "Generate code" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toContainText("Generate verification code?");
+    await dialog.getByRole("button", { name: "Generate and show code" }).click();
+
+    await expect(page.locator(".Toastify__toast")).toContainText(
+      "Verification code generated",
+    );
+    await expect(row).toContainText("Active");
+
+    // The raw code is returned once and kept in this tab only.
+    const stored = await page.evaluate(() =>
+      sessionStorage.getItem("lonex.admin.verificationCodes"),
+    );
+    expect(stored).toBeTruthy();
+
+    const codes = JSON.parse(stored as string) as Record<string, string>;
+    const code = codes[product.id];
+
+    expect(code).toMatch(/^LNX-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/);
+    await expect(row).toContainText(code);
+
+    // The same flow is offered as a rotation once a code exists.
+    await expect(
+      row.getByRole("button", { name: "Rotate code" }),
+    ).toBeVisible();
+  } finally {
+    await removeVerificationProduct(product.id);
+  }
+});
+
 test("a custom verification code closes the form and survives a reload", async ({
   page,
 }) => {
   await authenticate(page, adminCookies);
   await page.goto("/admin/verification");
 
-  const code = "LNX-5T7Y-1Z9X-3K2M";
+  // Each run needs a fresh code: digests are unique across products, so a
+  // hard-coded value would collide with the previous run's row.
+  const code = randomVerificationCode();
   const row = page
     .getByRole("row")
     .filter({ has: page.getByRole("button", { name: "Set custom code" }) })

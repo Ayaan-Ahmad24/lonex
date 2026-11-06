@@ -128,6 +128,54 @@ export async function removeExtraUser(id: string): Promise<void> {
   }
 }
 
+export type E2eProduct = { id: number; name: string; slug: string };
+
+/**
+ * Create a throwaway draft product in the solar category.
+ *
+ * Used by verification tests that need a model with no registered code; the
+ * seeded products must keep their real codes untouched.
+ */
+export async function createVerificationProduct(
+  prefix: string,
+): Promise<E2eProduct> {
+  const db = pool();
+  const slug = `${prefix}-${randomUUID()}`;
+  const name = `E2E Verify ${slug.slice(-8).toUpperCase()}`;
+
+  try {
+    const [categories] = await db.execute<mysql.RowDataPacket[]>(
+      "SELECT id FROM categories WHERE slug = 'solar' LIMIT 1",
+    );
+
+    if (categories.length === 0) {
+      throw new Error('Seed category "solar" is missing.');
+    }
+
+    const [result] = await db.execute<mysql.ResultSetHeader>(
+      "INSERT INTO products (category_id, name, slug, status) VALUES (?, ?, ?, 'draft')",
+      [Number(categories[0].id), name, slug],
+    );
+
+    return { id: Number(result.insertId), name, slug };
+  } finally {
+    await db.end();
+  }
+}
+
+/** Remove a throwaway verification product and any audit rows it produced. */
+export async function removeVerificationProduct(id: number): Promise<void> {
+  const db = pool();
+
+  try {
+    await db.execute("DELETE FROM audit_log WHERE target_id = ?", [String(id)]);
+    // product_verification_codes cascades from products.
+    await db.execute("DELETE FROM products WHERE id = ?", [id]);
+  } finally {
+    await db.end();
+  }
+}
+
 export async function createFixtures(): Promise<E2eFixtures> {
   const db = pool();
   const startedAt = Date.now();

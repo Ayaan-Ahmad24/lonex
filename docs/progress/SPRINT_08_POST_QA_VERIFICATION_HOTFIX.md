@@ -262,17 +262,47 @@ ever contains them.
 | `npm run lint` | PASS — 0 errors, 1 pre-existing `<img>` warning |
 | `npm run test` | PASS — 25 files, 192/192 tests |
 | `npm run build` | PASS — 40 routes |
-| `npm run test:e2e` | PASS — 22/22 tests |
+| `npm run test:e2e` | PASS — 23/23 tests |
 | `npx drizzle-kit check` | PASS |
 
 New E2E coverage:
 
 - `deleting a user redirects to the list with a confirmation toast` — proves the
   redirect, the toast, the list heading and the flash-parameter cleanup.
+- `generating a verification code shows the raw code and a toast` — creates a
+  throwaway draft product, generates its first code and proves the raw code is
+  shown in the row and stored in the tab.
 - `a custom verification code closes the form and survives a reload` — proves
-  the form closes, the code is shown, and sessionStorage hydration works.
+  the form closes, the code is shown, and sessionStorage hydration works. It
+  now uses a per-run random code so repeated runs cannot collide with the
+  unique digest constraint.
 - `sign out returns to the login page and confirms with a toast`.
 
 Two pre-existing E2E selector failures were also fixed (strict-mode matches for
 `valid phone number`, `image/png` and `role="alert"` now duplicated by toasts).
+
+### 14.7 "Generate code" produced no visible code (follow-up bug)
+
+**Symptom:** pressing *Generate code* and confirming stored a digest (the row
+changed to Active) but no toast appeared and the raw code was never shown, so
+the action looked like it did nothing.
+
+**Root cause:** `generateVerificationAction` calls `revalidatePath`. The refresh
+changes the row from "not registered" to "active", and the old JSX removed the
+generate form in that state. React therefore unmounted the `ActionForm` before
+its success effect ran, losing both `toast()` and `showCode()`. "Set custom
+code" worked because that form stays mounted across the refresh.
+
+**Fix in `src/admin/modules/verification/verification-actions.tsx`:**
+
+- The generate form is now always mounted (stable `key`), and its label becomes
+  *Rotate code* once a code exists. Because the component survives revalidation
+  its success effect runs and captures the raw code.
+- The activate/deactivate form is only rendered when a code row exists. Rows
+  with no code no longer show an *Activate* button that could only fail with
+  "This product has no verification code."
+- Added an E2E regression test that generates a code for a temporary product
+  and asserts the toast, the Active badge, the rendered raw code and the
+  tab-scoped session entry.
+
 

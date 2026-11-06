@@ -114,7 +114,7 @@ Final Sprint 08 + Hotfix results:
 - `npm run lint` — PASS, 0 errors, 1 pre-existing `<img>` warning
 - `npm run test` — 25 files, 192/192 tests PASS
 - `npm run build` — PASS, 40 routes
-- `npm run test:e2e` — 22/22 PASS (including new delete-redirect, verification-reload and sign-out coverage)
+- `npm run test:e2e` — 23/23 PASS (including generate-code, delete-redirect, verification-reload and sign-out coverage)
 - `npx drizzle-kit check` — PASS
 - `npm audit` — 12 moderate, 0 high/critical; `npm audit --omit=dev` — 4 moderate
 
@@ -212,9 +212,10 @@ by Git, so the committed documentation is the source of truth.
 2. **Central action feedback** — `ActionForm` now raises success/error toasts, renders the inline message and refreshes the server component once per result. `ConfirmSubmitButton` only owns its modal and closes when a new action result arrives. Pending labels use `useFormStatus()`.
 3. **Delete no longer 404s** — every delete action redirects server-side. `flashPath()` carries a one-shot message and `FlashToast` shows it on the list page, then strips the query parameters. This fixed the users delete flow, which previously re-rendered the deleted detail route. The other four deletes now confirm visibly too.
 4. **Verification code reload** — `VerificationCodeProvider` uses `useSyncExternalStore` over tab-scoped `sessionStorage`; the raw code survives a reload and is still never stored server-side. The custom-code form closes after assignment.
-5. **Client content** — corporate-profile About page; three published solar products (LONEX P1-BD 650W+, C&D CD-G640-670 MCH72Dw, LONGi Hi-MO X10 LR8-66HVD) with specifications and committed PDF datasheets in `content/datasheets/`; `npm run seed:content` is idempotent. Contact settings seeded only where empty.
-6. **Datasheet URL bug** — public document links now use the media asset id, not the `product_documents` id; `/media/<assetId>` returns the PDF with a 200.
-7. **Tests** — added E2E coverage for delete redirect + flash toast, verification code reload and sign-out toast; fixed pre-existing strict-mode selector failures.
+5. **Generate code feedback** — the generate form previously unmounted when `revalidatePath` marked the row registered, so its success effect (toast and raw-code capture) never ran. It now stays mounted and becomes *Rotate code* once a code exists; rows without a code no longer show a failing *Activate* button.
+6. **Client content** — corporate-profile About page; three published solar products (LONEX P1-BD 650W+, C&D CD-G640-670 MCH72Dw, LONGi Hi-MO X10 LR8-66HVD) with specifications and committed PDF datasheets in `content/datasheets/`; `npm run seed:content` is idempotent. Contact settings seeded only where empty.
+7. **Datasheet URL bug** — public document links now use the media asset id, not the `product_documents` id; `/media/<assetId>` returns the PDF with a 200.
+8. **Tests** — added E2E coverage for generate code, delete redirect + flash toast, verification code reload and sign-out toast; fixed pre-existing strict-mode selector failures.
 
 ## Git state
 
