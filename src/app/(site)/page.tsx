@@ -52,9 +52,7 @@ export default async function HomePage() {
       >
         <Container>
           <div className="flex items-center justify-between">
-            <Link href="/" aria-label="LONEX home" className="flex items-center gap-2">
-              <BrandMark settings={brand} size="header" inverse />
-            </Link>
+            <BrandMark settings={brand} size="header" inverse />
             <div className="flex items-center gap-6 text-sm font-medium">
               <Link
                 href="/verify"
