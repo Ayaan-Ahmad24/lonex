@@ -79,18 +79,20 @@ function CategoryTile({
   const description =
     category.description ||
     "Published LONEX products in this category. Details are added as they are approved.";
+  const cover = category.cover;
 
   if (variant === 2) {
     return (
       <Link
         href={category.path}
-        className="group lux-card reveal flex h-full flex-col overflow-hidden bg-white lg:col-span-12 lg:flex-row"
+        className="group lux-card reveal lift flex h-full flex-col overflow-hidden bg-white lg:col-span-12 lg:flex-row"
       >
         <div className="lux-media relative aspect-[16/10] overflow-hidden bg-[#F5EDED] lg:aspect-auto lg:min-h-[24rem] lg:w-1/2">
           <ContentImage
-            image={category.cover}
-            fallbackLabel="Category image pending"
+            image={cover}
+            fallbackLabel={`Category image pending — ${category.name}`}
             sizes="(max-width: 1024px) 100vw, 50vw"
+            className="group-hover:scale-105"
           />
         </div>
         <div className="flex flex-1 flex-col justify-between gap-10 p-6 sm:p-9">
@@ -120,7 +122,7 @@ function CategoryTile({
   return (
     <Link
       href={category.path}
-      className={`group lux-card reveal flex h-full flex-col overflow-hidden ${
+      className={`group lux-card reveal lift flex h-full flex-col overflow-hidden ${
         variant === 0 ? "lg:col-span-7" : "lg:col-span-5"
       } ${dark ? "bg-black text-white" : "bg-white"}`}
     >
@@ -144,9 +146,10 @@ function CategoryTile({
       ) : (
         <div className="lux-media relative aspect-[16/10] overflow-hidden bg-[#F5EDED]">
           <ContentImage
-            image={category.cover}
-            fallbackLabel="Category image pending"
+            image={cover}
+            fallbackLabel={`Category image pending — ${category.name}`}
             sizes="(max-width: 1024px) 100vw, 58vw"
+            className="group-hover:scale-105"
           />
         </div>
       )}
@@ -154,9 +157,10 @@ function CategoryTile({
       {dark ? (
         <div className="lux-media relative aspect-[16/10] overflow-hidden bg-[#F5EDED]">
           <ContentImage
-            image={category.cover}
-            fallbackLabel="Category image pending"
+            image={cover}
+            fallbackLabel={`Category image pending — ${category.name}`}
             sizes="(max-width: 1024px) 100vw, 42vw"
+            className="group-hover:scale-105"
           />
         </div>
       ) : (
@@ -202,12 +206,12 @@ export default async function HomePage() {
           className="lux-grid-bg pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 opacity-60 lg:block"
         />
         <Container className="relative grid items-center gap-14 pb-16 pt-12 sm:pb-20 sm:pt-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pb-28 lg:pt-20">
-          <div>
-            <div className="intro intro-1">
+          <div className="reveal-stagger">
+            <div className="intro intro-1 reveal">
               <Eyebrow>LONEX · Pakistan</Eyebrow>
             </div>
 
-            <h1 className="type-hero mt-7 text-black">
+            <h1 className="type-hero mt-7 text-black reveal intro-2">
               <span className="sr-only">Power for What&apos;s Next.</span>
               <span aria-hidden="true" className="block">
                 <span className="line-mask">
@@ -221,19 +225,19 @@ export default async function HomePage() {
               </span>
             </h1>
 
-            <p className="intro intro-3 type-lead mt-7 max-w-lg text-black/60">
+            <p className="intro intro-3 type-lead mt-7 max-w-lg text-black/60 reveal">
               Connecting solar energy, intelligent storage and electric
               mobility through carefully selected solutions.
             </p>
 
-            <div className="intro intro-4 mt-9 flex flex-wrap gap-3">
+            <div className="intro intro-4 mt-9 flex flex-wrap gap-3 reveal">
               <ButtonLink href="#categories">Explore the range</ButtonLink>
               <ButtonLink href="/verify" variant="outline">
                 Verify a model
               </ButtonLink>
             </div>
 
-            <div className="intro intro-5 mt-12 flex items-end justify-between gap-6 border-t border-black/10 pt-5">
+            <div className="intro intro-5 mt-12 flex items-end justify-between gap-6 border-t border-black/10 pt-5 reveal">
               <p className="max-w-sm text-[11px] leading-5 text-black/55">
                 Product model verification confirms that a model is registered
                 with LONEX. It does not by itself prove that a physical unit is
@@ -248,16 +252,22 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="intro intro-2 relative">
-            <div className="intro-mask relative aspect-[4/5] overflow-hidden bg-[#F5EDED] sm:aspect-[5/6]">
+          <div className="intro intro-2 reveal relative parallax-hero">
+            <div className="hero-image-frame relative aspect-[4/5] overflow-hidden bg-[#F5EDED] sm:aspect-[5/6]">
               <div className="parallax-exit absolute inset-0">
+                {/* ─────────────────────────────────────────────
+                    HERO IMAGE — replace with a real, premium photograph.
+                    Drop a supplied photo URL (or /public path) below.
+                    Recommended sources: Unsplash / Pexels solar & energy
+                    photography (see IMAGE_GUIDE below).
+                    ───────────────────────────────────────────── */}
                 <Image
                   src="/lonex-logo.png"
-                  alt="LONEX"
+                  alt="LONEX brand"
                   fill
                   priority
                   sizes="(max-width: 1024px) 90vw, 42vw"
-                  className="object-contain p-6 sm:p-10"
+                  className="object-contain p-6 sm:p-10 group-hover:scale-105"
                 />
               </div>
               <span
@@ -272,7 +282,7 @@ export default async function HomePage() {
               </span>
             </div>
 
-            <div className="absolute -bottom-6 -left-4 hidden w-48 bg-black p-5 text-white sm:block lg:-left-8">
+            <div className="absolute -bottom-6 -left-4 hidden w-48 bg-black p-5 text-white sm:block lg:-left-8 lift">
               <p className="type-eyebrow text-white/55">Positioning</p>
               <p className="mt-2 text-sm font-medium leading-6">
                 Importer · Distributor · Dealership
@@ -299,7 +309,7 @@ export default async function HomePage() {
           <div className="reveal">
             <Eyebrow>01 — Who we are</Eyebrow>
           </div>
-          <div className="space-y-9">
+          <div className="space-y-9 reveal-stagger">
             <p className="reveal type-statement text-black">
               Energy that moves life forward.
             </p>
@@ -342,7 +352,7 @@ export default async function HomePage() {
           />
 
           {categories.length > 0 ? (
-            <div className="grid gap-5 lg:grid-cols-12">
+            <div className="grid gap-5 lg:grid-cols-12 reveal-stagger">
               {categories.map((category, index) => (
                 <CategoryTile
                   key={category.id}
@@ -352,11 +362,11 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="grid gap-5 lg:grid-cols-3">
+            <div className="grid gap-5 lg:grid-cols-3 reveal-stagger">
               {RANGE_PILLARS.map((pillar) => (
                 <div
                   key={pillar.name}
-                  className="reveal border border-black/10 bg-white p-7"
+                  className="reveal border border-black/10 bg-white p-7 lift"
                 >
                   <span
                     aria-hidden="true"
@@ -385,7 +395,7 @@ export default async function HomePage() {
               title="From the catalogue."
               description="Products marked as featured in the LONEX catalogue."
             />
-            <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 reveal-stagger">
               {featured.map((product, index) => (
                 <div
                   key={product.id}
@@ -407,7 +417,7 @@ export default async function HomePage() {
             <div className="reveal">
               <Eyebrow>03 — Catalogue</Eyebrow>
             </div>
-            <div className="space-y-8">
+            <div className="space-y-8 reveal-stagger">
               <h2 className="reveal type-statement text-black">
                 Products are published when the details are confirmed.
               </h2>
@@ -421,7 +431,7 @@ export default async function HomePage() {
                   <Link
                     key={category.id}
                     href={category.path}
-                    className="group border-t border-black/15 pt-5"
+                    className="group border-t border-black/15 pt-5 lift"
                   >
                     <span className="type-eyebrow text-[#CF0A0A]">
                       {String(index + 1).padStart(2, "0")}
@@ -458,11 +468,11 @@ export default async function HomePage() {
             tone="light"
           />
 
-          <div className="grid gap-px bg-white/10 sm:grid-cols-3">
+          <div className="grid gap-px bg-white/10 sm:grid-cols-3 reveal-stagger">
             {WHY_LONEX.map((pillar, index) => (
               <div
                 key={pillar.title}
-                className="reveal group bg-black p-6 transition-colors duration-500 hover:bg-white/[0.04] sm:p-8"
+                className="reveal group glass bg-black p-6 transition-colors duration-500 hover:bg-white/[0.04] sm:p-8 lift"
               >
                 <p className="type-eyebrow text-[#CF0A0A]">
                   {String(index + 1).padStart(2, "0")}
@@ -492,7 +502,7 @@ export default async function HomePage() {
       {/* Verification */}
       <section className="border-y border-black/10 bg-[#F5EDED] py-16 sm:py-20">
         <Container className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-4">
+          <div className="space-y-4 reveal">
             <Eyebrow>05 — Model verification</Eyebrow>
             <h2 className="type-section text-black">
               Check a LONEX model code.
@@ -502,7 +512,7 @@ export default async function HomePage() {
               not by itself prove that a physical unit is genuine.
             </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
+          <div className="flex flex-col gap-3 sm:flex-row lg:justify-end reveal lift">
             <ButtonLink href="/verify">Verify a model</ButtonLink>
             <ButtonLink href="/authorized-sellers" variant="outline">
               Authorized sellers
@@ -527,13 +537,13 @@ export default async function HomePage() {
           />
 
           {sellers.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 reveal-stagger">
               {sellers.slice(0, 3).map((seller, index) => (
                 <SellerCard key={seller.id} seller={seller} index={index} />
               ))}
             </div>
           ) : (
-            <div className="reveal flex flex-col gap-6 border border-dashed border-black/20 p-8 sm:flex-row sm:items-center sm:justify-between">
+            <div className="reveal flex flex-col gap-6 border border-dashed border-black/20 p-8 sm:flex-row sm:items-center sm:justify-between lift">
               <p className="type-lead max-w-xl text-black/55">
                 Seller listings will be published here once confirmed by LONEX.
               </p>
@@ -561,7 +571,7 @@ export default async function HomePage() {
 
           {posts.length > 0 ? (
             posts.length >= 3 ? (
-              <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+              <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] reveal-stagger">
                 <BlogCard post={posts[0]} size="large" />
                 <div className="grid gap-8">
                   {posts.slice(1).map((post) => (
@@ -570,14 +580,14 @@ export default async function HomePage() {
                 </div>
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 reveal-stagger">
                 {posts.map((post) => (
                   <BlogCard key={post.id} post={post} />
                 ))}
               </div>
             )
           ) : (
-            <div className="reveal grid gap-6 border-t border-black/10 pt-8 lg:grid-cols-2">
+            <div className="reveal grid gap-6 border-t border-black/10 pt-8 lg:grid-cols-2 reveal-stagger">
               <p className="type-lead text-black/55">
                 Articles will appear here once published by LONEX.
               </p>
@@ -597,19 +607,19 @@ export default async function HomePage() {
           aria-hidden="true"
           className="lux-grid-bg-dark pointer-events-none absolute inset-0 opacity-30"
         />
-        <Container className="relative grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-          <div className="space-y-6">
+        <Container className="relative grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end reveal-stagger">
+          <div className="space-y-6 reveal">
             <p className="type-eyebrow flex items-center gap-3 text-white/60">
               <span aria-hidden="true" className="h-px w-8 bg-white/60" />
               08 — Next
             </p>
-            <h2 className="type-hero text-white">
+            <h2 className="type-hero text-white reveal shimmer">
               Let&apos;s talk about
               <br />
               what&apos;s next.
             </h2>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end">
+          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-end reveal lift">
             <ButtonLink href="/contact" variant="dark">
               Contact LONEX
             </ButtonLink>
