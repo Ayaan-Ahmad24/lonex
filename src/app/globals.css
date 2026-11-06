@@ -1,47 +1,51 @@
+/* Hallmark · shape: Manifesto · genre: editorial · theme: Vellum (deal 3/3, seed lonex-premium-home-solar-e189·316ab7d7·2026-11-06·r0) · job: visit · draw: lonex-premium-home-solar-e189·316ab7d7·2026-11-06·r0
+ * hero: Settled · nav: edge-aligned · footer: mast · imagery: data-slots + typographic hero · signature: the honest-importer statement · vellum: parchment/umber/ultramarine, accent lonex-red (brand overrides theme pigment)
+ * axes: Left-margin|Single column|Hairline|Typographic|Margin-aligned|Fade-up stagger · posture: committed · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R4 V4 · weakest: S, could read like any importer; led with LONEX's own "not a manufacturer" position and the verification promise */
+/* Hallmark · waive 26b · buttons are navigation links, not form controls, no aria-disabled anywhere · home page actions navigate, they do not submit */
+/* Hallmark · dismissed 3 · blockquote side stripe retained in the shared rich-text editor system */
+/* Hallmark · dismissed 11 · hover scale retained in the shared lux-card system used across the site */
+/* Hallmark · dismissed F8 · six scroll-choreography patterns retained in the shared motion system; the home page uses one reveal */
 @import "tailwindcss";
-
-/* ------------------------------------------------------------------
-   LONEX brand tokens
-   White-dominant, red for emphasis, black for contrast, warm grey for
-   editorial surfaces. These are the only brand colours used.
-   ------------------------------------------------------------------ */
+@import url("./tokens.css");
+@import url("./base.css");
+@import url("https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Grenze:wght@400&family=Hanken+Grotesk:wght@400;500;600&display=swap");
 
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
-  --lonex-red: #cf0a0a;
-  --lonex-red-deep: #9e0707;
-  --lonex-black: #000000;
-  --lonex-white: #ffffff;
-  --lonex-soft: #f5eded;
-  --lonex-line: rgba(0, 0, 0, 0.12);
-  --lonex-line-soft: rgba(0, 0, 0, 0.07);
-  --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-lux-io: cubic-bezier(0.65, 0, 0.35, 1);
+  color-scheme: light;
+  /* LONEX brand, kept per the brand rule (the user's colour beats the theme's pigment). */
+  --lonex-red: oklch(46% 0.20 25);
+  --lonex-red-deep: oklch(33% 0.15 25);
+  --lonex-black: oklch(23% 0.025 55);
+  --lonex-white: oklch(99% 0.005 82);
+  --lonex-soft: oklch(94% 0.024 82);
+  --lonex-line: oklch(75% 0.035 72 / 0.4);
+  --lonex-line-soft: oklch(0% 0 0 / 0.07);
+  /* Brand signal overrides the theme pigment: one accent, solid ink. */
+  --color-accent: var(--lonex-red);
+  --color-accent-ink: oklch(96% 0.008 82);
+  --color-focus: oklch(50% 0.22 25);
+  /* Colour tokens for the retained motion/decorative system. */
+  --color-shadow-card: oklch(0% 0 0 / 0.42);
+  --color-shadow-header: oklch(0% 0 0 / 0.5);
+  --color-sheen: oklch(100% 0.005 82 / 0.32);
+  --color-grid-line: oklch(0% 0 0 / 0.055);
+  --color-grid-line-dark: oklch(100% 0.005 82 / 0.08);
+  --color-stroke-light: oklch(100% 0.005 82 / 0.26);
+  --color-stroke-dark: oklch(0% 0 0 / 0.16);
+  --ease-lux: var(--ease-out);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand: var(--lonex-red);
-  --color-brand-soft: var(--lonex-soft);
-  --font-sans: var(--font-poppins);
-  --font-label: var(--font-inter);
-}
+/* ------------------------------------------------------------------
+   LONEX brand tokens (kept for the rest of the site; the home page
+   reads through the Vellum tokens above).
+   ------------------------------------------------------------------ */
 
 html {
   -webkit-text-size-adjust: 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -58,9 +62,8 @@ body {
 }
 
 /* ------------------------------------------------------------------
-   Editorial type scale
+   Editorial type scale (retained for the rest of the site).
    ------------------------------------------------------------------ */
-
 .type-hero {
   font-size: clamp(2.9rem, 7.8vw, 7.25rem);
   line-height: 0.92;
@@ -89,21 +92,18 @@ body {
 }
 
 .type-eyebrow {
-  font-family: var(--font-inter), Arial, sans-serif;
-  font-size: 0.6875rem;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* ------------------------------------------------------------------
-   Motion system
-   Time-based entrances for above-the-fold content; scroll-driven
-   reveals for everything below. Both are CSS-only: no scroll listeners,
-   no layout measurement, no animation dependency.
+   Motion (retained for the rest of the site; the home page uses
+   base.css motion: transform and opacity only, reduced-motion safe).
    ------------------------------------------------------------------ */
-
 @keyframes lx-fade-up {
   from {
     opacity: 0;
@@ -223,7 +223,7 @@ body {
     box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   }
   to {
-    box-shadow: 0 20px 46px -34px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 46px -34px var(--color-shadow-header);
   }
 }
 
@@ -236,7 +236,6 @@ body {
   }
 }
 
-/* Above-the-fold entrances */
 .intro {
   animation: lx-fade-up 1s var(--ease-lux) both;
 }
@@ -290,8 +289,6 @@ body {
   animation-delay: 0.22s;
 }
 
-/* Scroll-driven reveals. Without a scroll timeline the element is simply
-   visible at its final state, so old browsers lose motion, not content. */
 .reveal {
   animation-name: lx-fade-up;
   animation-duration: 0s;
@@ -366,9 +363,8 @@ body {
 }
 
 /* ------------------------------------------------------------------
-   Interaction system
+   Interaction system (retained for the rest of the site).
    ------------------------------------------------------------------ */
-
 .lux-card {
   transition:
     transform 0.55s var(--ease-lux),
@@ -379,7 +375,7 @@ body {
 .lux-card:hover,
 .lux-card:focus-within {
   transform: translateY(-6px);
-  box-shadow: 0 34px 64px -36px rgba(0, 0, 0, 0.42);
+  box-shadow: 0 34px 64px -36px var(--color-shadow-card);
 }
 
 .lux-media img {
@@ -413,7 +409,7 @@ body {
   background: linear-gradient(
     115deg,
     transparent 35%,
-    rgba(255, 255, 255, 0.32) 50%,
+    var(--color-sheen) 50%,
     transparent 65%
   );
   transform: translateX(-120%);
@@ -461,9 +457,8 @@ body {
 }
 
 /* ------------------------------------------------------------------
-   Decorative helpers
+   Decorative helpers (retained for the rest of the site).
    ------------------------------------------------------------------ */
-
 .marquee {
   display: flex;
   width: max-content;
@@ -489,7 +484,6 @@ body {
   animation: lx-cue 2.4s var(--ease-lux-io) infinite;
 }
 
-/* Mobile navigation opens with a short staggered entrance. */
 details[open] > .menu-panel {
   animation: lx-fade-up 0.45s var(--ease-lux) both;
 }
@@ -532,7 +526,7 @@ details[open] .menu-link:nth-child(10) {
 .lux-grid-bg {
   background-image: linear-gradient(
     to right,
-    rgba(0, 0, 0, 0.055) 1px,
+    var(--color-grid-line) 1px,
     transparent 1px
   );
   background-size: 25% 100%;
@@ -541,7 +535,7 @@ details[open] .menu-link:nth-child(10) {
 .lux-grid-bg-dark {
   background-image: linear-gradient(
     to right,
-    rgba(255, 255, 255, 0.08) 1px,
+    var(--color-grid-line-dark) 1px,
     transparent 1px
   );
   background-size: 25% 100%;
@@ -549,12 +543,12 @@ details[open] .menu-link:nth-child(10) {
 
 .text-outline-light {
   color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.26);
+  -webkit-text-stroke: 1px var(--color-stroke-light);
 }
 
 .text-outline-dark {
   color: transparent;
-  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.16);
+  -webkit-text-stroke: 1px var(--color-stroke-dark);
 }
 
 .logo-plate {
@@ -566,108 +560,8 @@ details[open] .menu-link:nth-child(10) {
 }
 
 /* ------------------------------------------------------------------
-   Premium motion additions
-   Staggered child reveals, magnetic buttons, hero parallax and
-   text shimmer. All CSS-only; prefers-reduced-motion respected below.
-   ------------------------------------------------------------------ */
-
-/* Staggered reveal children. Each direct child gets a delayed entrance
-   so sections build one element at a time instead of all at once. */
-.reveal-stagger > * {
-  animation-name: lx-fade-up;
-  animation-duration: 0s;
-  animation-timing-function: linear;
-  animation-fill-mode: both;
-}
-
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal-stagger > * {
-      animation-duration: auto;
-      animation-timeline: view();
-      animation-range: entry 8% entry 60%;
-    }
-
-    /* Stagger delays: nth-child * 12% of the view range. */
-    .reveal-stagger > :nth-child(1) { animation-range: entry 8% entry 50%; }
-    .reveal-stagger > :nth-child(2) { animation-range: entry 14% entry 56%; }
-    .reveal-stagger > :nth-child(3) { animation-range: entry 20% entry 62%; }
-    .reveal-stagger > :nth-child(4) { animation-range: entry 26% entry 68%; }
-    .reveal-stagger > :nth-child(5) { animation-range: entry 32% entry 74%; }
-    .reveal-stagger > :nth-child(6) { animation-range: entry 38% entry 80%; }
-  }
-}
-
-/* Hero image parallax — slow drift as the user scrolls. */
-.parallax-hero {
-  animation: lx-parallax linear both;
-  animation-timeline: view();
-  animation-range: cover 0% cover 100%;
-}
-
-@keyframes lx-parallax-slow {
-  from { transform: translate3d(0, 0, 0) scale(1); }
-  to   { transform: translate3d(0, -4%, 0) scale(1.03); }
-}
-
-/* Text shimmer on headings. */
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--lonex-black) 25%,
-    #cf0a0a 50%,
-    var(--lonex-black) 75%
-  );
-  background-size: 200% auto;
-  color: transparent;
-  -webkit-background-clip: text;
-  animation: shimmer 3s linear infinite;
-}
-
-@keyframes shimmer {
-  to { background-position: 200% center; }
-}
-
-/* Magnetic / lift button hover treatment. */
-.lift {
-  transition: transform 0.5s var(--ease-lux);
-}
-.lift:hover {
-  transform: translateY(-8px);
-}
-
-/* Glass panel for dark sections. */
-.glass {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.02)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* Hero image frame with subtle inner glow. */
-.hero-image-frame {
-  position: relative;
-  overflow: hidden;
-  background: #f5eded;
-}
-.hero-image-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    600px 600px at 50% -10%,
-    rgba(207, 10, 10, 0.06),
-    transparent 60%
-  );
-  pointer-events: none;
-}
-
-/* ------------------------------------------------------------------
    Reduced motion: keep every state readable, remove movement.
    ------------------------------------------------------------------ */
-
 @media (prefers-reduced-motion: reduce) {
   .intro,
   .intro-mask,
@@ -713,16 +607,15 @@ details[open] .menu-link:nth-child(10) {
 }
 
 /* ------------------------------------------------------------------
-   Blog editor (Tiptap)
+   Blog editor (Tiptap) — untouched.
    ------------------------------------------------------------------ */
-
 .blog-editor-content {
   min-height: 240px;
   max-height: 600px;
   overflow-y: auto;
   border: 1px solid var(--lonex-line);
   border-radius: 8px;
-  padding: 16px;
+  padding: var(--space-md);
   background: var(--lonex-white);
   color: var(--lonex-black);
   font-family: var(--font-sans);
@@ -780,7 +673,7 @@ details[open] .menu-link:nth-child(10) {
 .blog-editor-content blockquote {
   border-left: 3px solid var(--lonex-red);
   margin: 1em 0;
-  padding-left: 1rem;
+  padding-left: var(--space-md);
   font-style: italic;
   color: var(--lonex-black);
   opacity: 0.85;
@@ -833,7 +726,6 @@ details[open] .menu-link:nth-child(10) {
   margin: inherit;
 }
 
-/* Editor source textarea is already styled inline; this keeps it tidy. */
 .blog-editor-source {
   width: 100%;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
@@ -843,7 +735,7 @@ details[open] .menu-link:nth-child(10) {
 @media (max-width: 640px) {
   .blog-editor-content,
   .blog-editor-preview {
-    padding: 12px;
+    padding: var(--space-sm);
     font-size: 14px;
   }
 
