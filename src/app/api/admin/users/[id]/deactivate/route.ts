@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { session, user } from "@/db/schema";
 import { authorize } from "@/lib/rbac";
 import { isSameOrigin } from "@/lib/origin";
+import { deactivateUserAtomic } from "@/lib/admin/deactivate-user";
+import { deactivateUserParamsSchema } from "@/lib/validation/schemas";
 
 const noStore = { "Cache-Control": "no-store" };
 
@@ -27,7 +26,16 @@ export async function POST(
     );
   }
 
-  const { id } = await params;
+  const parsed = deactivateUserParamsSchema.safeParse(await params);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { status: "invalid_id" },
+      { status: 400, headers: noStore },
+    );
+  }
+
+  const { id } = parsed.data;
 
   if (id === access.user.id) {
     return NextResponse.json(
@@ -36,27 +44,22 @@ export async function POST(
     );
   }
 
-  const found = await db.transaction(async (tx) => {
-    const [target] = await tx
-      .select({ id: user.id })
-      .from(user)
-      .where(eq(user.id, id))
-      .limit(1);
-
-    if (!target) {
-      return false;
-    }
-
-    await tx.update(user).set({ isActive: false }).where(eq(user.id, id));
-    // Revoke every session so the user is signed out everywhere.
-    await tx.delete(session).where(eq(session.userId, id));
-    return true;
+  const result = await deactivateUserAtomic({
+    actorUserId: access.user.id,
+    targetId: id,
   });
 
-  if (!found) {
+  if (result === "not_found") {
     return NextResponse.json(
       { status: "not_found" },
       { status: 404, headers: noStore },
+    );
+  }
+
+  if (result === "last_administrator") {
+    return NextResponse.json(
+      { status: "last_administrator" },
+      { status: 400, headers: noStore },
     );
   }
 

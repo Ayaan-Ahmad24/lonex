@@ -1,8 +1,32 @@
+import "server-only";
+
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { user as userTable } from "@/db/schema";
+import { PASSWORD_MIN_LENGTH } from "@/lib/security/password-policy";
+import { resolveIpAddressConfig } from "@/lib/security/trusted-proxies";
+import {
+  ACCOUNT_THROTTLE_MAX_FAILURES,
+  ACCOUNT_THROTTLE_WINDOW_SECONDS,
+  clearAccountFailures,
+  isAccountThrottled,
+  recordAccountFailure,
+} from "@/lib/security/login-throttle";
+
+function readEmail(body: unknown): string | null {
+  if (!body || typeof body !== "object") {
+    return null;
+  }
+
+  const value = (body as { email?: unknown }).email;
+
+  return typeof value === "string" && value.trim().length > 0
+    ? value.trim().toLowerCase()
+    : null;
+}
 
 export const auth = betterAuth({
   appName: "LONEX Admin",
@@ -14,7 +38,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     disableSignUp: true,
-    minPasswordLength: 12,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
   },
 
   user: {
@@ -39,20 +63,76 @@ export const auth = betterAuth({
 
   advanced: {
     cookiePrefix: "lonex",
+    // SEC-03: do not blindly trust X-Forwarded-For. See
+    // src/lib/security/trusted-proxies.ts for the policy and tests.
+    ipAddress: resolveIpAddressConfig(),
   },
 
-    // DB-backed counters so limits survive restarts and work across processes.
+  // DB-backed counters so limits survive restarts and work across processes.
   rateLimit: {
     enabled: true,
     storage: "database",
     window: 60,
     max: 100,
     customRules: {
-      // Login throttling: 10 attempts per 5 minutes per client IP.
+      // Per-client-IP login throttling: 10 attempts per 5 minutes.
       "/sign-in/email": { window: 300, max: 10 },
     },
   },
-  
+
+  hooks: {
+    // SEC-03: account-scoped throttle, independent of the client IP.
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/email") {
+        return;
+      }
+
+      const email = readEmail(ctx.body);
+
+      if (!email) {
+        return;
+      }
+
+      if (await isAccountThrottled(email)) {
+        throw APIError.fromStatus(429, {
+          message:
+            "Too many sign-in attempts for this account. Please try again later.",
+        });
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/email") {
+        return;
+      }
+
+      const email = readEmail(ctx.body);
+
+      if (!email) {
+        return;
+      }
+
+      const returned = ctx.context.returned;
+
+      if (returned instanceof APIError) {
+        if (returned.statusCode === 401) {
+          await recordAccountFailure(email);
+        }
+
+        return;
+      }
+
+      // A successful sign-in clears prior failures for this account.
+      if (
+        returned &&
+        typeof returned === "object" &&
+        "user" in returned &&
+        (returned as { user?: unknown }).user
+      ) {
+        await clearAccountFailures(email);
+      }
+    }),
+  },
+
   databaseHooks: {
     session: {
       create: {
@@ -72,3 +152,8 @@ export const auth = betterAuth({
     },
   },
 });
+
+export const accountThrottle = {
+  windowSeconds: ACCOUNT_THROTTLE_WINDOW_SECONDS,
+  maxFailures: ACCOUNT_THROTTLE_MAX_FAILURES,
+};

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
@@ -6,6 +8,20 @@ import {
   adminUserRoles,
 } from "@/db/schema";
 import { getSessionUser } from "@/lib/session";
+
+/**
+ * Pure permission check, exported for unit tests.
+ */
+export function hasPermission(
+  codes: ReadonlySet<string> | readonly string[],
+  permission: string,
+): boolean {
+  if (Array.isArray(codes)) {
+    return (codes as readonly string[]).includes(permission);
+  }
+
+  return (codes as ReadonlySet<string>).has(permission);
+}
 
 /**
  * Permission codes granted to a user through their roles.
@@ -43,7 +59,7 @@ export async function authorize(permission: string) {
 
   const codes = await getUserPermissionCodes(user.id);
 
-  if (!codes.has(permission)) {
+  if (!hasPermission(codes, permission)) {
     return { ok: false as const, status: 403 as const };
   }
 

@@ -3,9 +3,11 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/admin/core/ui/toast";
 
 export function LoginForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -28,13 +30,29 @@ export function LoginForm() {
 
       if (!response.ok) {
         setError("Invalid email or password.");
+        toast({
+          title: "Sign in failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
         return;
       }
+
+      toast({
+        title: "Signed in",
+        description: "Welcome back to the LONEX dashboard.",
+        variant: "success",
+      });
 
       router.replace("/admin");
       router.refresh();
     } catch {
       setError("Could not sign in. Please try again.");
+      toast({
+        title: "Sign in failed",
+        description: "Could not reach the server. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setPending(false);
     }
