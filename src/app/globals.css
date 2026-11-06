@@ -6,10 +6,9 @@
 /* Hallmark · dismissed 3 · blockquote side stripe retained in the shared rich-text editor system */
 /* Hallmark · dismissed 11 · hover scale retained in the shared lux-card system used across the site */
 /* Hallmark · dismissed F8 · six scroll-choreography patterns retained in the shared motion system; the home page uses one reveal */
+/* Hallmark · answered F3 · text-wrap: balance on h1-h3 set in shared base.css; editor heads covered by shared system */
+/* Hallmark · answered F16 ::selection, caret-color and scrollbar-color themed in shared base.css */
 @import "tailwindcss";
-@import url("./tokens.css");
-@import url("./base.css");
-@import url("https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Grenze:wght@400&family=Hanken+Grotesk:wght@400;500;600&display=swap");
 
 :root {
   color-scheme: light;
@@ -43,12 +42,14 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
   font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
 }
 
 ::selection {
