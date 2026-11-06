@@ -22,6 +22,34 @@
       "when": 1793707902551,
       "tag": "0002_cold_marrow",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1793708971740,
+      "tag": "0003_vengeful_silk_fever",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1793783901738,
+      "tag": "0004_sprint02_cms_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1793787488641,
+      "tag": "0005_drop_page_builder",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1793787498322,
+      "tag": "0006_lonex_modules",
+      "breakpoints": true
     }
   ]
 }

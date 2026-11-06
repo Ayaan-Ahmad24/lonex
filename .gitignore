@@ -12,6 +12,13 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/tests/e2e/.fixtures.json
+
+# private media storage (never commit uploaded files)
+/.data/
 
 # next.js
 /.next/
@@ -32,6 +39,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +47,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local workspace notes and source handoff (not part of the app)
+/.kilo/
+/reference/
+/claude bakwas.md
+/LONEX_AUDIT_FOR_CHATGPT.md
+/final logo.png
+
+# local server logs and QA captures
+/.dev-*.log
+/.prod-server*.log
+/test-artifacts/

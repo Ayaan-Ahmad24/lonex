@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Typecheck, lint, unit/integration, build and E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_test_password
+          MYSQL_DATABASE: lonex_test
+          MYSQL_USER: lonex
+          MYSQL_PASSWORD: lonex_test_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot_test_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: "3306"
+      MYSQL_USER: lonex
+      MYSQL_PASSWORD: lonex_test_password
+      MYSQL_DATABASE: lonex_test
+      # Test-only values. Never reuse these outside CI.
+      BETTER_AUTH_SECRET: ci-only-test-secret-0123456789abcdef0123456789abcdef
+      BETTER_AUTH_URL: http://127.0.0.1:3101
+      TRUSTED_PROXIES: ""
+      ENABLE_HSTS: "0"
+      MEDIA_STORAGE_PATH: .data/test-media
+      MEDIA_MAX_UPLOAD_BYTES: "5242880"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply database migrations
+        run: npx drizzle-kit migrate
+
+      - name: Seed roles and permissions
+        run: >
+          mysql --protocol=TCP -h 127.0.0.1 -u "$MYSQL_USER" "$MYSQL_DATABASE"
+          < scripts/seed-rbac.sql
+        env:
+          MYSQL_PWD: ${{ env.MYSQL_PASSWORD }}
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and integration tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

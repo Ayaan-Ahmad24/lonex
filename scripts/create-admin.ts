@@ -1,12 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { createInterface } from "node:readline/promises";
 import { config } from "dotenv";
+import { hashPassword } from "better-auth/crypto";
 
 // Load env before the DB module is imported (it reads MYSQL_* at import time).
 config({ path: ".env.local", quiet: true });
 
-const MIN_PASSWORD = 3;
-const MAX_PASSWORD = 128;
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  evaluatePassword,
+  passwordPolicyMessage,
+} from "../src/lib/security/password-policy";
 
 class UserError extends Error {}
 
@@ -71,11 +76,10 @@ async function main() {
   const role = parseRole();
 
   const { eq } = await import("drizzle-orm");
-  const { db } = await import("../src/db");
+  const { db } = await import("../src/db/client");
   const { user, account, adminRoles, adminUserRoles } = await import(
     "../src/db/schema"
   );
-  const { auth } = await import("../src/lib/auth");
 
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const name = (await rl.question("Name: ")).trim();
@@ -90,17 +94,19 @@ async function main() {
   }
 
   const password = await promptHidden(
-    `Password (${MIN_PASSWORD}-${MAX_PASSWORD} characters): `,
+    `Password (${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters): `,
   );
   const confirm = await promptHidden("Confirm password: ");
 
   if (password !== confirm) {
     throw new UserError("Passwords do not match.");
   }
-  if (password.length < MIN_PASSWORD || password.length > MAX_PASSWORD) {
-    throw new UserError(
-      `Password must be ${MIN_PASSWORD}-${MAX_PASSWORD} characters.`,
-    );
+
+  // SEC-02: the same policy as Better Auth sign-in/password handling.
+  const policy = evaluatePassword({ password, email, name });
+
+  if (!policy.ok) {
+    throw new UserError(passwordPolicyMessage(policy.reason));
   }
 
   const existing = await db
@@ -124,8 +130,7 @@ async function main() {
   }
 
   // Better Auth's own password hasher, so login verification matches.
-  const ctx = await auth.$context;
-  const passwordHash = await ctx.password.hash(password);
+  const passwordHash = await hashPassword(password);
 
   const userId = randomUUID();
   const now = new Date();
