@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 
 /**
- * Editorial section heading used across the public site: an index, a red
- * rule, a large title, supporting copy and an optional action.
+ * Editorial section heading: a large title, supporting copy and an optional
+ * action. No eyebrow — a label above a heading that names what comes next is
+ * the tell (gate 54). Open the section another way (craft.md § 7).
  */
 export function SectionHeading({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   index,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   eyebrow,
   title,
   description,
@@ -29,17 +32,6 @@ export function SectionHeading({
       }`}
     >
       <div className="max-w-3xl space-y-4">
-        {index || eyebrow ? (
-          <p className="type-eyebrow flex items-center gap-3 text-black/55">
-            <span aria-hidden="true" className="h-px w-8 bg-[#CF0A0A]" />
-            {index ? <span className="text-[#CF0A0A]">{index}</span> : null}
-            {eyebrow ? (
-              <span className={tone === "light" ? "text-white/55" : "text-black/55"}>
-                {eyebrow}
-              </span>
-            ) : null}
-          </p>
-        ) : null}
         <h2 className={`type-section ${titleColor}`}>{title}</h2>
         {description ? (
           <p className={`type-lead max-w-2xl ${muted}`}>{description}</p>
