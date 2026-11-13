@@ -1,0 +1,540 @@
+/* ------------------------------------------------------------------
+   LONEX homepage hero — full-bleed cinematic range slideshow.
+   One stage, three photographs, one editorial control bar.
+   ------------------------------------------------------------------ */
+
+.lx-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: block;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  /* The homepage header is transparent and overlays the hero, so the hero
+     starts at the very top of the page, behind the sticky header. */
+  margin-top: calc(-1 * var(--site-header-h) - 1px);
+  min-height: 620px;
+  background: #0a0908;
+  color: #ffffff;
+}
+
+.lx-hero__stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #0a0908;
+}
+
+.lx-hero__slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.lx-hero__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lx-hero__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Left-weighted dark grade for copy, with a low vignette under the bar. */
+.lx-hero__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(4, 4, 4, 0.86) 0%,
+      rgba(4, 4, 4, 0.62) 34%,
+      rgba(4, 4, 4, 0.18) 66%,
+      rgba(4, 4, 4, 0.32) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(4, 4, 4, 0.54) 0%,
+      rgba(4, 4, 4, 0.08) 28%,
+      rgba(4, 4, 4, 0.12) 58%,
+      rgba(4, 4, 4, 0.88) 100%
+    );
+}
+
+.lx-hero__shell {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Clear the transparent header that overlays the top of the hero. */
+  padding-block: calc(var(--site-header-h) + 1px + clamp(22px, 3.6vh, 44px))
+    clamp(18px, 3vh, 34px);
+}
+
+/* ---------- Top line ---------- */
+
+.lx-hero__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.lx-hero__kicker,
+
+.lx-hero__kicker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+
+.lx-hero__kicker-mark {
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+}
+
+.lx-hero__kicker-rule {
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.lx-hero__note {
+  color: rgba(255, 255, 255, 0.78);
+  text-align: right;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- Slide copy ---------- */
+
+.lx-hero__main {
+  margin-top: auto;
+  max-width: 46rem;
+  padding-top: clamp(32px, 6vh, 72px);
+}
+
+.lx-hero__eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 clamp(14px, 2vh, 22px);
+  font-family: var(--lx-mono);
+  font-size: 0.6875rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+
+.lx-hero__headline {
+  margin: 0;
+  font-family: var(--site-font-display);
+  font-size: clamp(2.9rem, 5.6vw, 5.75rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+
+.lx-hero__lead {
+  margin: clamp(16px, 2.4vh, 26px) 0 0;
+  max-width: 44ch;
+  font-size: clamp(1rem, 0.32vw + 0.94rem, 1.125rem);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.lx-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(22px, 3.4vh, 36px);
+}
+
+.lx-hero__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 1px solid var(--lx-red);
+  border-radius: 2px;
+  background: var(--lx-red);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  transition:
+    background 200ms var(--lx-ease),
+    border-color 200ms var(--lx-ease),
+    color 200ms var(--lx-ease),
+    transform 240ms var(--lx-ease);
+}
+
+/* A small, deliberate lift — never a bounce. */
+.lx-hero__cta:hover {
+  transform: translateY(-2px);
+}
+
+.lx-hero__cta:active {
+  transform: translateY(0);
+}
+
+.lx-hero__cta:hover {
+  background: var(--lx-red-deep);
+  border-color: var(--lx-red-deep);
+}
+
+.lx-hero__cta-arrow {
+  display: inline-flex;
+  transition: transform 200ms var(--lx-ease);
+}
+
+.lx-hero__cta:hover .lx-hero__cta-arrow {
+  transform: translateX(3px);
+}
+
+.lx-hero__cta--ghost {
+  background: rgba(10, 9, 8, 0.34);
+  border-color: rgba(255, 255, 255, 0.62);
+  color: #ffffff;
+}
+
+.lx-hero__cta--ghost:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+/* ---------- Control bar ---------- */
+
+.lx-hero__bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(18px, 2.4vw, 36px);
+  margin-top: clamp(30px, 5.4vh, 64px);
+  padding-top: clamp(14px, 2vh, 22px);
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.lx-hero__tabs {
+  display: flex;
+  gap: clamp(14px, 2.4vw, 34px);
+  min-width: 0;
+}
+
+.lx-hero__tab {
+  flex: 0 1 190px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 200ms var(--lx-ease);
+}
+
+.lx-hero__tab:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lx-hero__tab.is-active {
+  color: #ffffff;
+}
+
+.lx-hero__tab-track {
+  position: relative;
+  display: block;
+  height: 2px;
+  margin-bottom: clamp(10px, 1.4vh, 14px);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 200ms var(--lx-ease);
+}
+
+.lx-hero__tab:hover .lx-hero__tab-track {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.lx-hero__tab-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--lx-red);
+}
+
+.lx-hero__tab.is-active .lx-hero__tab-fill {
+  animation: lxHeroProgress 7s linear both;
+}
+
+.lx-hero.is-paused .lx-hero__tab.is-active .lx-hero__tab-fill {
+  animation-play-state: paused;
+}
+
+.lx-hero__tab-text {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--lx-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+
+.lx-hero__tab.is-active .lx-hero__tab-index {
+  color: var(--lx-red);
+}
+
+.lx-hero__transport {
+  display: flex;
+  gap: 8px;
+}
+
+.lx-hero__nav {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  border-radius: 0;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background 200ms var(--lx-ease),
+    border-color 200ms var(--lx-ease),
+    color 200ms var(--lx-ease);
+}
+
+.lx-hero__nav:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+.lx-hero__nav:active {
+  transform: translateY(1px);
+}
+
+/* The arrow leans towards the direction of travel. */
+.lx-hero__nav svg {
+  transition: transform 260ms var(--lx-ease);
+}
+
+.lx-hero__nav[aria-label="Previous slide"]:hover svg {
+  transform: translateX(-3px);
+}
+
+.lx-hero__nav[aria-label="Next slide"]:hover svg {
+  transform: translateX(3px);
+}
+
+.lx-hero .lx-hero__cta:focus-visible,
+.lx-hero .lx-hero__tab:focus-visible,
+.lx-hero .lx-hero__nav:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+/* ---------- Text entrance on slide change ---------- */
+
+.lx-hero__main > * {
+  animation: lxHeroRise 0.95s var(--lx-ease) both;
+}
+
+/* The headline arrives from behind a mask, so the type reads as a curtain
+   lifting rather than a fade. */
+.lx-hero__main > .lx-hero__headline {
+  animation-name: lxHeroMask;
+  animation-duration: 1.15s;
+  animation-delay: 0.05s;
+}
+
+.lx-hero__main > .lx-hero__lead {
+  animation-delay: 0.16s;
+}
+
+.lx-hero__main > .lx-hero__actions {
+  animation-delay: 0.24s;
+}
+
+@keyframes lxHeroRise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lxHeroMask {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+    clip-path: inset(0% 0% 100% 0%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0% 0% 0% 0%);
+  }
+}
+
+@keyframes lxHeroProgress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .lx-hero__tab {
+    flex: 1 1 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .lx-hero {
+    min-height: 640px;
+  }
+
+  .lx-hero__shade {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(4, 4, 4, 0.6) 0%,
+        rgba(4, 4, 4, 0.22) 24%,
+        rgba(4, 4, 4, 0.58) 50%,
+        rgba(4, 4, 4, 0.9) 76%,
+        rgba(4, 4, 4, 0.97) 100%
+      ),
+      linear-gradient(
+        90deg,
+        rgba(4, 4, 4, 0.55) 0%,
+        rgba(4, 4, 4, 0.15) 60%,
+        rgba(4, 4, 4, 0.3) 100%
+      );
+  }
+
+  .lx-hero__bar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .lx-hero__transport {
+    justify-self: end;
+    order: -1;
+  }
+
+  .lx-hero__tab-text {
+    gap: 8px;
+    letter-spacing: 0.12em;
+  }
+}
+
+@media (max-width: 700px) {
+  .lx-hero__headline {
+    max-width: 11ch;
+    font-size: clamp(2.5rem, 10.6vw, 3.4rem);
+  }
+
+  .lx-hero__lead {
+    max-width: 34ch;
+  }
+}
+
+@media (max-width: 560px) {
+  .lx-hero__kicker-rule,
+  .lx-hero__kicker-line {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .lx-hero {
+    min-height: 620px;
+  }
+
+  .lx-hero__kicker {
+    gap: 9px;
+    letter-spacing: 0.12em;
+  }
+
+  .lx-hero__note {
+    letter-spacing: 0.1em;
+  }
+
+  .lx-hero__actions {
+    gap: 10px;
+  }
+
+  .lx-hero__cta {
+    min-height: 50px;
+    padding: 0 18px;
+    font-size: 0.9rem;
+  }
+
+  .lx-hero__nav {
+    width: 44px;
+    height: 44px;
+  }
+
+  .lx-hero__tab-text {
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-hero__main > * {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .lx-hero__tab.is-active .lx-hero__tab-fill {
+    animation: none;
+    width: 100%;
+  }
+
+  .lx-hero__cta,
+  .lx-hero__cta-arrow,
+  .lx-hero__nav,
+  .lx-hero__tab,
+  .lx-hero__tab-track {
+    transition: none;
+  }
+}
