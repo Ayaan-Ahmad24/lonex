@@ -4,27 +4,43 @@ export function EmptyState({
   title,
   description,
   action,
+  icon,
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
+  icon?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
-      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-400">
-        ∅
+    <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+      <div className="flex h-11 w-11 items-center justify-center rounded-full border border-lonex-line bg-lonex-line-soft text-lonex-muted">
+        {icon ?? (
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 13.5 5.2 6.4A2 2 0 0 1 7.1 5h9.8a2 2 0 0 1 1.9 1.4L21 13.5" />
+            <path d="M3 13.5h5l1 2h6l1-2h5v4.5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          </svg>
+        )}
       </div>
-      <p className="text-sm font-semibold text-slate-900">{title}</p>
+      <p className="mt-3 text-sm font-semibold text-lonex-ink">{title}</p>
       {description ? (
-        <p className="max-w-sm text-sm text-slate-500">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-lonex-muted">{description}</p>
       ) : null}
-      {action ? <div className="mt-2">{action}</div> : null}
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
 }
 
 export function LoadingState({
-  label = "Loading...",
+  label = "Loading…",
   rows = 3,
 }: {
   label?: string;
@@ -36,7 +52,7 @@ export function LoadingState({
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="h-10 animate-pulse rounded-lg bg-slate-100"
+          className="h-10 animate-pulse rounded-lg border border-lonex-line bg-lonex-line-soft"
         />
       ))}
     </div>
@@ -46,11 +62,11 @@ export function LoadingState({
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-2 p-5" role="status" aria-label="Loading table">
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">Loading…</span>
       {Array.from({ length: rows }).map((_, index) => (
         <div
           key={index}
-          className="h-11 animate-pulse rounded-lg bg-slate-100"
+          className="h-11 animate-pulse rounded-lg border border-lonex-line bg-lonex-line-soft"
         />
       ))}
     </div>
@@ -69,13 +85,13 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="flex flex-col items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-4"
+      className="rounded-xl border border-lonex-red/20 bg-lonex-red-soft px-4 py-3.5"
     >
-      <p className="text-sm font-semibold text-red-800">{title}</p>
+      <p className="text-sm font-semibold text-lonex-red">{title}</p>
       {description ? (
-        <p className="text-sm text-red-700">{description}</p>
+        <p className="mt-1 text-sm text-lonex-ink-soft">{description}</p>
       ) : null}
-      {action}
+      {action ? <div className="mt-3">{action}</div> : null}
     </div>
   );
 }

@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
 import {
@@ -37,7 +39,7 @@ export default async function SellersPage({
       render: (row) => (
         <Link
           href={`/admin/sellers/${row.id}`}
-          className="font-medium text-slate-900 hover:underline"
+          className="font-medium text-lonex-ink hover:underline"
         >
           {row.name}
         </Link>
@@ -58,7 +60,7 @@ export default async function SellersPage({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Authorized sellers"
         description="Active sellers appear in the public dealer directory with city filtering, call links and map links."

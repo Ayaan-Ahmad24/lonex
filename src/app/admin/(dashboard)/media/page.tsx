@@ -1,3 +1,5 @@
+export const instant = false;
+
 import { Suspense } from "react";
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
@@ -16,6 +18,7 @@ import { Badge } from "@/admin/core/ui/badge";
 import { TableSkeleton } from "@/admin/core/ui/states";
 import { formatDate } from "@/admin/core/ui/format";
 import { MediaUploadForm } from "@/admin/modules/media/media-upload-form";
+import { MediaThumb } from "@/admin/modules/media/media-thumb";
 
 const SORTS = ["createdAt"] as const;
 
@@ -27,7 +30,7 @@ export default function MediaPage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Media"
+        title="Media library"
         description="Private media library. Files are stored outside public/ and served only to authorized administrators."
       />
       <Suspense fallback={<TableSkeleton rows={4} />}>
@@ -58,14 +61,13 @@ async function MediaContent({
       header: "Preview",
       render: (row) =>
         row.mimeType.startsWith("image/") ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <MediaThumb
             src={`/admin/media/${row.id}/file`}
             alt={row.altText || row.originalName}
-            className="h-12 w-12 rounded-lg border border-slate-200 object-cover"
+            className="h-12 w-12 rounded-lg border border-lonex-line object-cover"
           />
         ) : (
-          <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-semibold text-slate-500">
+          <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-lonex-line bg-lonex-stone text-[10px] font-semibold text-lonex-muted">
             PDF
           </span>
         ),
@@ -77,11 +79,11 @@ async function MediaContent({
         <div className="min-w-0">
           <Link
             href={`/admin/media/${row.id}`}
-            className="block max-w-72 truncate font-medium text-slate-900 hover:underline"
+            className="block max-w-72 truncate font-medium text-lonex-ink no-underline transition-colors hover:text-lonex-red"
           >
             {row.originalName}
           </Link>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-lonex-muted">
             {row.width && row.height ? `${row.width}×${row.height} · ` : ""}
             {formatBytes(row.bytes)}
           </p>
@@ -97,8 +99,8 @@ async function MediaContent({
       key: "alt",
       header: "Alt text",
       render: (row) => (
-        <span className="text-xs text-slate-600">
-          {row.altText || <span className="text-slate-400">Not set</span>}
+        <span className="text-xs text-lonex-muted">
+          {row.altText || <span className="text-lonex-muted">Not set</span>}
         </span>
       ),
     },
@@ -106,22 +108,9 @@ async function MediaContent({
       key: "created",
       header: "Uploaded",
       render: (row) => (
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-lonex-muted">
           {formatDate(row.createdAt)}
         </span>
-      ),
-    },
-    {
-      key: "actions",
-      header: "",
-      className: "text-right",
-      render: (row) => (
-        <Link
-          href={`/admin/media/${row.id}`}
-          className="text-xs font-medium text-slate-600 hover:text-slate-900 hover:underline"
-        >
-          Details
-        </Link>
       ),
     },
   ];
@@ -131,7 +120,7 @@ async function MediaContent({
       <MediaUploadForm maxBytes={env.MEDIA_MAX_UPLOAD_BYTES} />
 
       <Card>
-        <ListToolbar action="/admin/media">
+        <ListToolbar action="/admin/media" resetHref="/admin/media">
           <SearchInput
             defaultValue={params.q}
             placeholder="Search filename or alt text"

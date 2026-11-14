@@ -34,6 +34,7 @@ export const siteConfig = {
   admin: {
     productName: "LONEX Admin",
     logoText: "LX",
+    logoSrc: "/lonex-logo-transparent.png",
     accentColor: "#CF0A0A",
     accentSoftColor: "#FDF2F2",
     supportEmail: "support@lonex.example",

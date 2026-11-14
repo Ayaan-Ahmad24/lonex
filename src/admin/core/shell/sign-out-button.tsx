@@ -54,11 +54,11 @@ export function SignOutButton({ compact = false }: { compact?: boolean }) {
       aria-busy={pending}
       className={
         compact
-          ? "w-full rounded-lg px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-          : "rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          ? "flex w-full items-center justify-start rounded-lg px-3 py-2 text-left text-[13px] font-medium text-lonex-ink-soft transition-colors hover:bg-lonex-line-soft hover:text-lonex-ink disabled:opacity-50"
+          : "inline-flex h-9 items-center rounded-[10px] border border-lonex-line bg-lonex-paper px-3 text-[13px] font-medium text-lonex-ink-soft transition-colors hover:bg-lonex-stone hover:text-lonex-ink disabled:opacity-50"
       }
     >
-      {pending ? "Signing out..." : "Sign out"}
+      {pending ? "Signing out…" : "Sign out"}
     </button>
   );
 }

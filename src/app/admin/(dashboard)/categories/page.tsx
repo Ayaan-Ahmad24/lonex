@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
 import {
@@ -39,7 +41,7 @@ export default async function CategoriesPage({
       render: (row) => (
         <Link
           href={`/admin/categories/${row.id}`}
-          className="font-medium text-slate-900 hover:underline"
+          className="font-medium text-lonex-ink no-underline transition-colors hover:text-lonex-red"
         >
           {row.name}
         </Link>
@@ -48,9 +50,10 @@ export default async function CategoriesPage({
     {
       key: "priority",
       header: "Priority",
+      className: "w-24",
       render: (row) => (
         <span
-          className="font-mono text-xs text-slate-600"
+          className="font-mono text-xs text-lonex-muted"
           title="Lower numbers appear first in the public catalogue."
         >
           {row.sortOrder}
@@ -61,22 +64,25 @@ export default async function CategoriesPage({
       key: "slug",
       header: "Public URL",
       render: (row) => (
-        <span className="font-mono text-xs text-slate-600">/{row.slug}</span>
+        <span className="font-mono text-xs text-lonex-muted">/{row.slug}</span>
       ),
     },
     {
       key: "status",
       header: "Status",
+      className: "w-28",
       render: (row) => <StatusBadge status={row.status} />,
     },
     {
       key: "products",
       header: "Products",
-      render: (row) => row.productCount,
+      className: "w-24 text-right",
+      render: (row) => <span className="lx-num">{row.productCount}</span>,
     },
     {
       key: "updated",
       header: "Updated",
+      className: "w-32 whitespace-nowrap",
       render: (row) => formatDate(row.updatedAt),
     },
   ];
@@ -97,7 +103,7 @@ export default async function CategoriesPage({
       />
 
       <Card>
-        <ListToolbar action="/admin/categories">
+        <ListToolbar action="/admin/categories" resetHref="/admin/categories">
           <SearchInput
             defaultValue={params.q}
             placeholder="Search name or slug"

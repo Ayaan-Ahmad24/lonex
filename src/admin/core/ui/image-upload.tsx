@@ -47,7 +47,7 @@ export function ImageUpload({
         accept={accept}
         onChange={onChange}
         aria-label={label}
-        className="block w-full cursor-pointer rounded-lg border border-slate-300 bg-white text-sm text-slate-600 file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+        className="block w-full cursor-pointer rounded-[10px] border border-lonex-line bg-lonex-paper text-sm text-lonex-ink-soft file:mr-3 file:border-0 file:bg-lonex-line-soft file:px-3 file:py-2 file:text-sm file:font-medium file:text-lonex-ink hover:file:bg-lonex-line"
       />
       {preview ? (
         // Object URL preview only; the server never trusts the browser type.
@@ -55,11 +55,11 @@ export function ImageUpload({
         <img
           src={preview}
           alt="Selected file preview"
-          className="h-32 w-auto rounded-lg border border-slate-200 object-cover"
+          className="h-32 w-auto rounded-lg border border-lonex-line object-cover"
         />
       ) : null}
       {error ? (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs text-lonex-red">
           {error}
         </p>
       ) : null}

@@ -32,6 +32,8 @@ export type AdminBrand = {
   productName: string;
   /** Short mark shown next to the product name. */
   logoText: string;
+  /** Logo image source (falls back to logoText mark when absent). */
+  logoSrc?: string;
   /** Brand accent used sparingly for active navigation and primary actions. */
   accentColor: string;
   /** Very light accent used for active navigation backgrounds. */

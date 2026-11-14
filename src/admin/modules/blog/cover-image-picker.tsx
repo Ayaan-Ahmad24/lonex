@@ -189,8 +189,8 @@ export function BlogCoverImagePicker({
                       aria-pressed={internalValue === option.id}
                       className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
                         internalValue === option.id
-                          ? "border-[#CF0A0A] bg-[#F5EDED]/30"
-                          : "border-transparent hover:border-slate-200"
+                          ? "border-lonex-red bg-lonex-red-soft/30"
+                          : "border-transparent hover:border-lonex-line-soft"
                       }`}
                     >
                       <img

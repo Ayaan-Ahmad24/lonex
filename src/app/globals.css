@@ -10,6 +10,28 @@
 /* Hallmark · answered F16 ::selection, caret-color and scrollbar-color themed in shared base.css */
 @import "tailwindcss";
 
+@theme {
+  /* Admin design-system tokens. The public site only consumes lonex-red. */
+  --color-lonex-red: #CF0A0A;
+  --color-lonex-red-soft: #FDF2F2;
+  --color-lonex-ink: #171923;
+  --color-lonex-ink-soft: #475467;
+  --color-lonex-muted: #667085;
+  --color-lonex-paper: #FFFFFF;
+  --color-lonex-stone: #F7F8FA;
+  --color-lonex-line: #E4E7EC;
+  --color-lonex-line-soft: #F2F4F7;
+  --color-lonex-surface: #FFFFFF;
+  --color-lonex-success: #067647;
+  --color-lonex-success-soft: #ECFDF3;
+  --color-lonex-warning: #B54708;
+  --color-lonex-warning-soft: #FFFAEB;
+  --color-lonex-info: #175CD3;
+  --color-lonex-info-soft: #EFF8FF;
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-plex-mono);
+}
+
 :root {
   color-scheme: light;
   /* LONEX brand, kept per the brand rule (the user's colour beats the theme's pigment). */

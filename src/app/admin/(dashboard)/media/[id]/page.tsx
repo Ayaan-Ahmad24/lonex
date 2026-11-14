@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -14,6 +16,7 @@ import { ConfirmSubmitButton } from "@/admin/core/ui/confirm-dialog";
 import { Card, CardBody, CardHeader } from "@/admin/core/ui/card";
 import { PageHeader } from "@/admin/core/ui/page-header";
 import { Badge } from "@/admin/core/ui/badge";
+import { MediaThumb } from "@/admin/modules/media/media-thumb";
 import { buttonClassName } from "@/admin/core/ui/button";
 import { formatDateTime } from "@/admin/core/ui/format";
 import {
@@ -65,11 +68,10 @@ export default async function MediaDetailPage({
           <CardHeader title="Preview" />
           <CardBody>
             {isImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <MediaThumb
                 src={`/admin/media/${asset.id}/file`}
                 alt={asset.altText || asset.originalName}
-                className="max-h-[28rem] w-auto rounded-lg border border-slate-200 object-contain"
+                className="h-[24rem] w-full rounded-lg border border-lonex-line object-contain"
               />
             ) : (
               <a
@@ -90,26 +92,26 @@ export default async function MediaDetailPage({
             <CardBody>
               <dl className="space-y-3 text-sm">
                 <div>
-                  <dt className="text-xs text-slate-500">Type</dt>
+                  <dt className="text-xs text-lonex-muted">Type</dt>
                   <dd className="mt-1">
                     <Badge>{asset.mimeType}</Badge>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-500">Size</dt>
-                  <dd className="text-slate-800">{formatBytes(asset.bytes)}</dd>
+                  <dt className="text-xs text-lonex-muted">Size</dt>
+                  <dd className="text-lonex-ink">{formatBytes(asset.bytes)}</dd>
                 </div>
                 {asset.width && asset.height ? (
                   <div>
-                    <dt className="text-xs text-slate-500">Dimensions</dt>
-                    <dd className="text-slate-800">
+                    <dt className="text-xs text-lonex-muted">Dimensions</dt>
+                    <dd className="text-lonex-ink">
                       {asset.width} × {asset.height}
                     </dd>
                   </div>
                 ) : null}
                 <div>
-                  <dt className="text-xs text-slate-500">Storage key</dt>
-                  <dd className="break-all font-mono text-[11px] text-slate-500">
+                  <dt className="text-xs text-lonex-muted">Storage key</dt>
+                  <dd className="break-all font-mono text-[11px] text-lonex-muted">
                     {asset.storageKey}
                   </dd>
                 </div>
@@ -140,10 +142,10 @@ export default async function MediaDetailPage({
             <CardBody className="space-y-3">
               {references.length > 0 ? (
                 <>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-lonex-muted">
                     This asset is referenced and cannot be deleted:
                   </p>
-                  <ul className="list-inside list-disc space-y-1 text-xs text-slate-500">
+                  <ul className="list-inside list-disc space-y-1 text-xs text-lonex-muted">
                     {references.map((reference) => (
                       <li key={reference}>{reference}</li>
                     ))}
@@ -152,7 +154,7 @@ export default async function MediaDetailPage({
               ) : (
                 <ActionForm action={deleteMediaAction}>
                   <input type="hidden" name="id" value={asset.id} />
-                  <p className="mb-3 text-sm text-slate-600">
+                  <p className="mb-3 text-sm text-lonex-muted">
                     Permanently delete this file from private storage. This
                     cannot be undone.
                   </p>

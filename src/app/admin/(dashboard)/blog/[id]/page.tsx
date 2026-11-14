@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminModule } from "@/admin/config/access";
@@ -59,7 +61,7 @@ export default async function EditBlogPostPage({
             ) : null}
             <Link
               href="/admin/blog"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline"
+              className="text-sm font-medium text-lonex-ink-soft hover:text-lonex-ink hover:underline"
             >
               Back to blog
             </Link>
@@ -73,11 +75,11 @@ export default async function EditBlogPostPage({
             {post.status === "published" ? "Published" : "Draft"}
           </Badge>
           {post.publishedAt ? (
-            <span className="text-slate-600">
+            <span className="text-lonex-muted">
               Published {formatDateTime(post.publishedAt)}
             </span>
           ) : (
-            <span className="text-slate-500">
+            <span className="text-lonex-muted">
               This article has never been published.
             </span>
           )}

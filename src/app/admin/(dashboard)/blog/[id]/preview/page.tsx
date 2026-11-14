@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminModule } from "@/admin/config/access";
@@ -52,18 +54,16 @@ export default async function BlogPreviewPage({
 
       <Card>
         <CardBody className="mx-auto max-w-3xl space-y-6 px-6 py-8">
-          <header className="space-y-2 border-b border-slate-200 pb-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#CF0A0A]">
+          <header className="lx-prose space-y-2 border-b border-lonex-line pb-6">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-lonex-red">
               LONEX Journal
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-black">
-              {post.title}
-            </h1>
+            <h1 className="text-lonex-ink">{post.title}</h1>
           </header>
           {document ? (
             <RichTextRenderer document={document} />
           ) : (
-            <p className="text-sm text-red-600">
+            <p className="text-sm text-lonex-red">
               Stored content is invalid and would not render publicly. Re-save the
               article to repair it.
             </p>

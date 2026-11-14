@@ -57,22 +57,21 @@ export function ConfirmSubmitButton({
 
       {visible ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-lonex-ink/45 p-4 backdrop-blur-[1px]"
           role="presentation"
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-title"
-            className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-xl"
+            className="w-full max-w-md rounded-xl border border-lonex-line bg-lonex-paper p-5 shadow-xl"
           >
-            <h2
-              id="confirm-title"
-              className="text-base font-semibold text-slate-900"
-            >
+            <h2 id="confirm-title" className="text-lonex-ink">
               {confirmTitle}
             </h2>
-            <p className="mt-2 text-sm text-slate-600">{confirmMessage}</p>
+            <p className="mt-1.5 text-sm leading-6 text-lonex-ink-soft">
+              {confirmMessage}
+            </p>
             <DialogActions
               variant={variant}
               confirmLabel={confirmLabel}

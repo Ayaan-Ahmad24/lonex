@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminModule } from "@/admin/config/access";
@@ -59,7 +61,7 @@ export default async function EditProductPage({
             ) : null}
             <Link
               href="/admin/products"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline"
+              className="text-sm font-medium text-lonex-ink-soft hover:text-lonex-ink hover:underline"
             >
               Back to products
             </Link>
@@ -86,13 +88,13 @@ export default async function EditProductPage({
               <Badge tone={product.verification.active ? "success" : "danger"}>
                 {product.verification.active ? "Registered" : "Inactive"}
               </Badge>
-              <span className="text-slate-600">
+              <span className="text-lonex-muted">
                 Registered{" "}
                 {product.verification.registeredAt.toLocaleDateString("en-GB")}
               </span>
             </>
           ) : (
-            <span className="text-slate-500">
+            <span className="text-lonex-muted">
               No verification code has been generated for this product model.
             </span>
           )}

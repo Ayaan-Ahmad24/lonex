@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminModule } from "@/admin/config/access";
@@ -51,7 +53,7 @@ export default async function EditCategoryPage({
             ) : null}
             <Link
               href="/admin/categories"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline"
+              className="text-sm font-medium text-lonex-ink-soft hover:text-lonex-ink hover:underline"
             >
               Back to categories
             </Link>

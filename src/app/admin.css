@@ -1,0 +1,152 @@
+/*
+ * LONEX admin design system.
+ *
+ * Imported only by the /admin layout, so the public site keeps its editorial
+ * typography (tokens.css + base.css). Everything here is scoped under
+ * `.lx-admin` and exists to undo the public site's display-serif and
+ * `max-width` heading rules that were leaking into the dashboard.
+ */
+
+.lx-admin {
+  --lx-sidebar-width: 260px;
+  --lx-header-height: 64px;
+  --lx-radius: 10px;
+  --lx-focus: color-mix(in oklab, var(--color-lonex-red) 45%, transparent);
+
+  color: var(--color-lonex-ink);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+}
+
+/* Reset the public site's Grenze Gotisch headings inside the admin shell. */
+.lx-admin h1,
+.lx-admin h2,
+.lx-admin h3,
+.lx-admin h4,
+.lx-admin h5,
+.lx-admin h6 {
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--color-lonex-ink);
+  letter-spacing: -0.011em;
+  line-height: 1.3;
+  max-width: none;
+  text-wrap: pretty;
+}
+
+.lx-admin h1 {
+  font-size: 1.875rem; /* 30px */
+  line-height: 1.2;
+  letter-spacing: -0.022em;
+}
+
+.lx-admin h2 {
+  font-size: 1.125rem; /* 18px */
+}
+
+.lx-admin h3 {
+  font-size: 1rem; /* 16px */
+}
+
+.lx-admin h4 {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 1024px) {
+  .lx-admin h1 {
+    font-size: 2.125rem; /* 34px */
+  }
+}
+
+@media (min-width: 1280px) {
+  .lx-admin h1 {
+    font-size: 2.375rem; /* 38px */
+  }
+}
+
+/* Paragraphs inherit the shell measure instead of the public 65ch cap. */
+.lx-admin p {
+  max-width: none;
+}
+
+/* base.css sets `p { text-wrap: pretty }` unlayered, which beats Tailwind's
+   `white-space: nowrap` inside `truncate`. Re-assert truncation for the admin. */
+.lx-admin .truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lx-admin .lx-prose p {
+  max-width: 68ch;
+}
+
+/* Faithful editorial preview: restore the public type inside the preview. */
+.lx-prose h1,
+.lx-prose h2,
+.lx-prose h3 {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display, -0.01em);
+  line-height: 1.1;
+}
+
+.lx-prose h1 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+}
+
+/* Numeric columns stay aligned across rows. */
+.lx-admin .lx-mono,
+.lx-admin .lx-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.lx-mono {
+  font-family: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* One focus treatment for every interactive element in the admin. */
+.lx-admin
+  :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-lonex-red);
+  outline-offset: 2px;
+}
+
+/* Native date/time pickers should not inherit the public caret colour. */
+.lx-admin input,
+.lx-admin select,
+.lx-admin textarea {
+  color: var(--color-lonex-ink);
+}
+
+.lx-admin input::placeholder,
+.lx-admin textarea::placeholder {
+  color: var(--color-lonex-muted);
+}
+
+/* Thin, quiet scrollbars for long tables and the sidebar. */
+.lx-admin .lx-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-lonex-line) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-admin *,
+  .lx-admin *::before,
+  .lx-admin *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* The sign-in screen uses a tighter heading scale than a dashboard page. */
+.lx-auth h1 {
+  font-size: 1.75rem;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+

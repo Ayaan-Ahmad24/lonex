@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdminModule } from "@/admin/config/access";
@@ -63,25 +65,25 @@ export default async function UserDetailPage({
           <CardBody className="space-y-4">
             <dl className="grid gap-4 sm:grid-cols-2">
               <div>
-                <dt className="text-xs text-slate-500">Name</dt>
-                <dd className="text-sm font-medium text-slate-900">
+                <dt className="text-xs text-lonex-muted">Name</dt>
+                <dd className="text-sm font-medium text-lonex-ink">
                   {detail.name}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Email</dt>
-                <dd className="break-all text-sm font-medium text-slate-900">
+                <dt className="text-xs text-lonex-muted">Email</dt>
+                <dd className="break-all text-sm font-medium text-lonex-ink">
                   {detail.email}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Status</dt>
+                <dt className="text-xs text-lonex-muted">Status</dt>
                 <dd className="mt-1">
                   <StatusBadge status={detail.isActive ? "active" : "inactive"} />
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Roles</dt>
+                <dt className="text-xs text-lonex-muted">Roles</dt>
                 <dd className="mt-1 flex flex-wrap gap-1">
                   {detail.roles.length > 0 ? (
                     detail.roles.map((role) => (
@@ -93,24 +95,24 @@ export default async function UserDetailPage({
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-xs text-slate-400">No role</span>
+                    <span className="text-xs text-lonex-muted">No role</span>
                   )}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Created</dt>
-                <dd className="text-sm text-slate-700">
+                <dt className="text-xs text-lonex-muted">Created</dt>
+                <dd className="text-sm text-lonex-muted">
                   {formatDateTime(detail.createdAt)}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate-500">Active sessions</dt>
-                <dd className="text-sm text-slate-700">{detail.sessionCount}</dd>
+                <dt className="text-xs text-lonex-muted">Active sessions</dt>
+                <dd className="text-sm text-lonex-muted">{detail.sessionCount}</dd>
               </div>
             </dl>
 
             {isSelf ? (
-              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+              <p className="rounded-xl border border-lonex-line bg-lonex-line-soft px-3 py-2 text-xs text-lonex-muted">
                 This is your own account. Self-deactivation and self role changes
                 are blocked to prevent lockout.
               </p>
@@ -124,13 +126,13 @@ export default async function UserDetailPage({
             <CardBody className="space-y-3">
               {detail.isActive ? (
                 isSelf ? (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-lonex-muted">
                     You cannot deactivate your own account.
                   </p>
                 ) : (
                   <ActionForm action={deactivateUserAction}>
                     <input type="hidden" name="id" value={detail.id} />
-                    <p className="mb-3 text-sm text-slate-600">
+                    <p className="mb-3 text-sm text-lonex-muted">
                       Deactivation revokes every existing session immediately.
                     </p>
                     <ConfirmSubmitButton
@@ -144,7 +146,7 @@ export default async function UserDetailPage({
               ) : (
                 <ActionForm action={reactivateUserAction}>
                   <input type="hidden" name="id" value={detail.id} />
-                  <p className="mb-3 text-sm text-slate-600">
+                  <p className="mb-3 text-sm text-lonex-muted">
                     Reactivation allows this account to sign in again. The
                     password is unchanged.
                   </p>
@@ -215,17 +217,17 @@ export default async function UserDetailPage({
         />
         {detail.recentAudit.length === 0 ? (
           <CardBody>
-            <p className="text-sm text-slate-500">No audit events yet.</p>
+            <p className="text-sm text-lonex-muted">No audit events yet.</p>
           </CardBody>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-lonex-line">
             {detail.recentAudit.map((event) => (
               <li
                 key={event.id}
-                className="flex items-center justify-between gap-3 px-5 py-3"
+                className="flex items-center justify-between gap-3 px-6 py-3"
               >
-                <span className="text-sm text-slate-700">{event.action}</span>
-                <span className="text-xs text-slate-400">
+                <span className="text-sm text-lonex-ink">{event.action}</span>
+                <span className="text-xs text-lonex-muted">
                   {formatDateTime(event.createdAt)}
                 </span>
               </li>

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+const FIELD_LABEL = "text-xs font-medium text-lonex-ink-soft";
+
 /**
  * GET-based list toolbar. Search and filters live in the URL so the list is
  * shareable, refresh-safe and never depends on client state.
@@ -8,25 +10,37 @@ export function ListToolbar({
   action,
   children,
   submitLabel = "Apply",
+  resetHref,
 }: {
   action: string;
   children: ReactNode;
   submitLabel?: string;
+  resetHref?: string;
 }) {
   return (
     <form
       action={action}
       method="get"
-      className="flex flex-col gap-3 border-b border-slate-200 p-4 sm:flex-row sm:items-end"
+      className="flex flex-col gap-3 border-b border-lonex-line px-5 py-4 sm:flex-row sm:flex-wrap sm:items-end sm:px-6"
       role="search"
     >
       {children}
-      <button
-        type="submit"
-        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
-      >
-        {submitLabel}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          className="inline-flex h-9 items-center justify-center rounded-[10px] bg-lonex-ink px-3.5 text-[13px] font-medium text-white transition-colors hover:bg-lonex-ink/90 focus-visible:outline-none"
+        >
+          {submitLabel}
+        </button>
+        {resetHref ? (
+          <a
+            href={resetHref}
+            className="inline-flex h-9 items-center rounded-[10px] px-2.5 text-[13px] font-medium text-lonex-ink-soft no-underline transition-colors hover:bg-lonex-line-soft hover:text-lonex-ink"
+          >
+            Reset
+          </a>
+        ) : null}
+      </div>
     </form>
   );
 }
@@ -35,7 +49,7 @@ export function SearchInput({
   name = "q",
   defaultValue = "",
   label = "Search",
-  placeholder = "Search...",
+  placeholder = "Search…",
 }: {
   name?: string;
   defaultValue?: string;
@@ -43,16 +57,30 @@ export function SearchInput({
   placeholder?: string;
 }) {
   return (
-    <label className="flex flex-1 flex-col gap-1 text-xs font-medium text-slate-600">
-      {label}
-      <input
-        type="search"
-        name={name}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        maxLength={200}
-        className="h-9 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
-      />
+    <label className="flex min-w-[220px] flex-1 flex-col gap-1.5">
+      <span className={FIELD_LABEL}>{label}</span>
+      <span className="relative block">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-lonex-muted"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+        >
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
+        </svg>
+        <input
+          type="search"
+          name={name}
+          defaultValue={defaultValue}
+          placeholder={placeholder}
+          maxLength={200}
+          className="h-9 w-full rounded-[10px] border border-lonex-line bg-lonex-paper pl-9 pr-3 text-sm text-lonex-ink transition-colors placeholder:text-lonex-muted hover:border-lonex-muted/50 focus:border-lonex-red focus:outline-none"
+        />
+      </span>
     </label>
   );
 }
@@ -69,12 +97,12 @@ export function FilterSelect({
   options: readonly { value: string; label: string }[];
 }) {
   return (
-    <label className="flex flex-col gap-1 text-xs font-medium text-slate-600">
-      {label}
+    <label className="flex flex-col gap-1.5 sm:w-[168px] sm:shrink-0">
+      <span className={FIELD_LABEL}>{label}</span>
       <select
         name={name}
         defaultValue={value}
-        className="h-9 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+        className="h-9 w-full rounded-[10px] border border-lonex-line bg-lonex-paper px-2.5 text-sm text-lonex-ink transition-colors hover:border-lonex-muted/50 focus:border-lonex-red focus:outline-none"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

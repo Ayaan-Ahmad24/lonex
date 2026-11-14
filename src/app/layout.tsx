@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { IBM_Plex_Mono, Inter, Poppins } from "next/font/google";
 import { ToastProvider } from "@/admin/core/ui/toast";
 import "./base.css";
 import "./globals.css";
@@ -15,6 +15,13 @@ const poppins = Poppins({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -53,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
      */
     <html
       lang="en"
-      className={`${poppins.variable} ${inter.variable} h-full antialiased`}
+      className={`${poppins.variable} ${inter.variable} ${plexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body

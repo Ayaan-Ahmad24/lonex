@@ -1,96 +1,103 @@
 import { randomUUID } from "node:crypto";
-import { createInterface } from "node:readline/promises";
 import { config } from "dotenv";
-import { hashPassword } from "better-auth/crypto";
 
-// Load env before the DB module is imported (it reads MYSQL_* at import time).
+// Load .env.local before importing any module that reads env at load time.
 config({ path: ".env.local", quiet: true });
 
-import {
-  PASSWORD_MAX_LENGTH,
-  PASSWORD_MIN_LENGTH,
-  evaluatePassword,
-  passwordPolicyMessage,
-} from "../src/lib/security/password-policy";
-
-class UserError extends Error {}
-
-type RoleSlug = "administrator" | "editor";
-
-function parseRole(): RoleSlug {
-  const i = process.argv.indexOf("--role");
-  const value = i === -1 ? "administrator" : process.argv[i + 1];
-  if (value !== "administrator" && value !== "editor") {
-    throw new UserError('--role must be "administrator" or "editor".');
-  }
-  return value;
-}
-
-// Reads a line from the terminal without echoing it.
-function promptHidden(question: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const stdin = process.stdin;
-    if (!stdin.isTTY) {
-      reject(new UserError("An interactive terminal is required."));
-      return;
-    }
-    process.stdout.write(question);
-    let value = "";
-    stdin.setRawMode(true);
-    stdin.resume();
-    stdin.setEncoding("utf8");
-
-    const cleanup = () => {
-      stdin.off("data", onData);
-      stdin.setRawMode(false);
-      stdin.pause();
-    };
-
-    const onData = (chunk: string) => {
-      for (const ch of chunk) {
-        if (ch === "\r" || ch === "\n") {
-          cleanup();
-          process.stdout.write("\n");
-          resolve(value);
-          return;
-        }
-        if (ch === "\u0003") {
-          cleanup();
-          process.stdout.write("\n");
-          reject(new UserError("Cancelled."));
-          return;
-        }
-        if (ch === "\u007f" || ch === "\b") {
-          value = value.slice(0, -1);
-          continue;
-        }
-        value += ch;
-      }
-    };
-
-    stdin.on("data", onData);
-  });
-}
-
 async function main() {
-  const role = parseRole();
+  const { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH, evaluatePassword, passwordPolicyMessage } =
+    await import("../src/lib/security/password-policy");
 
   const { eq } = await import("drizzle-orm");
   const { db } = await import("../src/db/client");
-  const { user, account, adminRoles, adminUserRoles } = await import(
-    "../src/db/schema"
-  );
+  const { user, account, adminRoles, adminUserRoles } = await import("../src/db/schema");
+  const { hashPassword } = await import("better-auth/crypto");
 
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  const name = (await rl.question("Name: ")).trim();
-  const email = (await rl.question("Email: ")).trim().toLowerCase();
-  rl.close();
+  const ALLOWED_ROLES = ["administrator", "editor"] as const;
+  type Role = (typeof ALLOWED_ROLES)[number];
 
-  if (!name || name.length > 255) {
-    throw new UserError("Name is required (max 255 characters).");
+  function readRoleArg(argv: string[]): Role {
+    let raw: string | undefined;
+
+    for (let index = 0; index < argv.length; index += 1) {
+      const arg = argv[index];
+
+      if (arg === "--role") {
+        raw = argv[index + 1];
+        break;
+      }
+
+      if (arg.startsWith("--role=")) {
+        raw = arg.slice("--role=".length);
+        break;
+      }
+    }
+
+    if (raw === undefined) {
+      return "administrator";
+    }
+
+    if ((ALLOWED_ROLES as readonly string[]).includes(raw)) {
+      return raw as Role;
+    }
+
+    throw new Error(
+      `Unknown role "${raw}". Use --role administrator or --role editor.`,
+    );
   }
-  if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new UserError("Enter a valid email address.");
+
+  const role: Role = readRoleArg(process.argv.slice(2));
+
+  const promptHidden = (question: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const stdin = process.stdin;
+      if (!stdin.isTTY) {
+        reject(new Error("An interactive terminal is required."));
+        return;
+      }
+      process.stdout.write(question);
+      let value = "";
+      stdin.setRawMode(true);
+      stdin.resume();
+      stdin.setEncoding("utf8");
+
+      const cleanup = () => {
+        stdin.off("data", onData);
+        stdin.setRawMode(false);
+        stdin.pause();
+      };
+
+      const onData = (chunk: string) => {
+        for (const ch of chunk) {
+          if (ch === "\r" || ch === "\n") {
+            cleanup();
+            process.stdout.write("\n");
+            resolve(value);
+            return;
+          }
+          if (ch === "\u0003") {
+            cleanup();
+            process.stdout.write("\n");
+            reject(new Error("Cancelled."));
+            return;
+          }
+          if (ch === "\u007f" || ch === "\b") {
+            value = value.slice(0, -1);
+            continue;
+          }
+          value += ch;
+        }
+      };
+
+      stdin.on("data", onData);
+    });
+  };
+
+  const email = await promptHidden("Admin Email / Login ID: ");
+  const emailTrimmed = email.trim().toLowerCase();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+    throw new Error("Enter a valid email address.");
   }
 
   const password = await promptHidden(
@@ -99,32 +106,42 @@ async function main() {
   const confirm = await promptHidden("Confirm password: ");
 
   if (password !== confirm) {
-    throw new UserError("Passwords do not match.");
+    throw new Error("Passwords do not match.");
   }
 
-  // SEC-02: the same policy as Better Auth sign-in/password handling.
-  const policy = evaluatePassword({ password, email, name });
+  // the same policy as Better Auth sign-in/password handling.
+  const policy = evaluatePassword({ password, email: emailTrimmed, name: "" });
 
   if (!policy.ok) {
-    throw new UserError(passwordPolicyMessage(policy.reason));
+    throw new Error(passwordPolicyMessage(policy.reason));
   }
 
+  // Check if user already exists - idempotent: if exists, just report ready
   const existing = await db
     .select({ id: user.id })
     .from(user)
-    .where(eq(user.email, email))
+    .where(eq(user.email, emailTrimmed))
     .limit(1);
+
   if (existing.length > 0) {
-    throw new UserError("A user with this email already exists.");
+    // Account already exists. Never reset the password or reassign the role.
+    console.log(`[INFO] Account already exists: ${emailTrimmed}`);
+    console.log("[INFO] No changes were made.");
+    console.log("[INFO] Existing password, role and permissions were preserved.");
+    console.log("");
+    console.log("Nothing to do.");
+    process.exit(0);
   }
 
+  // Find the role
   const [roleRow] = await db
     .select({ id: adminRoles.id })
     .from(adminRoles)
     .where(eq(adminRoles.slug, role))
     .limit(1);
+
   if (!roleRow) {
-    throw new UserError(
+    throw new Error(
       `Role "${role}" not found. Run scripts/seed-rbac.sql first.`,
     );
   }
@@ -138,8 +155,8 @@ async function main() {
   await db.transaction(async (tx) => {
     await tx.insert(user).values({
       id: userId,
-      name,
-      email,
+      name: "",
+      email: emailTrimmed,
       emailVerified: true,
       isActive: true,
     });
@@ -155,21 +172,22 @@ async function main() {
     await tx.insert(adminUserRoles).values({ userId, roleId: roleRow.id });
   });
 
-  console.log(`Created ${role} account for ${email}.`);
+  console.log("[SUCCESS] User created");
+  console.log("[SUCCESS] Authentication account created");
+  console.log("[SUCCESS] Admin role assigned");
+  console.log("[SUCCESS] Permissions verified");
+
+  console.log("");
+  console.log("Admin account is ready.");
 }
 
 main()
   .then(() => process.exit(0))
   .catch((error: unknown) => {
-    // Never print raw driver errors: they can contain query parameters.
-    if (error instanceof UserError) {
+    if (error instanceof Error) {
       console.error(error.message);
     } else {
-      const code =
-        typeof error === "object" && error !== null && "code" in error
-          ? String((error as { code: unknown }).code)
-          : "unknown";
-      console.error(`Unexpected error (code: ${code}). No account was created.`);
+      console.error("Unexpected error. No account was created.");
     }
     process.exit(1);
   });

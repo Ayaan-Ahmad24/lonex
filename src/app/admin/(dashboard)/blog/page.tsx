@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
 import {
@@ -12,10 +14,7 @@ import { PageHeader } from "@/admin/core/ui/page-header";
 import { StatusBadge } from "@/admin/core/ui/badge";
 import { buttonClassName } from "@/admin/core/ui/button";
 import { formatDate } from "@/admin/core/ui/format";
-import {
-  listBlogPosts,
-  type BlogListRow,
-} from "@/admin/modules/blog/queries";
+import { listBlogPosts, type BlogListRow } from "@/admin/modules/blog/queries";
 
 const SORTS = ["title", "status", "publishedAt", "updatedAt"] as const;
 
@@ -41,11 +40,11 @@ export default async function BlogPage({
         <div>
           <Link
             href={`/admin/blog/${row.id}`}
-            className="font-medium text-slate-900 hover:underline"
+            className="font-medium text-lonex-ink hover:underline"
           >
             {row.title}
           </Link>
-          <p className="font-mono text-[11px] text-slate-500">/blog/{row.slug}</p>
+          <p className="font-mono text-[11px] text-lonex-muted">/blog/{row.slug}</p>
         </div>
       ),
     },
@@ -68,12 +67,15 @@ export default async function BlogPage({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Blog"
         description="Draft and published articles. Only published posts appear on the public site; content is stored as safe structured blocks, never raw HTML."
         actions={
-          <Link href="/admin/blog/new" className={buttonClassName("primary", "sm")}>
+          <Link
+            href="/admin/blog/new"
+            className={buttonClassName("primary", "sm")}
+          >
             New article
           </Link>
         }
@@ -101,7 +103,10 @@ export default async function BlogPage({
           emptyTitle="No articles yet"
           emptyDescription="Write the first article. Drafts stay private until published by an authorized user."
           emptyAction={
-            <Link href="/admin/blog/new" className={buttonClassName("primary", "sm")}>
+            <Link
+              href="/admin/blog/new"
+              className={buttonClassName("primary", "sm")}
+            >
               New article
             </Link>
           }

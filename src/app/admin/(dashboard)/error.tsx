@@ -18,18 +18,16 @@ export default function AdminError({
 
   return (
     <div className="mx-auto max-w-lg py-12 text-center">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-lonex-muted">
         Error
       </p>
-      <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-        This page could not be loaded
-      </h1>
-      <p className="mt-2 text-sm text-slate-600">
+      <h1 className="mt-2 text-lonex-ink">This page could not be loaded</h1>
+      <p className="mt-2 text-sm leading-6 text-lonex-ink-soft">
         Try again. If the problem continues, check the server logs using the
         digest below.
       </p>
       {error.digest ? (
-        <p className="mt-2 font-mono text-xs text-slate-400">
+        <p className="mt-2 font-mono text-xs text-lonex-muted">
           {error.digest}
         </p>
       ) : null}

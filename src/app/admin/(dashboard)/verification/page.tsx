@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
 import {
@@ -7,16 +9,16 @@ import {
 import { DataTable, type DataTableColumn } from "@/admin/core/ui/data-table";
 import { FilterSelect, ListToolbar, SearchInput } from "@/admin/core/ui/list-toolbar";
 import { Pagination } from "@/admin/core/ui/pagination";
-import { Card, CardBody, CardHeader } from "@/admin/core/ui/card";
+import { Card, CardHeader, CardBody } from "@/admin/core/ui/card";
 import { PageHeader } from "@/admin/core/ui/page-header";
 import { StatusBadge } from "@/admin/core/ui/badge";
+import { buttonClassName } from "@/admin/core/ui/button";
 import { formatDateTime } from "@/admin/core/ui/format";
 import {
   listVerificationRows,
   type VerificationRow,
 } from "@/admin/modules/verification/queries";
 import { VerificationActions } from "@/admin/modules/verification/verification-actions";
-import { VerificationCodeCell } from "@/admin/modules/verification/verification-code-cell";
 
 export default async function VerificationPage({
   searchParams,
@@ -40,11 +42,11 @@ export default async function VerificationPage({
         <div>
           <Link
             href={`/admin/products/${row.productId}`}
-            className="font-medium text-slate-900 hover:underline"
+            className="font-medium text-lonex-ink hover:underline"
           >
             {row.productName}
           </Link>
-          <p className="font-mono text-[11px] text-slate-500">
+          <p className="font-mono text-[11px] text-lonex-muted">
             /{row.categorySlug}/{row.productSlug}
           </p>
         </div>
@@ -58,7 +60,14 @@ export default async function VerificationPage({
     {
       key: "code",
       header: "Verification code",
-      render: (row) => <VerificationCodeCell row={row} />,
+      render: () => (
+        <span
+          className="lx-mono select-none text-xs text-lonex-ink"
+          title="Code stored as HMAC digest"
+        >
+          •••••
+        </span>
+      ),
     },
     {
       key: "registered",
@@ -74,7 +83,7 @@ export default async function VerificationPage({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Model verification"
         description="One verification code per product model. Only an HMAC digest is stored; the raw code is shown once when generated or rotated."
@@ -82,7 +91,7 @@ export default async function VerificationPage({
 
       <Card>
         <CardHeader title="How verification works" />
-        <CardBody className="space-y-2 text-sm text-slate-600">
+        <CardBody className="space-y-2 text-sm text-lonex-muted">
           <p>
             A matching code confirms that the model is registered with LONEX. It
             does <strong>not</strong> prove that a physical unit is authentic.
@@ -122,7 +131,7 @@ export default async function VerificationPage({
           emptyAction={
             <Link
               href="/admin/products"
-              className="text-sm font-medium text-slate-700 underline"
+              className={buttonClassName("secondary", "sm")}
             >
               Go to products
             </Link>

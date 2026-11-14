@@ -1,3 +1,5 @@
+export const instant = false;
+
 import { Suspense } from "react";
 import { requireAdminModule } from "@/admin/config/access";
 import { getSiteSettings } from "@/admin/core/settings/service";
@@ -9,7 +11,7 @@ import { SettingsForm } from "@/admin/modules/settings/settings-form";
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageHeader
         title="Site settings"
         description="Typed public settings. Database credentials, authentication secrets and API keys are never stored in the CMS."

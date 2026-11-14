@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
 import { PageHeader } from "@/admin/core/ui/page-header";
@@ -24,7 +26,7 @@ export default async function NewProductPage() {
         actions={
           <Link
             href="/admin/products"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline"
+            className="text-sm font-medium text-lonex-ink-soft hover:text-lonex-ink hover:underline"
           >
             Back to products
           </Link>

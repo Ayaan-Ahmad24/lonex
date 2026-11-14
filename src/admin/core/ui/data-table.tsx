@@ -12,6 +12,7 @@ export function DataTable<Row extends { id: string | number }>({
   columns,
   rows,
   caption,
+  fixed = false,
   emptyTitle = "Nothing here yet",
   emptyDescription,
   emptyAction,
@@ -19,6 +20,8 @@ export function DataTable<Row extends { id: string | number }>({
   columns: readonly DataTableColumn<Row>[];
   rows: readonly Row[];
   caption: string;
+  /** Use fixed table layout so long unbreakable values can truncate. */
+  fixed?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
   emptyAction?: ReactNode;
@@ -34,32 +37,36 @@ export function DataTable<Row extends { id: string | number }>({
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] text-left text-sm">
+    <div className="lx-scroll w-full overflow-x-auto">
+      <table
+        className={`w-full min-w-[680px] border-collapse text-left text-sm ${
+          fixed ? "table-fixed" : ""
+        }`}
+      >
         <caption className="sr-only">{caption}</caption>
-        <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+        <thead className="border-b border-lonex-line bg-lonex-stone">
           <tr>
             {columns.map((column) => (
               <th
                 key={column.key}
                 scope="col"
-                className={`px-4 py-3 font-medium ${column.className ?? ""}`}
+                className={`px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-lonex-muted ${column.className ?? ""}`}
               >
                 {column.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-lonex-line">
           {rows.map((row) => (
             <tr
               key={row.id}
-              className="align-top transition-colors hover:bg-slate-50/70"
+              className="align-middle transition-colors hover:bg-lonex-stone/70"
             >
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  className={`px-4 py-3 text-slate-700 ${column.className ?? ""}`}
+                  className={`px-5 py-3.5 text-sm text-lonex-ink ${column.className ?? ""}`}
                 >
                   {column.render(row)}
                 </td>

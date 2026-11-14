@@ -1,3 +1,5 @@
+export const instant = false;
+
 import Link from "next/link";
 import { requireAdminModule } from "@/admin/config/access";
 import {
@@ -66,11 +68,11 @@ export default async function ProductsPage({
         <div>
           <Link
             href={`/admin/products/${row.id}`}
-            className="font-medium text-slate-900 hover:underline"
+            className="font-medium text-lonex-ink no-underline transition-colors hover:text-lonex-red"
           >
             {row.name}
           </Link>
-          <p className="font-mono text-[11px] text-slate-500">
+          <p className="font-mono text-[11px] text-lonex-muted">
             /{row.categorySlug}/{row.slug}
           </p>
         </div>
@@ -84,8 +86,15 @@ export default async function ProductsPage({
     {
       key: "price",
       header: "Price",
+      className: "whitespace-nowrap",
       render: (row) => (
-        <span className={row.showPrice ? "text-slate-800" : "text-slate-400"}>
+        <span
+          className={
+            row.showPrice
+              ? "lx-num text-lonex-ink"
+              : "text-xs font-medium text-lonex-muted"
+          }
+        >
           {priceLabel(row)}
         </span>
       ),
@@ -103,6 +112,7 @@ export default async function ProductsPage({
     {
       key: "updated",
       header: "Updated",
+      className: "w-32 whitespace-nowrap",
       render: (row) => formatDate(row.updatedAt),
     },
   ];
@@ -123,7 +133,7 @@ export default async function ProductsPage({
       />
 
       <Card>
-        <ListToolbar action="/admin/products">
+        <ListToolbar action="/admin/products" resetHref="/admin/products">
           <SearchInput defaultValue={params.q} placeholder="Search name or slug" />
           <FilterSelect
             name="categoryId"

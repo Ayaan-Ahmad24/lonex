@@ -11,12 +11,20 @@ export function Pagination({
   total: number;
   buildHref: (page: number) => string;
 }) {
+  const summary = (
+    <span className="text-xs text-lonex-muted">
+      {pageCount <= 1
+        ? `${total} ${total === 1 ? "record" : "records"}`
+        : `Page ${page} of ${pageCount} · ${total} ${
+            total === 1 ? "record" : "records"
+          }`}
+    </span>
+  );
+
   if (pageCount <= 1) {
     return (
-      <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3 text-xs text-slate-500">
-        <span>
-          {total} {total === 1 ? "record" : "records"}
-        </span>
+      <div className="flex items-center justify-between border-t border-lonex-line px-5 py-3 sm:px-6">
+        {summary}
       </div>
     );
   }
@@ -24,37 +32,33 @@ export function Pagination({
   const previous = Math.max(1, page - 1);
   const next = Math.min(pageCount, page + 1);
 
+  const linkClass =
+    "inline-flex h-8 items-center rounded-lg border border-lonex-line bg-lonex-paper px-2.5 text-xs font-medium text-lonex-ink no-underline transition-colors hover:bg-lonex-stone";
+  const disabledClass =
+    "inline-flex h-8 items-center rounded-lg border border-lonex-line/60 px-2.5 text-xs font-medium text-lonex-muted/70";
+
   return (
     <nav
       aria-label="Pagination"
-      className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 text-xs text-slate-500"
+      className="flex flex-wrap items-center justify-between gap-3 border-t border-lonex-line px-5 py-3 sm:px-6"
     >
-      <span>
-        Page {page} of {pageCount} · {total}{" "}
-        {total === 1 ? "record" : "records"}
-      </span>
+      {summary}
       <div className="flex items-center gap-2">
         {page > 1 ? (
-          <Link
-            href={buildHref(previous)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
-          >
+          <Link href={buildHref(previous)} className={linkClass}>
             Previous
           </Link>
         ) : (
-          <span className="cursor-not-allowed rounded-lg border border-slate-200 px-3 py-1.5 text-slate-400">
+          <span aria-disabled="true" className={disabledClass}>
             Previous
           </span>
         )}
         {page < pageCount ? (
-          <Link
-            href={buildHref(next)}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium text-slate-700 hover:bg-slate-50"
-          >
+          <Link href={buildHref(next)} className={linkClass}>
             Next
           </Link>
         ) : (
-          <span className="cursor-not-allowed rounded-lg border border-slate-200 px-3 py-1.5 text-slate-400">
+          <span aria-disabled="true" className={disabledClass}>
             Next
           </span>
         )}

@@ -6,7 +6,7 @@ import type {
 } from "react";
 
 const CONTROL =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:bg-slate-50";
+  "w-full rounded-[10px] border border-lonex-line bg-lonex-paper px-3 text-sm text-lonex-ink shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors placeholder:text-lonex-muted hover:border-lonex-muted/50 focus:border-lonex-red focus:outline-none disabled:cursor-not-allowed disabled:bg-lonex-line-soft disabled:text-lonex-muted";
 
 export function FormField({
   label,
@@ -29,17 +29,21 @@ export function FormField({
     <div className={`flex flex-col gap-1.5 ${className}`}>
       <label
         htmlFor={htmlFor}
-        className="text-xs font-medium text-slate-700"
+        className="text-[13px] font-medium leading-5 text-lonex-ink"
       >
         {label}
-        {required ? <span className="ml-0.5 text-red-600">*</span> : null}
+        {required ? (
+          <span className="ml-0.5 text-lonex-red" aria-hidden="true">
+            *
+          </span>
+        ) : null}
       </label>
       {children}
       {hint && !error ? (
-        <p className="text-xs text-slate-500">{hint}</p>
+        <p className="text-xs leading-5 text-lonex-muted">{hint}</p>
       ) : null}
       {error ? (
-        <p role="alert" className="text-xs text-red-600">
+        <p role="alert" className="text-xs leading-5 text-lonex-red">
           {error}
         </p>
       ) : null}
@@ -47,19 +51,34 @@ export function FormField({
   );
 }
 
-export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={`${CONTROL} ${props.className ?? ""}`} />;
+export function TextInput({
+  className = "",
+  ...props
+}: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={`${CONTROL} h-10 ${className}`} />;
 }
 
-export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Textarea({
+  className = "",
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <textarea {...props} className={`${CONTROL} min-h-24 ${props.className ?? ""}`} />
+    <textarea
+      {...props}
+      className={`${CONTROL} min-h-[120px] py-2.5 leading-6 ${className}`}
+    />
   );
 }
 
-export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({
+  className = "",
+  children,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select {...props} className={`${CONTROL} ${props.className ?? ""}`} />
+    <select {...props} className={`${CONTROL} h-10 ${className}`}>
+      {children}
+    </select>
   );
 }
 
@@ -68,13 +87,13 @@ export function Checkbox({
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
   return (
-    <label className="flex items-center gap-2 text-sm text-slate-700">
+    <label className="flex items-start gap-2.5 text-sm text-lonex-ink">
       <input
         type="checkbox"
         {...props}
-        className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-lonex-line text-lonex-red accent-lonex-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lonex-red/30"
       />
-      {label}
+      <span className="leading-5">{label}</span>
     </label>
   );
 }

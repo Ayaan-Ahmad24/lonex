@@ -1,25 +1,28 @@
 import type { ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
-type ButtonSize = "sm" | "md";
+type ButtonVariant = "primary" | "secondary" | "danger" | "outline" | "ghost";
+type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-medium no-underline transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 [&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0";
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    "bg-slate-900 text-white hover:bg-slate-700 focus-visible:ring-slate-900",
+    "bg-lonex-red text-white shadow-sm hover:bg-[#B30909] active:bg-[#9B0808]",
   secondary:
-    "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:ring-slate-400",
+    "border border-lonex-line bg-lonex-paper text-lonex-ink shadow-xs hover:bg-lonex-stone",
   danger:
-    "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600",
+    "border border-lonex-red/25 bg-lonex-paper text-lonex-red hover:border-lonex-red/40 hover:bg-lonex-red-soft",
+  outline:
+    "border border-lonex-line bg-transparent text-lonex-ink-soft hover:bg-lonex-stone hover:text-lonex-ink",
   ghost:
-    "text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:ring-slate-400",
+    "bg-transparent text-lonex-ink-soft hover:bg-lonex-line-soft hover:text-lonex-ink",
 };
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2 text-sm",
+  sm: "h-9 px-3 text-[13px]",
+  md: "h-10 px-4 text-sm",
+  lg: "h-11 px-5 text-sm",
 };
 
 export function buttonClassName(
@@ -37,6 +40,7 @@ export function Button({
   variant = "primary",
   size = "md",
   className,
+  type = "button",
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -44,7 +48,39 @@ export function Button({
   children: ReactNode;
 }) {
   return (
-    <button className={buttonClassName(variant, size, className)} {...props}>
+    <button
+      type={type}
+      className={buttonClassName(variant, size, className)}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function IconButton({
+  children,
+  variant = "ghost",
+  size = "sm",
+  className,
+  type = "button",
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type={type}
+      className={buttonClassName(
+        variant,
+        size,
+        ["!px-0 w-9", className].filter(Boolean).join(" "),
+      )}
+      {...props}
+      aria-label={typeof children === "string" ? children : undefined}
+    >
       {children}
     </button>
   );
