@@ -1,5 +1,5 @@
 import "server-only";
-
+import { getServerEnv } from "@/lib/env";
 import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { APIError, createAuthMiddleware } from "better-auth/api";
@@ -28,12 +28,34 @@ function readEmail(body: unknown): string | null {
     : null;
 }
 
+// export const auth = betterAuth({
+//   appName: "LONEX Admin",
+//   baseURL: new URL(getServerEnv().BETTER_AUTH_URL).origin,
+
+//   database: drizzleAdapter(db, {
+//     provider: "mysql",
+//   }),
+
+const authBaseURL = new URL(
+  getServerEnv().BETTER_AUTH_URL
+).origin;
+
 export const auth = betterAuth({
   appName: "LONEX Admin",
+
+  baseURL: authBaseURL,
+
+  trustedOrigins: [
+    authBaseURL,
+    "http://localhost:3000",
+    "https://*.ngrok-free.app",
+  ],
 
   database: drizzleAdapter(db, {
     provider: "mysql",
   }),
+
+  // Keep all your existing configuration below unchanged.
 
   emailAndPassword: {
     enabled: true,

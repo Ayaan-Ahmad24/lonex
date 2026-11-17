@@ -1,21 +1,41 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
-import { ButtonLink } from "@/components/public/button-link";
-import { Container } from "@/components/public/container";
 import { ContentImage } from "@/components/public/content-image";
-import { Eyebrow } from "@/components/public/eyebrow";
 import { JsonLd } from "@/components/public/json-ld";
-import { RichTextRenderer } from "@/components/public/rich-text";
+import { PageMotion } from "@/components/public/page-motion";
 import { createPageMetadata, notFoundMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
-import { getPublishedBlogPostBySlug } from "@/lib/public/queries";
+import {
+  getPublishedBlogPostBySlug,
+  listPublishedBlogPosts,
+} from "@/lib/public/queries";
 import { redirectMovedPath } from "@/lib/public/redirects";
-import { parseStoredRichText } from "@/lib/content/rich-text";
+import { ArticleActions } from "./article-actions";
+import { ArticleBody } from "./article-body";
+import { ArticleNavigation } from "./article-navigation";
+import {
+  ARTICLE,
+  CLOSING,
+  buildArticleOutline,
+  coverNoteFor,
+  kickerFor,
+  parseArticleDocument,
+  standfirstFor,
+  topicLabelFor,
+} from "./content";
+import { topicForSlug } from "../content";
+import "../../../home.css";
+import "../../../article.css";
 
 type Params = { slug: string };
+
+function pad(value: number): string {
+  return String(value).padStart(2, "0");
+}
 
 export async function generateMetadata({
   params,
@@ -31,10 +51,8 @@ export async function generateMetadata({
   }
 
   const settings = await loadPublicSettings();
-  const document = parseStoredRichText(post.contentJson);
   const description =
-    post.seoDescription ||
-    (document ? post.excerpt || "" : post.excerpt || settings.seoDescription);
+    post.seoDescription || post.excerpt || settings.seoDescription;
 
   return createPageMetadata({
     settings,
@@ -55,14 +73,34 @@ export default async function BlogDetailPage({
   await connection();
 
   const { slug } = await params;
-  const post = await getPublishedBlogPostBySlug(slug);
+  const [post, listing] = await Promise.all([
+    getPublishedBlogPostBySlug(slug),
+    listPublishedBlogPosts({ page: 1, pageSize: 20 }),
+  ]);
 
   if (!post) {
     await redirectMovedPath(`/blog/${slug}`);
     notFound();
   }
 
-  const document = parseStoredRichText(post.contentJson);
+  const document = parseArticleDocument(post.contentJson);
+  const outline = buildArticleOutline(document);
+  const cover = coverNoteFor(post);
+  const topic = topicLabelFor(post);
+  const topicId = topicForSlug(post.slug);
+
+  const index = listing.items.findIndex((item) => item.id === post.id);
+  const newer = index > 0 ? listing.items[index - 1] : null;
+  const older =
+    index >= 0 && index < listing.items.length - 1
+      ? listing.items[index + 1]
+      : null;
+
+  const others = listing.items.filter((item) => item.id !== post.id);
+  const related = [
+    ...others.filter((item) => topicForSlug(item.slug) === topicId),
+    ...others.filter((item) => topicForSlug(item.slug) !== topicId),
+  ].slice(0, 3);
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
@@ -73,104 +111,260 @@ export default async function BlogDetailPage({
   };
 
   return (
-    <>
+    <div className="lx-page lxad-page">
       <JsonLd data={jsonLd} />
 
-      <div className="border-b border-black/10 bg-white">
-        <Container className="py-5">
-          <nav
-            aria-label="Breadcrumb"
-            className="type-eyebrow flex flex-wrap items-center gap-2 text-black/55"
-          >
-            <Link href="/" className="transition-colors hover:text-[#CF0A0A]">
-              Home
-            </Link>
-            <span aria-hidden="true">/</span>
-            <Link href="/blog" className="transition-colors hover:text-[#CF0A0A]">
-              Journal
-            </Link>
-            <span aria-hidden="true">/</span>
-            <span className="line-clamp-1 text-black/60">{post.title}</span>
-          </nav>
-        </Container>
-      </div>
+      <PageMotion>
+        <header className="lxad-hero" data-hero>
+          <div className="lx-wrap">
+            <nav aria-label="Breadcrumb" className="lx-crumbs lxad-crumbs">
+              <Link href="/">Home</Link>
+              <span aria-hidden="true">/</span>
+              <Link href="/blog">Journal</Link>
+              <span aria-hidden="true">/</span>
+              <span className="lxad-crumbs__current" aria-current="page">
+                {post.title}
+              </span>
+            </nav>
 
-      <article>
-        <section className="relative overflow-hidden border-b border-black/10 bg-[#F5EDED]">
-          <div
-            aria-hidden="true"
-            className="lux-grid-bg pointer-events-none absolute inset-0 opacity-40"
-          />
-          <Container className="relative space-y-7 py-12 sm:py-16 lg:py-20">
-            <Eyebrow>
-              {post.publishedLabel ? `Journal · ${post.publishedLabel}` : "Journal"}
-            </Eyebrow>
-            <h1 className="intro intro-2 max-w-4xl text-4xl font-semibold leading-[1.02] tracking-[-0.03em] text-black sm:text-6xl">
-              {post.title}
-            </h1>
-            {post.excerpt ? (
-              <p className="intro intro-3 type-lead max-w-2xl text-black/60">
-                {post.excerpt}
-              </p>
-            ) : null}
-          </Container>
+            <div className="lxad-hero__grid">
+              <div className="lxad-hero__head">
+                <p className="lxad-meta" data-hero-item>
+                  <span className="lxad-meta__kicker">{kickerFor(post)}</span>
+                  <time dateTime={post.publishedAt}>
+                    {post.publishedLabel}
+                  </time>
+                </p>
+
+                <h1 className="lxad-title" data-hero-line>
+                  {post.title}
+                </h1>
+
+                <p className="lxad-standfirst" data-hero-item>
+                  {standfirstFor(post)}
+                </p>
+              </div>
+
+              <aside className="lxad-hero__aside" data-hero-item>
+                <p className="lxad-hero__aside-label">Filed under</p>
+                <p className="lxad-hero__topic">{topic}</p>
+
+                <dl className="lxad-hero__facts">
+                  <div>
+                    <dt>Published</dt>
+                    <dd>
+                      <time dateTime={post.publishedAt}>
+                        {post.publishedLabel}
+                      </time>
+                    </dd>
+                  </div>
+                </dl>
+
+                <p className="lxad-hero__link">
+                  <Link href="/blog" className="lxad-textlink">
+                    {ARTICLE.allArticles}
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                </p>
+              </aside>
+            </div>
+          </div>
+
+          {post.cover ? (
+            <figure className="lxad-cover">
+              <div className="lx-wrap">
+                <div
+                  className="lxad-cover__frame"
+                  data-hero-media
+                  style={{ "--lxad-focus": cover.focus } as CSSProperties}
+                >
+                  <ContentImage
+                    image={post.cover}
+                    fallbackLabel={post.title}
+                    sizes="(max-width: 900px) 100vw, 92vw"
+                    preload
+                    className="lxad-cover__img"
+                  />
+                </div>
+
+                <figcaption className="lxad-cover__cap">
+                  <span className="lxad-cover__caption">{cover.caption}</span>
+                  {cover.caveat ? (
+                    <span className="lxad-cover__caveat">{cover.caveat}</span>
+                  ) : null}
+                  <span className="lxad-cover__tag">{topic}</span>
+                </figcaption>
+              </div>
+            </figure>
+          ) : null}
+        </header>
+
+        <section className="lxad-read" aria-label="Article">
+          <div className="lx-wrap lxad-read__grid">
+            <ArticleNavigation outline={outline} />
+
+            <article className="lxad-article">
+              {document ? (
+                <ArticleBody document={document} outline={outline} />
+              ) : (
+                <p className="lxad-p lxad-p--lead">
+                  This article has no readable content.
+                </p>
+              )}
+
+              <ArticleActions title={post.title} />
+            </article>
+          </div>
         </section>
 
-        {post.cover ? (
-          <section className="border-b border-black/10 bg-white">
-            <Container className="py-8 sm:py-10">
-              <div className="reveal-mask relative aspect-[16/9] overflow-hidden bg-[#F5EDED]">
-                <ContentImage
-                  image={post.cover}
-                  fallbackLabel="Article image pending"
-                  sizes="100vw"
-                  priority
-                />
+        <nav className="lxad-pager" aria-label={ARTICLE.pagerLabel}>
+          <div className="lx-wrap lxad-pager__grid">
+            <div className="lxad-pager__cell">
+              {older ? (
+                <Link href={older.path} className="lxad-pager__link">
+                  <span className="lxad-pager__label">
+                    {ARTICLE.previousLabel}
+                  </span>
+                  <span className="lxad-pager__title">{older.title}</span>
+                  <span className="lxad-pager__meta">
+                    {topicLabelFor(older)} · {older.publishedLabel}
+                  </span>
+                </Link>
+              ) : (
+                <Link href="/blog" className="lxad-pager__link">
+                  <span className="lxad-pager__label">
+                    {ARTICLE.journalLabel}
+                  </span>
+                  <span className="lxad-pager__title">
+                    {ARTICLE.allArticles}
+                  </span>
+                </Link>
+              )}
+            </div>
+
+            <div className="lxad-pager__cell lxad-pager__cell--next">
+              {newer ? (
+                <Link href={newer.path} className="lxad-pager__link">
+                  <span className="lxad-pager__label">{ARTICLE.nextLabel}</span>
+                  <span className="lxad-pager__title">{newer.title}</span>
+                  <span className="lxad-pager__meta">
+                    {topicLabelFor(newer)} · {newer.publishedLabel}
+                  </span>
+                </Link>
+              ) : (
+                <Link href="/blog" className="lxad-pager__link">
+                  <span className="lxad-pager__label">
+                    {ARTICLE.journalLabel}
+                  </span>
+                  <span className="lxad-pager__title">
+                    {ARTICLE.allArticles}
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
+        </nav>
+
+        {related.length > 0 ? (
+          <section
+            className="lxad-related"
+            aria-labelledby="lxad-related-title"
+          >
+            <div className="lx-wrap">
+              <div className="lxad-related__head">
+                <div data-reveal>
+                  <p className="lxad-eyebrow">{ARTICLE.relatedLabel}</p>
+                  <h2 className="lxad-related__title" id="lxad-related-title">
+                    {ARTICLE.relatedTitle}
+                  </h2>
+                </div>
+
+                <p className="lxad-related__intro" data-reveal>
+                  {ARTICLE.relatedIntro}
+                </p>
               </div>
-            </Container>
+
+              <div className="lxad-related__list">
+                {related.map((item, position) => (
+                  <article
+                    key={item.id}
+                    className="lxad-related__item"
+                    data-reveal
+                  >
+                    <Link href={item.path} className="lxad-related__link">
+                      <span className="lxad-related__num" aria-hidden="true">
+                        {pad(position + 1)}
+                      </span>
+
+                      <span className="lxad-related__body">
+                        <span className="lxad-related__meta">
+                          <span>{topicLabelFor(item)}</span>
+                          <time dateTime={item.publishedAt}>
+                            {item.publishedLabel}
+                          </time>
+                        </span>
+                        <span className="lxad-related__name">{item.title}</span>
+                      </span>
+
+                      <span className="lxad-related__thumb">
+                        <ContentImage
+                          image={item.cover}
+                          fallbackLabel={item.title}
+                          sizes="(max-width: 620px) 96px, 200px"
+                        />
+                      </span>
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </div>
           </section>
         ) : null}
 
-        <section className="py-16 sm:py-24">
-          <Container className="max-w-3xl">
-            {document ? (
-              <RichTextRenderer document={document} />
-            ) : (
-              <p className="text-sm text-black/55">
-                This article has no readable content.
-              </p>
-            )}
+        <section className="lxad-close">
+          <div className="lx-wrap lxad-close__grid">
+            <div className="lxad-close__copy">
+              <div data-reveal>
+                <p className="lxad-eyebrow lxad-eyebrow--light">
+                  {CLOSING.eyebrow}
+                </p>
+                <h2 className="lxad-close__title">{CLOSING.title}</h2>
+                <p className="lxad-close__intro">{CLOSING.intro}</p>
+              </div>
 
-            <div className="mt-14 flex flex-col gap-4 border-t border-black/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-black/55">Published by LONEX.</p>
-              <ButtonLink href="/blog" variant="outline">
-                All articles
-              </ButtonLink>
+              <div className="lxad-close__actions" data-reveal>
+                <Link
+                  href={CLOSING.primary.href}
+                  className="lxad-btn lxad-btn--light"
+                >
+                  {CLOSING.primary.label}
+                  <span aria-hidden="true">→</span>
+                </Link>
+                <Link
+                  href={CLOSING.secondary.href}
+                  className="lxad-close__secondary"
+                >
+                  {CLOSING.secondary.label}
+                  <span aria-hidden="true">↗</span>
+                </Link>
+              </div>
             </div>
-          </Container>
-        </section>
-      </article>
 
-      <section className="border-t border-black/10 bg-black py-14 text-white sm:py-16">
-        <Container className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-3">
-            <Eyebrow tone="light">Journal</Eyebrow>
-            <h2 className="type-statement text-white">
-              More notes from LONEX.
-            </h2>
-            <p className="max-w-xl text-sm leading-7 text-white/55">
-              Product notes, company updates and published articles.
-            </p>
+            <aside className="lxad-close__note" data-reveal>
+              <p className="lxad-close__note-label">{CLOSING.noteLabel}</p>
+              <p className="lxad-close__note-copy">{CLOSING.note}</p>
+              <Link
+                href={CLOSING.noteLink.href}
+                className="lxad-close__note-link"
+              >
+                {CLOSING.noteLink.label}
+                <span aria-hidden="true">→</span>
+              </Link>
+            </aside>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-            <ButtonLink href="/blog">All articles</ButtonLink>
-            <ButtonLink href="/contact" variant="inverse">
-              Contact LONEX
-            </ButtonLink>
-          </div>
-        </Container>
-      </section>
-    </>
+        </section>
+      </PageMotion>
+    </div>
   );
 }
 

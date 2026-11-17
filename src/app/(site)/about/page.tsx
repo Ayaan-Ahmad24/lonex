@@ -3,97 +3,19 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 
-import { ButtonLink } from "@/components/public/button-link";
-import { Container } from "@/components/public/container";
-import { Eyebrow } from "@/components/public/eyebrow";
-import { SectionHeading } from "@/components/public/section-heading";
+import { PageMotion } from "@/components/public/page-motion";
+import { formatPhone } from "@/lib/public/contact";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
-
-const MODEL = [
-  {
-    title: "Import",
-    copy: "International sourcing connects products manufactured abroad with domestic purchasing requirements. LONEX evaluates specifications, supplier documentation, commercial feasibility and applicable import requirements.",
-  },
-  {
-    title: "Distribution",
-    copy: "Distribution supports access to products through appropriate purchasing and supply arrangements. Solar businesses, battery retailers and electric bike dealers each have different needs.",
-  },
-  {
-    title: "Dealership",
-    copy: "We welcome commercial discussions with suitable dealers and business buyers. Arrangements define products, quantities, prices, payment conditions and delivery responsibilities in writing.",
-  },
-] as const;
-
-const VALUES = [
-  {
-    title: "Integrity",
-    copy: "How we communicate specifications, pricing and commercial conditions.",
-  },
-  {
-    title: "Reliability",
-    copy: "Respecting agreed responsibilities and explaining uncertainties honestly.",
-  },
-  {
-    title: "Quality consciousness",
-    copy: "Attention to the technical characteristics and intended applications of the products we supply.",
-  },
-  {
-    title: "Customer commitment",
-    copy: "Understanding requirements rather than promoting one solution to everyone.",
-  },
-  {
-    title: "Innovation",
-    copy: "Remaining attentive to relevant technology without assuming that newer is always better.",
-  },
-  {
-    title: "Partnership",
-    copy: "Mutually beneficial relationships based on clarity and professional cooperation.",
-  },
-] as const;
-
-const DIRECTIONS = [
-  {
-    index: "01",
-    name: "Solar panels",
-    verb: "Generate",
-    copy: "Photovoltaic panels convert sunlight into direct-current electricity. Suitability depends on rated output, voltage, current, dimensions, system design and installation conditions.",
-    href: "/solar",
-  },
-  {
-    index: "02",
-    name: "Batteries",
-    verb: "Store",
-    copy: "Batteries store energy chemically and release it when required. Suitability depends on chemistry, usable capacity, voltage, charging requirements and operating conditions.",
-    href: "/batteries",
-  },
-  {
-    index: "03",
-    name: "Electric bikes",
-    verb: "Move",
-    copy: "Electric bikes use rechargeable batteries and electric motors for propulsion. Range, charging time and ownership cost vary with model, rider, terrain and battery condition.",
-    href: "/ev-bikes",
-  },
-] as const;
-
-const PUBLISHED = [
-  {
-    title: "Products",
-    copy: "Published categories and products, with approved imagery and descriptions.",
-  },
-  {
-    title: "Specifications",
-    copy: "Technical data is shown only when supplied and approved by LONEX.",
-  },
-  {
-    title: "Documents",
-    copy: "Datasheets and PDF documents are attached to the products they describe.",
-  },
-  {
-    title: "Sellers",
-    copy: "Only seller listings confirmed and published by LONEX appear in the directory.",
-  },
-] as const;
+import {
+  APPROACH,
+  COMMITMENTS,
+  PILLARS,
+  RANGE_LINKS,
+  STORY,
+} from "./content";
+import "../../home.css";
+import "../../about.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
@@ -102,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     settings,
     title: "About LONEX",
     description:
-      "LONEX is a Pakistan-based import, distribution and dealership business connecting solar panels, batteries and electric bikes.",
+      "LONEX brings solar generation, battery storage and electric mobility into one connected view — products chosen for real use and explained with clarity.",
     path: "/about",
   });
 }
@@ -110,509 +32,509 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AboutPage() {
   await connection();
   const settings = await loadPublicSettings();
+  const [generate, store, move] = PILLARS;
 
   return (
-    <>
-      <section className="relative overflow-hidden bg-white">
-        <div
-          aria-hidden="true"
-          className="lux-grid-bg pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 opacity-60 lg:block"
-        />
-        <Container className="relative grid gap-14 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:py-20">
-          <div className="space-y-7">
-            <nav
-              aria-label="Breadcrumb"
-              className="type-eyebrow flex flex-wrap items-center gap-2 text-black/55"
-            >
-              <Link href="/" className="transition-colors hover:text-[#CF0A0A]">
-                Home
-              </Link>
-              <span aria-hidden="true">/</span>
-              <span className="text-black/60">About</span>
-            </nav>
+    <div className="lx-page lxa-page">
+      <PageMotion>
+        {/* Hero ------------------------------------------------------- */}
+        <section className="lxa-hero" data-hero>
+          <div className="lx-wrap lxa-hero__grid">
+            <div className="lxa-hero__copy">
+              <nav aria-label="Breadcrumb" className="lx-crumbs lxa-crumbs">
+                <Link href="/">Home</Link>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">About</span>
+              </nav>
 
-            <div className="intro intro-1">
-              <Eyebrow>About LONEX</Eyebrow>
+              <p className="lxa-eyebrow" data-hero-item>
+                About LONEX
+              </p>
+
+              <h1 className="lxa-hero__title">
+                <span className="lxa-hero__line" data-hero-line>
+                  One current.
+                </span>{" "}
+                <span className="lxa-hero__line" data-hero-line>
+                  <em>Three directions.</em>
+                </span>
+              </h1>
+
+              <div className="lxa-hero__intro" data-hero-item>
+                <p>
+                  LONEX is an energy brand built around the way power actually
+                  reaches a home: sunlight a roof can collect, a battery that
+                  keeps it available, and an electric ride that turns it into
+                  movement. We bring those three needs into one conversation, so
+                  a decision about energy is made with the whole picture in
+                  view.
+                </p>
+                <p>
+                  Based in Lahore, our work spans solar generation, battery
+                  storage and electric mobility — selecting the range,
+                  explaining its limits, and helping each customer find the
+                  combination that fits.
+                </p>
+              </div>
+
+              <div className="lxa-hero__actions" data-hero-item>
+                <Link href="#pillars" className="lxa-btn lxa-btn--red">
+                  Explore the range
+                  <span aria-hidden="true">→</span>
+                </Link>
+                <Link href="/contact" className="lxa-btn lxa-btn--outline">
+                  Contact LONEX
+                </Link>
+              </div>
+
+              <dl className="lxa-hero__facts" data-hero-item>
+                <div>
+                  <dt>Range</dt>
+                  <dd>Generate · Store · Move</dd>
+                </div>
+                <div>
+                  <dt>Based</dt>
+                  <dd>Lahore, Pakistan</dd>
+                </div>
+                <div>
+                  <dt>Approach</dt>
+                  <dd>Clarity before choice</dd>
+                </div>
+              </dl>
             </div>
 
-            <h1 className="intro intro-2 type-hero text-black">
-              Energy that
-              <br />
-              moves life
-              <br />
-              forward<span className="text-[#CF0A0A]">.</span>
-            </h1>
-
-            <p className="intro intro-3 type-lead max-w-xl text-black/60">
-              LONEX is a Pakistan-based import, distribution and dealership
-              business focused on solar panels, batteries and electric bikes.
-            </p>
-
-            <div className="intro intro-4 flex flex-wrap gap-3">
-              <ButtonLink href="/contact">Contact LONEX</ButtonLink>
-              <ButtonLink href="/authorized-sellers" variant="outline">
-                Authorized sellers
-              </ButtonLink>
-            </div>
-          </div>
-
-          <div className="reveal relative">
-            <div className="reveal-mask relative aspect-[4/5] overflow-hidden bg-[#F5EDED]">
-              <div className="parallax-exit absolute inset-0">
+            <figure className="lxa-hero__figure" data-hero-item>
+              <div className="lxa-hero__media">
                 <Image
-                  src="/lonex-logo.png"
-                  alt="LONEX"
+                  src="/images/lonex-story/story-architecture.webp"
+                  alt="Terracotta roof tiles meeting a dark solar array beneath a pale sky"
                   fill
-                  sizes="(max-width: 1024px) 90vw, 44vw"
-                  className="object-contain p-6 sm:p-10"
+                  preload
+                  sizes="(max-width: 900px) 100vw, 46vw"
+                  className="lxa-hero__image"
                 />
               </div>
-              <span
-                aria-hidden="true"
-                className="absolute left-0 top-0 h-20 w-1 bg-[#CF0A0A]"
+              <figcaption className="lxa-hero__caption">
+                <span className="lxa-hero__caption-index">01</span>
+                <span>Rooftop solar, in detail</span>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        {/* Our story -------------------------------------------------- */}
+        <section id="story" className="lxa-story lxa-section">
+          <div className="lx-wrap">
+            <div className="lxa-story__head" data-reveal-group>
+              <div data-reveal>
+                <p className="lxa-eyebrow">Our story</p>
+                <h2 className="lxa-story__title">
+                  Energy is a system,
+                  <br />
+                  <em>not a shelf.</em>
+                </h2>
+              </div>
+
+              <p className="lxa-story__lede" data-reveal>
+                {STORY.intro}
+              </p>
+            </div>
+
+            <div className="lxa-story__grid">
+              <div className="lxa-story__body" data-reveal-group>
+                <p data-reveal>{STORY.vision}</p>
+                <p data-reveal>{STORY.mark}</p>
+              </div>
+
+              <aside className="lxa-story__note" data-reveal>
+                <p className="lxa-story__note-label">The loop</p>
+                <ol className="lxa-story__chain">
+                  <li>
+                    <span>01</span>
+                    Generate
+                  </li>
+                  <li>
+                    <span>02</span>
+                    Store
+                  </li>
+                  <li>
+                    <span>03</span>
+                    Move
+                  </li>
+                </ol>
+                <p className="lxa-story__note-copy">
+                  The same electricity, at three points in its life.
+                </p>
+              </aside>
+            </div>
+          </div>
+
+          <figure className="lxa-story__figure">
+            <div className="lxa-story__frame" data-reveal-image>
+              <Image
+                src="/images/v2/city-rooftops.webp"
+                alt="An aerial view of city rooftops with solar arrays among terracotta tiles"
+                fill
+                sizes="100vw"
+                className="lxa-story__image"
               />
-              <span className="type-eyebrow absolute left-5 top-5 text-black/55">
-                LONEX / Company profile
-              </span>
-              <span className="type-eyebrow absolute bottom-5 right-5 text-black/55">
-                2026
-              </span>
             </div>
-            <div className="absolute -bottom-6 -left-4 hidden bg-black px-5 py-4 text-white sm:block lg:-left-8">
-              <p className="type-eyebrow text-white/55">Business</p>
-              <p className="mt-2 text-sm font-medium">
-                Import · Distribution · Dealership
-              </p>
+            <div className="lx-wrap lxa-story__caption" data-reveal>
+              <p>A city of small power stations.</p>
+              <p className="lxa-story__caption-meta">Distributed generation</p>
             </div>
-          </div>
-        </Container>
-      </section>
+          </figure>
+        </section>
 
-      <section className="border-t border-black/10 py-20 sm:py-28">
-        <Container className="grid gap-10 lg:grid-cols-[0.32fr_0.68fr]">
-          <div className="reveal">
-            <Eyebrow>01 — Who we are</Eyebrow>
-          </div>
-          <div className="space-y-9">
-            <p className="reveal type-statement text-black">
-              Connecting energy, technology and everyday progress.
-            </p>
-            <div className="reveal grid gap-8 sm:grid-cols-2">
-              <div className="space-y-4 text-sm leading-7 text-black/60">
-                <p>
-                  LONEX is a newly established business in Pakistan focused on
-                  the import, distribution and dealership of solar panels,
-                  batteries and electric bikes. The three categories shape how
-                  people generate power, store electricity and travel.
-                </p>
-                <p>
-                  We operate as a trading and distribution company rather than a
-                  manufacturer. Our responsibilities include product sourcing,
-                  commercial coordination, clear product information and
-                  relationships with suppliers and customers.
-                </p>
+        {/* Product pillars -------------------------------------------- */}
+        <section id="pillars" className="lxa-pillars lxa-section">
+          <div className="lx-wrap">
+            <div className="lxa-pillars__head" data-reveal-group>
+              <div data-reveal>
+                <p className="lxa-eyebrow">The range</p>
+                <h2 className="lxa-h2">
+                  Three directions.
+                  <br />
+                  One connected idea.
+                </h2>
               </div>
-              <div className="space-y-4 text-sm leading-7 text-black/55">
-                <p>
-                  Our brand philosophy is rooted in dependable, empowering
-                  everyday energy. The infinity symbol in our identity
-                  represents the continuing relationship between generating,
-                  moving and storing power.
-                </p>
-                <p>
-                  As a new entrant, we understand that trust must be earned
-                  through responsible commitments and consistent business
-                  conduct.
-                </p>
-              </div>
-            </div>
-
-            <dl className="reveal grid gap-px border border-black/10 bg-black/10 sm:grid-cols-3">
-              {[
-                { term: "Business model", detail: "Import / Distribution / Dealership" },
-                { term: "Categories", detail: "Solar panels · Batteries · Electric bikes" },
-                { term: "Based in", detail: "Lahore, Pakistan" },
-              ].map((item) => (
-                <div key={item.term} className="bg-white p-5">
-                  <dt className="type-eyebrow text-black/45">{item.term}</dt>
-                  <dd className="mt-3 text-sm font-medium leading-6 text-black">
-                    {item.detail}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-t border-black/10 bg-[#F5EDED] py-20 sm:py-28">
-        <Container className="space-y-12">
-          <SectionHeading
-            index="02"
-            eyebrow="Vision, mission & purpose"
-            title="The principles that shape our commercial purpose."
-            description="An ambition, a way of working, and a clear reason to exist."
-          />
-
-          <div className="grid gap-px bg-black/10 lg:grid-cols-3">
-            <article className="reveal bg-white p-6 sm:p-8">
-              <p className="type-eyebrow text-[#CF0A0A]">Vision</p>
-              <h3 className="mt-6 text-xl font-semibold text-black">
-                A trusted business in Pakistan&apos;s energy transition.
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-black/55">
-                To become a trusted and respected business in Pakistan&apos;s
-                renewable energy, energy storage and electric mobility sectors
-                by connecting customers with suitable products through
-                responsible sourcing and professional distribution.
-              </p>
-              <p className="mt-4 text-xs leading-6 text-black/40">
-                This is an ambition, not a claim about our current market
-                position.
-              </p>
-            </article>
-
-            <article className="reveal bg-white p-6 sm:p-8">
-              <p className="type-eyebrow text-[#CF0A0A]">Mission</p>
-              <h3 className="mt-6 text-xl font-semibold text-black">
-                Supply with attention to each requirement.
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-black/55">
-                To import, distribute and supply solar panels, batteries and
-                electric bikes with attention to technical suitability,
-                transparent communication and the distinct requirements of each
-                customer.
-              </p>
-              <p className="mt-4 text-xs leading-6 text-black/40">
-                We aim to build constructive relationships with dealers,
-                suppliers and commercial buyers through clear terms and mutual
-                understanding.
-              </p>
-            </article>
-
-            <article className="reveal bg-black p-6 text-white sm:p-8">
-              <p className="type-eyebrow text-[#CF0A0A]">Purpose</p>
-              <h3 className="mt-6 text-xl font-semibold">
-                Connect technology with real-world needs.
-              </h3>
-              <p className="mt-4 text-sm leading-7 text-white/55">
-                Solar panels generate electricity; batteries store it; electric
-                bikes turn stored electricity into motion. Together they create
-                a coherent business identity centred on power, access and
-                practical progress.
-              </p>
-            </article>
-          </div>
-        </Container>
-      </section>
-
-      <section className="py-20 sm:py-28">
-        <Container className="space-y-12">
-          <SectionHeading
-            index="03"
-            eyebrow="Core values"
-            title="Standards we intend to demonstrate."
-            description="As a newly established company, these are standards for conduct rather than achievements already demonstrated over many years."
-          />
-
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-            {VALUES.map((value, index) => (
-              <div key={value.title} className="reveal border-t border-black/15 pt-5">
-                <p className="type-eyebrow text-[#CF0A0A]">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <h3 className="mt-3 text-lg font-semibold text-black">
-                  {value.title}
-                </h3>
-                <p className="mt-2 text-sm leading-7 text-black/55">
-                  {value.copy}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="relative overflow-hidden bg-black py-20 text-white sm:py-28">
-        <div
-          aria-hidden="true"
-          className="lux-grid-bg-dark pointer-events-none absolute inset-0 opacity-40"
-        />
-        <Container className="relative space-y-12">
-          <SectionHeading
-            index="04"
-            eyebrow="Pakistan market landscape"
-            title="A changing environment for electricity and mobility."
-            description="Commercial context, not a guarantee of future sales."
-            tone="light"
-          />
-
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="space-y-5 text-sm leading-7 text-white/55">
-              <p className="reveal">
-                Pakistan has experienced rapid solar equipment adoption. Ember
-                reported approximately 17 GW of solar panel imports in 2024,
-                around twice the previous year&apos;s volume. Import volumes
-                indicate market activity, but do not equal installed capacity or
-                final customer sales.
-              </p>
-              <p className="reveal">
-                Battery storage is becoming more relevant as customers evaluate
-                backup power, energy management and compatible solar systems.
-                Market researchers estimate a multi-billion-dollar battery
-                industry across several applications; these estimates should not
-                be mistaken for the narrower solar storage segment.
-              </p>
-              <p className="reveal">
-                Pakistan&apos;s New Energy Vehicles Policy 2025–2030 sets a
-                target for new energy vehicles to account for 30% of new vehicle
-                sales by 2030. This is a policy objective, not an achieved
-                adoption rate.
+              <p className="lxa-pillars__intro" data-reveal>
+                Each category has its own purpose. None of them works best in
+                isolation.
               </p>
             </div>
 
-            <div className="grid gap-px self-start bg-white/10 sm:grid-cols-2">
-              {[
-                { value: "≈17 GW", label: "Solar panel imports reported in 2024" },
-                { value: "2×", label: "Roughly double the previous year's volume" },
-                { value: "30%", label: "NEV share target by 2030 (policy objective)" },
-                { value: "3", label: "Connected categories: generate, store, move" },
-              ].map((stat) => (
-                <div key={stat.label} className="reveal bg-black p-5">
-                  <p className="type-section text-white">{stat.value}</p>
-                  <p className="mt-2 text-xs leading-5 text-white/45">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-t border-black/10 py-20 sm:py-28">
-        <Container className="space-y-12">
-          <SectionHeading
-            index="05"
-            eyebrow="What we do"
-            title="Import, distribution and dealership."
-            description="Three connected responsibilities, one commercial purpose."
-          />
-
-          <div className="grid gap-px bg-black/10 lg:grid-cols-3">
-            {MODEL.map((item, index) => (
-              <div key={item.title} className="reveal bg-white p-6 sm:p-8">
-                <p className="type-eyebrow text-[#CF0A0A]">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <h3 className="mt-6 text-xl font-semibold text-black">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-black/55">
-                  {item.copy}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-
-      <section className="border-t border-black/10 bg-[#F5EDED] py-20 sm:py-28">
-        <Container className="space-y-12">
-          <SectionHeading
-            index="06"
-            eyebrow="Product portfolio"
-            title="Three connected categories."
-            description="Generate / Store / Move."
-            action={
-              <ButtonLink href="/#categories" variant="ghost">
-                Browse the range
-              </ButtonLink>
-            }
-          />
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {DIRECTIONS.map((direction) => (
+            <article
+              className="lxa-pillar lxa-pillar--generate"
+              data-reveal-group
+            >
               <Link
-                key={direction.name}
-                href={direction.href}
-                className="group reveal flex flex-col justify-between gap-10 border border-black/10 bg-white p-6 transition-colors hover:border-black/25 sm:p-8"
+                href={generate.href}
+                aria-label={`Explore ${generate.name}`}
+                className="lxa-pillar__media"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <span className="type-eyebrow text-[#CF0A0A]">
-                    {direction.index}
-                  </span>
-                  <span className="type-eyebrow text-black/45">
-                    {direction.verb}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  <h3 className="text-xl font-semibold text-black">
-                    {direction.name}
-                  </h3>
-                  <p className="text-sm leading-7 text-black/55">
-                    {direction.copy}
-                  </p>
-                  <span className="type-eyebrow inline-flex items-center gap-2 text-black/55 transition-colors group-hover:text-[#CF0A0A]">
-                    Explore
-                    <span aria-hidden="true" className="arrow-slide">
-                      →
-                    </span>
-                  </span>
-                </div>
+                <Image
+                  src={generate.image}
+                  alt={generate.alt}
+                  fill
+                  sizes="(max-width: 900px) 100vw, 58vw"
+                  className="lxa-pillar__image"
+                />
+                <span className="lxa-pillar__tag">{generate.index}</span>
               </Link>
-            ))}
+
+              <div className="lxa-pillar__body" data-reveal>
+                <p className="lxa-pillar__kicker">
+                  <span>{generate.index}</span>
+                  {generate.shortName} / {generate.name}
+                </p>
+                <h3 className="lxa-pillar__title">{generate.title}</h3>
+                <p className="lxa-pillar__copy">{generate.copy}</p>
+                <p className="lxa-pillar__detail">{generate.detail}</p>
+                <ul className="lxa-pillar__points">
+                  {generate.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+                <Link href={generate.href} className="lxa-link">
+                  Explore {generate.name}
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </article>
           </div>
 
-          <p className="reveal max-w-3xl text-xs leading-6 text-black/45">
-            The products are complementary, but not automatically
-            interoperable. Technical integration requires compatible equipment
-            and qualified design. Actual brands, models, capacities and
-            availability are determined by confirmed sourcing and inventory
-            arrangements.
-          </p>
-        </Container>
-      </section>
+          <div className="lxa-pillars__band">
+            <div className="lx-wrap">
+              <article
+                className="lxa-pillar lxa-pillar--store"
+                data-reveal-group
+              >
+                <Link
+                  href={store.href}
+                  aria-label={`Explore ${store.name}`}
+                  className="lxa-pillar__media"
+                >
+                  <Image
+                    src={store.image}
+                    alt={store.alt}
+                    fill
+                    sizes="(max-width: 900px) 100vw, 58vw"
+                    className="lxa-pillar__image"
+                  />
+                  <span className="lxa-pillar__tag">{store.index}</span>
+                </Link>
 
-      <section className="py-20 sm:py-28">
-        <Container className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-          <div className="space-y-6">
-            <Eyebrow>07 — Why LONEX</Eyebrow>
-            <h2 className="type-section text-black">
-              Focused products.
-              <br />
-              Clear communication.
-            </h2>
-            <p className="type-lead max-w-xl text-black/55">
-              Choosing a supplier requires more than comparing prices. Product
-              suitability, documentation, availability and commercial terms all
-              affect purchasing decisions.
-            </p>
-          </div>
-
-          <div className="space-y-6 text-sm leading-7 text-black/55">
-            <p className="reveal">
-              LONEX has been established with a focused identity across three
-              related industries rather than an unrestricted general trading
-              portfolio. Homeowners, commercial buyers, retailers and dealers
-              evaluate products differently, and our objective is to provide
-              relevant information and develop practical commercial
-              relationships.
-            </p>
-            <p className="reveal">
-              We do not claim decades of experience or market leadership. Our
-              intended advantage is a clear business focus, responsible
-              communication and a commitment to establishing appropriate
-              standards from the beginning.
-            </p>
-            <div className="reveal grid gap-4 sm:grid-cols-2">
-              <div className="border-l-2 border-[#CF0A0A] pl-4">
-                <p className="text-sm font-semibold text-black">
-                  Dealership &amp; distribution
-                </p>
-                <p className="mt-2 text-xs leading-6 text-black/55">
-                  Commercial arrangements define products, quantities, prices,
-                  payment conditions and delivery responsibilities. Exclusive
-                  territories are never assumed without written agreement.
-                </p>
-              </div>
-              <div className="border-l-2 border-[#CF0A0A] pl-4">
-                <p className="text-sm font-semibold text-black">
-                  Quality &amp; customers
-                </p>
-                <p className="mt-2 text-xs leading-6 text-black/55">
-                  Specifications are communicated responsibly. Warranty and
-                  after-sales provisions, where available, follow the written
-                  terms applicable to each specific product.
-                </p>
-              </div>
+                <div className="lxa-pillar__body" data-reveal>
+                  <p className="lxa-pillar__kicker">
+                    <span>{store.index}</span>
+                    {store.shortName} / {store.name}
+                  </p>
+                  <h3 className="lxa-pillar__title">{store.title}</h3>
+                  <p className="lxa-pillar__copy">{store.copy}</p>
+                  <p className="lxa-pillar__detail">{store.detail}</p>
+                  <ul className="lxa-pillar__points">
+                    {store.points.map((point) => (
+                      <li key={point}>{point}</li>
+                    ))}
+                  </ul>
+                  <Link href={store.href} className="lxa-link">
+                    Explore {store.name}
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              </article>
             </div>
           </div>
-        </Container>
-      </section>
 
-      <section className="border-t border-black/10 bg-[#F5EDED] py-20 sm:py-28">
-        <Container className="space-y-12">
-          <SectionHeading
-            index="08"
-            eyebrow="What we publish"
-            title="Only what is confirmed."
-            description="A simple rule governs the website: nothing is invented."
-          />
-          <div className="grid gap-px bg-black/10 sm:grid-cols-2 lg:grid-cols-4">
-            {PUBLISHED.map((item, index) => (
-              <div key={item.title} className="reveal bg-white p-6 sm:p-7">
-                <p className="type-eyebrow text-[#CF0A0A]">
-                  {String(index + 1).padStart(2, "0")}
+          <div className="lx-wrap">
+            <article className="lxa-pillar lxa-pillar--move" data-reveal-group>
+              <Link
+                href={move.href}
+                aria-label={`Explore ${move.name}`}
+                className="lxa-pillar__media"
+              >
+                <Image
+                  src={move.image}
+                  alt={move.alt}
+                  fill
+                  sizes="100vw"
+                  className="lxa-pillar__image"
+                />
+                <span className="lxa-pillar__tag">{move.index}</span>
+              </Link>
+
+              <div className="lxa-pillar__body" data-reveal>
+                <p className="lxa-pillar__kicker">
+                  <span>{move.index}</span>
+                  {move.shortName} / {move.name}
                 </p>
-                <h3 className="mt-6 text-lg font-semibold text-black">
-                  {item.title}
-                </h3>
-                <p className="mt-3 text-sm leading-7 text-black/55">
-                  {item.copy}
+                <h3 className="lxa-pillar__title">{move.title}</h3>
+                <p className="lxa-pillar__copy">{move.copy}</p>
+                <p className="lxa-pillar__detail">{move.detail}</p>
+                <ul className="lxa-pillar__points">
+                  {move.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+                <Link href={move.href} className="lxa-link">
+                  Explore {move.name}
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </article>
+
+            <p className="lxa-pillars__chain" data-reveal>
+              <span>Generate</span>
+              <span aria-hidden="true">→</span>
+              <span>Store</span>
+              <span aria-hidden="true">→</span>
+              <span>Move</span>
+              <em>The same electricity, at three points in its life.</em>
+            </p>
+          </div>
+        </section>
+
+        {/* Our approach ------------------------------------------------ */}
+        <section id="approach" className="lxa-approach">
+          <div className="lx-wrap lxa-approach__grid">
+            <div className="lxa-approach__aside">
+              <div data-reveal-group>
+                <div data-reveal>
+                  <p className="lxa-eyebrow lxa-eyebrow--light">
+                    Our approach
+                  </p>
+                  <h2 className="lxa-approach__title">
+                    Clarity is part
+                    <br />
+                    of the product.
+                  </h2>
+                </div>
+                <p className="lxa-approach__intro" data-reveal>
+                  A specification can be accurate and still leave someone
+                  unsure. Our approach is to make the decision legible: what a
+                  product is for, what it needs, and what it will not do.
                 </p>
               </div>
-            ))}
-          </div>
-        </Container>
-      </section>
 
-      <section className="relative overflow-hidden bg-black py-20 text-white sm:py-28">
-        <div
-          aria-hidden="true"
-          className="lux-grid-bg-dark pointer-events-none absolute inset-0 opacity-40"
-        />
-        <Container className="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-          <div className="space-y-6">
-            <Eyebrow tone="light">09 — Our position</Eyebrow>
-            <p className="reveal type-section text-white">
-              Not a manufacturer.
-              <br />
-              A partner in what&apos;s next.
-            </p>
-          </div>
-          <div className="space-y-5">
-            <p className="reveal text-sm leading-7 text-white/55">
-              LONEX imports, distributes and represents selected energy and
-              mobility products. Product model verification confirms registration
-              with LONEX, not the authenticity of an individual unit.
-            </p>
-            <div className="reveal">
-              <ButtonLink href="/verify" variant="inverse">
-                Verify a model
-              </ButtonLink>
+              <figure className="lxa-approach__figure" data-reveal-image>
+                <Image
+                  src="/images/lonex-generated-images/editorial/energy-consultation.webp"
+                  alt="Three people reviewing information together in front of a solar array"
+                  fill
+                  sizes="(max-width: 900px) 100vw, 34vw"
+                  className="lxa-approach__image"
+                />
+                <figcaption>
+                  The conversation is part of the system.
+                </figcaption>
+              </figure>
+            </div>
+
+            <div className="lxa-approach__list">
+              {APPROACH.map((principle, index) => (
+                <article key={principle.title} className="lxa-principle" data-reveal>
+                  <span className="lxa-principle__index">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <h3 className="lxa-principle__title">{principle.title}</h3>
+                    <p className="lxa-principle__copy">{principle.copy}</p>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
-        </Container>
-      </section>
 
-      <section className="py-16 sm:py-20">
-        <Container className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div className="space-y-5">
-            <Eyebrow>10 — Connect with LONEX</Eyebrow>
-            <h2 className="type-statement text-black">
-              Talk to LONEX about the range.
-            </h2>
-            <div className="space-y-2 text-sm leading-7 text-black/55">
-              <p>
-                {settings.address ||
-                  "84 Brandth Road, Lahore, Pakistan"}
-              </p>
-              <p>
-                {settings.contactPhone || "0322 8888278"} · 0315 9899426
-              </p>
-              <p className="text-black/40">lonexglobal.com</p>
+          <div className="lx-wrap">
+            <div className="lxa-approach__quote" data-reveal>
+              <span aria-hidden="true" className="lxa-approach__mark" />
+              <p>The right system is the one that fits the life around it.</p>
             </div>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row lg:justify-end">
-            <ButtonLink href="/contact">Contact LONEX</ButtonLink>
-            <ButtonLink href="/#categories" variant="outline">
-              Explore categories
-            </ButtonLink>
+        </section>
+
+        {/* Community and responsibility -------------------------------- */}
+        <section id="community" className="lxa-community lxa-section">
+          <div className="lx-wrap lxa-community__grid">
+            <div className="lxa-community__copy">
+              <div data-reveal-group>
+                <div data-reveal>
+                  <p className="lxa-eyebrow">Community &amp; responsibility</p>
+                  <h2 className="lxa-h2">
+                    Knowledge should travel further than a quotation.
+                  </h2>
+                </div>
+                <p className="lxa-community__lede" data-reveal>
+                  Energy decisions are often made with half the picture: a price
+                  without context, a specification without a translation, a
+                  benefit without its limit. We believe people choose better
+                  when the subject is explained clearly, in their terms, before
+                  anything is recommended.
+                </p>
+                <p data-reveal>
+                  Our responsibility is practical rather than promotional. It is
+                  to describe the range honestly, answer the question behind the
+                  question, and leave room for a customer to decide at their own
+                  pace. Generation, storage and movement are long-term
+                  decisions; the conversation should be worth returning to.
+                </p>
+              </div>
+
+              <ul className="lxa-commitments">
+                {COMMITMENTS.map((commitment, index) => (
+                  <li key={commitment.title} data-reveal>
+                    <span className="lxa-commitments__index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <h3 className="lxa-commitments__title">
+                        {commitment.title}
+                      </h3>
+                      <p className="lxa-commitments__copy">
+                        {commitment.copy}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="lxa-community__actions" data-reveal>
+                <Link href="/contact" className="lxa-btn lxa-btn--dark">
+                  Ask a question
+                  <span aria-hidden="true">→</span>
+                </Link>
+                <Link href="/blog" className="lxa-link">
+                  Read the journal
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            </div>
+
+            <figure className="lxa-community__figure" data-reveal-image>
+              <div className="lxa-community__frame">
+                <Image
+                  src="/images/v2/generate-installation.webp"
+                  alt="A technician connecting wiring beside a solar module on a corrugated roof"
+                  fill
+                  sizes="(max-width: 900px) 100vw, 40vw"
+                  className="lxa-community__image"
+                />
+              </div>
+              <figcaption>Practical work, in progress.</figcaption>
+            </figure>
           </div>
-        </Container>
-      </section>
-    </>
+        </section>
+
+        {/* Closing ----------------------------------------------------- */}
+        <section className="lxa-close">
+          <div aria-hidden="true" className="lxa-close__media">
+            <Image
+              src="/images/lonex-generated-images/about/mountain-energy-landscape.webp"
+              alt=""
+              fill
+              sizes="100vw"
+              className="lxa-close__image"
+            />
+          </div>
+          <div aria-hidden="true" className="lxa-close__scrim" />
+
+          <div className="lx-wrap lxa-close__grid">
+            <div className="lxa-close__copy" data-reveal-group>
+              <div data-reveal>
+                <p className="lxa-eyebrow lxa-eyebrow--light">Next step</p>
+                <h2 className="lxa-close__title">
+                  Start with the
+                  <br />
+                  whole picture.
+                </h2>
+                <p className="lxa-close__intro">
+                  A roof, a battery and a bike are separate purchases. They are
+                  also one way of thinking about power. Tell us what you are
+                  trying to solve, and we will start there.
+                </p>
+              </div>
+
+              <div className="lxa-close__actions" data-reveal>
+                <Link href="/contact" className="lxa-btn lxa-btn--light">
+                  Contact LONEX
+                  <span aria-hidden="true">→</span>
+                </Link>
+                {settings.contactPhone ? (
+                  <a
+                    href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
+                    className="lxa-close__phone"
+                  >
+                    {formatPhone(settings.contactPhone)}
+                  </a>
+                ) : null}
+              </div>
+            </div>
+
+            <nav
+              aria-label="Explore the range"
+              className="lxa-close__range"
+              data-reveal
+            >
+              <p className="lxa-close__range-label">The range</p>
+              {RANGE_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="lxa-close__range-link"
+                >
+                  <span>{item.label}</span>
+                  <span className="lxa-close__range-meta">
+                    {item.meta}
+                    <span aria-hidden="true">↗</span>
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </section>
+      </PageMotion>
+    </div>
   );
 }
 

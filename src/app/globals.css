@@ -192,7 +192,8 @@ body {
     clip-path: inset(0 0 100% 0);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    /* Outside the border box so descenders are never clipped at rest. */
+    clip-path: inset(-30% -6% -30% -6%);
   }
 }
 
@@ -201,7 +202,7 @@ body {
     clip-path: inset(0 100% 0 0);
   }
   to {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(-30% -6% -30% -6%);
   }
 }
 
@@ -575,7 +576,7 @@ details[open] .menu-link:nth-child(10) {
 }
 
 .logo-plate {
-  background: var(--lonex-soft);
+  background: transparent;
 }
 
 .spinner {

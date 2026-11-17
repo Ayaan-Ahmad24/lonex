@@ -220,6 +220,9 @@ export function EvBikesPage({
                       <h3 className="lxe-plate-product__name">
                         <Link href={card.path}>{card.name}</Link>
                       </h3>
+                      <p className="lxe-plate-product__price">
+                        {card.priceLabel ?? "Price on inquiry"}
+                      </p>
                       <p className="lxe-plate-product__summary">
                         {product.summary}
                       </p>

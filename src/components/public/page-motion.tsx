@@ -60,8 +60,8 @@ export function PageMotion({
         ) => {
           const {
             y = 26,
-            duration = 0.9,
-            stagger = 0.08,
+            duration = 0.55,
+            stagger = 0.06,
             start = "top 88%",
             delay = 0,
           } = options;
@@ -93,7 +93,7 @@ export function PageMotion({
               {
                 scale: 1,
                 autoAlpha: 1,
-                duration: 1.6,
+                duration: 0.8,
                 ease: "expo.out",
               },
             );
@@ -108,11 +108,13 @@ export function PageMotion({
               {
                 yPercent: 0,
                 autoAlpha: 1,
-                clipPath: "inset(0% 0% 0% 0%)",
-                duration: 1.15,
+                // Ends outside the border box: an inset of 0 clips the
+                // heading's descenders once the reveal has finished.
+                clipPath: "inset(-30% -6% -30% -6%)",
+                duration: 0.7,
                 ease: "expo.out",
-                stagger: 0.11,
-                delay: 0.18,
+                stagger: 0.07,
+                delay: 0.05,
               },
             );
           }
@@ -126,10 +128,10 @@ export function PageMotion({
               {
                 y: 0,
                 autoAlpha: 1,
-                duration: 0.95,
+                duration: 0.55,
                 ease: "power3.out",
-                stagger: 0.08,
-                delay: 0.42,
+                stagger: 0.05,
+                delay: 0.12,
               },
             );
           }
@@ -159,7 +161,7 @@ export function PageMotion({
                 {
                   autoAlpha: 1,
                   scale: 1,
-                  duration: 1.25,
+                  duration: 0.7,
                   ease: "expo.out",
                   scrollTrigger: { trigger: group, start: "top 86%", once: true },
                 },

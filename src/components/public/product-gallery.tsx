@@ -1,89 +1,204 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
 import type { PublicProductImage } from "@/lib/public/dto";
 import { ContentImage } from "./content-image";
-import { ImageLightbox } from "./image-lightbox";
 
 /**
- * Product gallery: keyboard-accessible thumbnails, a quiet hover zoom and a
- * index counter. Only the active image is tracked in the client.
+ * Product gallery.
+ *
+ * The stage and the thumbnails are one controlled component so the active
+ * image is never duplicated in state. The lightbox is rendered in a portal,
+ * locks scrolling, traps focus at its own controls, closes on Escape and the
+ * backdrop, and returns focus to the stage when it closes.
  */
 export function ProductGallery({
   images,
   productName,
   fallbackLabel = "Product image pending",
+  sizes = "(max-width: 900px) 100vw, 58vw",
 }: {
   images: PublicProductImage[];
   productName: string;
   fallbackLabel?: string;
+  sizes?: string;
 }) {
   const [active, setActive] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const stageRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  const total = images.length;
   const current = images[active] ?? null;
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    stageRef.current?.focus();
+  }, []);
+
+  const go = useCallback(
+    (direction: 1 | -1) => {
+      if (total < 2) {
+        return;
+      }
+
+      setActive((previous) => (previous + direction + total) % total);
+    },
+    [total],
+  );
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        close();
+      } else if (event.key === "ArrowLeft") {
+        go(-1);
+      } else if (event.key === "ArrowRight") {
+        go(1);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, close, go]);
+
   return (
-    <div className="space-y-4">
-      <div className="group relative aspect-[4/5] overflow-hidden bg-[#F5EDED] sm:aspect-[4/3]">
-        <div key={active} className="intro absolute inset-0 cursor-pointer" onClick={() => {
-          if (images.length > 0) {
-            setLightboxOpen(true);
+    <div className="lxp-gallery">
+      <button
+        ref={stageRef}
+        type="button"
+        className="lxp-gallery__stage"
+        onClick={() => {
+          if (total > 0) {
+            setOpen(true);
           }
-        }}>
+        }}
+        aria-label={
+          total > 0
+            ? `Enlarge image ${active + 1} of ${total} for ${productName}`
+            : fallbackLabel
+        }
+        aria-disabled={total === 0}
+        data-gallery-stage
+      >
+        <span key={active} className="lxp-gallery__frame">
           <ContentImage
             image={current}
             fallbackLabel={fallbackLabel}
-            sizes="(max-width: 1024px) 100vw, 52vw"
-            priority
-            className="transition-transform duration-[900ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.12]"
+            sizes={sizes}
+            preload
           />
-        </div>
-        {images.length > 0 ? (
-          <span className="type-eyebrow absolute bottom-4 left-4 bg-black px-3 py-2 text-white">
-            {String(active + 1).padStart(2, "0")} /{" "}
-            {String(images.length).padStart(2, "0")}
-          </span>
-        ) : null}
-      </div>
+        </span>
 
-      {images.length > 1 ? (
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+        {total > 0 ? (
+          <>
+            <span className="lxp-gallery__count">
+              {String(active + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+            </span>
+            <span className="lxp-gallery__zoom" aria-hidden="true">
+              Enlarge
+              <span>＋</span>
+            </span>
+          </>
+        ) : null}
+      </button>
+
+      {total > 1 ? (
+        <div className="lxp-gallery__thumbs" role="group" aria-label={`${productName} images`}>
           {images.map((image, index) => (
             <button
               key={image.id}
               type="button"
+              className="lxp-gallery__thumb"
               onClick={() => setActive(index)}
-              aria-label={`View image ${index + 1} of ${productName}`}
+              aria-label={`View image ${index + 1} of ${total}`}
               aria-pressed={index === active}
-              className={`relative aspect-square overflow-hidden bg-[#F5EDED] transition-shadow ${
-                index === active
-                  ? "ring-2 ring-[#CF0A0A]"
-                  : "ring-1 ring-black/10 hover:ring-black/40"
-              }`}
             >
-              <ContentImage
-                image={image}
-                fallbackLabel="Image"
-                sizes="(max-width: 768px) 25vw, 120px"
-              />
+              <ContentImage image={image} fallbackLabel="Image" sizes="140px" />
             </button>
           ))}
         </div>
       ) : null}
 
-      {images.length > 0 ? (
-        <p className="type-eyebrow text-right text-black/55">
-          Click to enlarge · Hover to zoom
-        </p>
-      ) : null}
+      {open && total > 0 && typeof document !== "undefined"
+        ? createPortal(
+            <div
+              className="lxp-lightbox"
+              role="dialog"
+              aria-modal="true"
+              aria-label={`${productName} image preview`}
+            >
+              <button
+                type="button"
+                className="lxp-lightbox__backdrop"
+                aria-label="Close image preview"
+                onClick={close}
+                tabIndex={-1}
+              />
 
-      {lightboxOpen && images.length > 0 ? (
-        <ImageLightbox
-          images={images}
-          productName={productName}
-          initialIndex={active}
-        />
-      ) : null}
+              <div className="lxp-lightbox__bar">
+                <p className="lxp-lightbox__title">
+                  {productName}
+                  <span>
+                    {String(active + 1).padStart(2, "0")} /{" "}
+                    {String(total).padStart(2, "0")}
+                  </span>
+                </p>
+                <button
+                  ref={closeRef}
+                  type="button"
+                  className="lxp-lightbox__close"
+                  onClick={close}
+                  aria-label="Close image preview"
+                >
+                  <span aria-hidden="true">✕</span>
+                </button>
+              </div>
+
+              <div className="lxp-lightbox__stage">
+                <ContentImage
+                  image={current}
+                  fallbackLabel={fallbackLabel}
+                  sizes="92vw"
+                  fit="contain"
+                />
+              </div>
+
+              {total > 1 ? (
+                <div className="lxp-lightbox__nav">
+                  <button type="button" onClick={() => go(-1)} aria-label="Previous image">
+                    <span aria-hidden="true">←</span>
+                  </button>
+                  <button type="button" onClick={() => go(1)} aria-label="Next image">
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
+              ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

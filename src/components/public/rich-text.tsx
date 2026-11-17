@@ -37,7 +37,7 @@ function renderSpan(span: InlineSpan, key: number): ReactNode {
     node = (
       <a
         {...linkProps(span.href)}
-        className="font-medium text-[#CF0A0A] underline decoration-2 underline-offset-4 transition-colors hover:text-black"
+        className="font-medium text-[color:var(--site-red,var(--lonex-red))] underline decoration-2 underline-offset-4 transition-colors hover:text-black"
       >
         {node}
       </a>
@@ -51,9 +51,20 @@ function renderSpans(spans: InlineSpan[]): ReactNode {
   return spans.map((span, index) => renderSpan(span, index));
 }
 
-export function RichTextRenderer({ document }: { document: RichTextDocument }) {
+export function RichTextRenderer({
+  document,
+  className,
+}: {
+  document: RichTextDocument;
+  className?: string;
+}) {
   return (
-    <div className="space-y-6 text-base leading-8 text-black/65 sm:text-[17px] sm:leading-9">
+    <div
+      className={
+        className ??
+        "space-y-6 text-base leading-8 text-black/65 sm:text-[17px] sm:leading-9"
+      }
+    >
       {document.blocks.map((block, index) => {
         switch (block.type) {
           case "heading":
@@ -91,7 +102,7 @@ export function RichTextRenderer({ document }: { document: RichTextDocument }) {
             return block.ordered ? (
               <ol
                 key={index}
-                className="list-decimal space-y-2 pl-6 marker:text-[#CF0A0A]"
+                className="list-decimal space-y-2 pl-6 marker:text-[color:var(--site-red,var(--lonex-red))]"
               >
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex}>{renderSpans(item)}</li>
@@ -100,7 +111,7 @@ export function RichTextRenderer({ document }: { document: RichTextDocument }) {
             ) : (
               <ul
                 key={index}
-                className="list-disc space-y-2 pl-6 marker:text-[#CF0A0A]"
+                className="list-disc space-y-2 pl-6 marker:text-[color:var(--site-red,var(--lonex-red))]"
               >
                 {block.items.map((item, itemIndex) => (
                   <li key={itemIndex}>{renderSpans(item)}</li>
@@ -111,7 +122,7 @@ export function RichTextRenderer({ document }: { document: RichTextDocument }) {
             return (
               <blockquote
                 key={index}
-                className="border-l-2 border-[#CF0A0A] pl-6 text-xl italic leading-9 text-black/75"
+                className="border-l-2 border-[color:var(--site-red,var(--lonex-red))] pl-6 text-xl italic leading-9 text-black/75"
               >
                 {renderSpans(block.spans)}
               </blockquote>

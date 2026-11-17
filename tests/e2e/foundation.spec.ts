@@ -20,13 +20,11 @@ async function signIn(page: import("@playwright/test").Page, user: E2eFixtures["
   await page.waitForURL("**/admin");
 }
 
-test("homepage renders branded LONEX placeholder", async ({ page }) => {
+test("homepage renders the branded LONEX experience", async ({ page }) => {
   const response = await page.goto("/");
 
   expect(response?.status()).toBe(200);
-  await expect(page.locator("h1")).toContainText(
-    "Power for What's Next.",
-  );
+  await expect(page.locator("h1")).toContainText("Power for what's next.");
   await expect(page.locator("header")).toContainText("LONEX");
   await expect(page.locator("footer")).toContainText("LONEX");
   await expect(page.locator("body")).not.toContainText("Create Next App");

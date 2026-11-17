@@ -11,46 +11,60 @@ import {
   INDEX,
   TOPIC_LABELS,
   TOPIC_ORDER,
-  noteFor,
-  topicForSlug,
-  type FeatureCopy,
+  articleCount,
+  excerptFor,
+  topicForPost,
   type JournalTopicId,
   type SubjectTopicId,
 } from "./content";
 
-type Layout = "tall" | "wide" | "band" | "pair" | "solo";
-
-type FeatureStory = {
-  post: PublicBlogCard;
-  copy: FeatureCopy;
-};
+/**
+ * The archive is a complete index, so the layouts never truncate the list:
+ * every published article except the one already shown above is rendered.
+ *
+ * Layouts are assigned by position in a five-slot row pattern:
+ *   [ wide 7 | tall 5 ] [ tall 5 | wide 7 ] [ full-width band ]
+ * A final card that would leave a half-empty row becomes a full-width solo.
+ */
+type Layout = "tall" | "wide" | "band" | "solo";
 
 type Props = {
-  latest: PublicBlogCard | null;
-  feature: FeatureStory | null;
-  remaining: PublicBlogCard[];
-  topicsEnabled: boolean;
-  pagination: { page: number; pageCount: number } | null;
+  posts: PublicBlogCard[];
+  featuredId: number | null;
 };
 
 const IMAGE_SIZES: Record<Layout, string> = {
   tall: "(max-width: 900px) 100vw, 40vw",
-  wide: "(max-width: 900px) 100vw, 55vw",
-  band: "(max-width: 900px) 100vw, 38vw",
-  pair: "(max-width: 900px) 100vw, 46vw",
-  solo: "(max-width: 900px) 100vw, 56vw",
+  wide: "(max-width: 900px) 100vw, 58vw",
+  band: "(max-width: 900px) 100vw, 52vw",
+  solo: "(max-width: 900px) 100vw, 55vw",
 };
 
+const CYCLE: Layout[] = ["wide", "tall", "tall", "wide", "band"];
+
+function spanOf(layout: Layout): number {
+  if (layout === "band" || layout === "solo") return 12;
+  return layout === "wide" ? 7 : 5;
+}
+
 function layoutFor(index: number, total: number): Layout {
-  if (total === 1) {
-    return "solo";
+  const base = CYCLE[index % CYCLE.length];
+
+  if (index !== total - 1) {
+    return base;
   }
 
-  if (total === 2) {
-    return "pair";
+  let rowWidth = 0;
+
+  for (let position = 0; position < index; position += 1) {
+    rowWidth += spanOf(CYCLE[position % CYCLE.length]);
+
+    if (rowWidth >= 12) {
+      rowWidth = 0;
+    }
   }
 
-  return (["tall", "wide", "band"] as const)[index % 3];
+  return rowWidth + spanOf(base) < 12 ? "solo" : base;
 }
 
 function pad(value: number): string {
@@ -73,17 +87,13 @@ function Entry({
   index: number;
   animate: boolean;
 }) {
-  const note = noteFor(post);
-
   return (
     <article
       className={`lxjn-entry lxjn-entry--${layout}`}
       data-entry={post.slug}
       data-animate={animate ? "in" : undefined}
       style={
-        animate
-          ? ({ "--lxjn-order": index } as CSSProperties)
-          : undefined
+        animate ? ({ "--lxjn-order": index } as CSSProperties) : undefined
       }
     >
       <Link
@@ -104,8 +114,10 @@ function Entry({
 
       <div className="lxjn-entry__body">
         <p className="lxjn-entry__meta">
-          <span className="lxjn-entry__index">{pad(index)}</span>
-          <span className="lxjn-entry__kicker">{note.kicker}</span>
+          <span className="lxjn-entry__index">{pad(index + 1)}</span>
+          <span className="lxjn-entry__kicker">
+            {TOPIC_LABELS[topicForPost(post)]}
+          </span>
           <time className="lxjn-entry__date" dateTime={post.publishedAt}>
             {post.publishedLabel}
           </time>
@@ -115,7 +127,7 @@ function Entry({
           <Link href={post.path}>{post.title}</Link>
         </h3>
 
-        <p className="lxjn-entry__copy">{note.standfirst}</p>
+        <p className="lxjn-entry__copy">{excerptFor(post)}</p>
 
         <p className="lxjn-entry__more">
           <Link href={post.path} className="lxjn-link">
@@ -128,145 +140,58 @@ function Entry({
   );
 }
 
-function Feature({
-  post,
-  copy,
-}: {
-  post: PublicBlogCard;
-  copy: FeatureCopy;
-}) {
-  return (
-    <section
-      className="lxjn-feature"
-      data-feature
-      aria-labelledby="lxjn-feature-title"
-    >
-      <div className="lx-wrap">
-        <div className="lxjn-feature__grid">
-          <figure className="lxjn-feature__figure">
-            <span className="lxjn-feature__frame" data-reveal-image>
-              <ContentImage
-                image={post.cover}
-                fallbackLabel={post.title}
-                sizes="(max-width: 900px) 100vw, 58vw"
-                className="lxjn-img"
-              />
-            </span>
-            <span aria-hidden="true" className="lxjn-feature__plate">
-              01
-            </span>
-            <figcaption className="lxjn-feature__caption">
-              <span>{copy.caption}</span>
-              <span className="lxjn-feature__caption-topic">
-                {TOPIC_LABELS[topicForSlug(post.slug)]}
-              </span>
-            </figcaption>
-          </figure>
-
-          <div className="lxjn-feature__body" data-reveal-group>
-            <p className="lxjn-eyebrow" data-reveal>
-              {INDEX.featureLabel}
-            </p>
-
-            <p className="lxjn-feature__meta" data-reveal>
-              <span>{TOPIC_LABELS[topicForSlug(post.slug)]}</span>
-              <time dateTime={post.publishedAt}>{post.publishedLabel}</time>
-            </p>
-
-            <h2
-              className="lxjn-feature__title"
-              id="lxjn-feature-title"
-              data-reveal
-            >
-              {post.title}
-            </h2>
-
-            {copy.paragraphs.map((paragraph) => (
-              <p className="lxjn-feature__copy" key={paragraph} data-reveal>
-                {paragraph}
-              </p>
-            ))}
-
-            <p className="lxjn-feature__action" data-reveal>
-              <Link href={post.path} className="lxjn-btn lxjn-btn--red">
-                {INDEX.featureLink}
-                <span aria-hidden="true">→</span>
-              </Link>
-            </p>
-          </div>
-        </div>
-
-        {copy.sections.length > 0 ? (
-          <div className="lxjn-feature__contents" data-reveal>
-            <p className="lxjn-feature__contents-label">
-              {INDEX.contentsLabel}
-            </p>
-            <ol className="lxjn-feature__sections">
-              {copy.sections.map((section) => (
-                <li key={section}>{section}</li>
-              ))}
-            </ol>
-          </div>
-        ) : null}
-      </div>
-    </section>
-  );
-}
-
-export function JournalIndex({
-  latest,
-  feature,
-  remaining,
-  topicsEnabled,
-  pagination,
-}: Props) {
+export function JournalIndex({ posts, featuredId }: Props) {
   const [topic, setTopic] = useState<JournalTopicId>("all");
   const [hasFiltered, setHasFiltered] = useState(false);
 
-  const posts = useMemo(() => {
-    const seen = new Set<number>();
-    const all: PublicBlogCard[] = [];
-
-    [latest, feature?.post ?? null, ...remaining].forEach((post) => {
-      if (post && !seen.has(post.id)) {
-        seen.add(post.id);
-        all.push(post);
-      }
-    });
-
-    return all;
-  }, [latest, feature, remaining]);
+  const featured = useMemo(
+    () => posts.find((post) => post.id === featuredId) ?? null,
+    [posts, featuredId],
+  );
 
   const counts = useMemo(() => {
     const map = new Map<SubjectTopicId, number>();
 
     posts.forEach((post) => {
-      const key = topicForSlug(post.slug);
+      const key = topicForPost(post);
       map.set(key, (map.get(key) ?? 0) + 1);
     });
 
     return map;
   }, [posts]);
 
-  const subjects = useMemo(() => {
-    const ordered = TOPIC_ORDER.filter((item) => (counts.get(item) ?? 0) > 0);
-    return counts.get("journal") ? [...ordered, "journal" as const] : ordered;
-  }, [counts]);
+  const subjects = useMemo(
+    () => TOPIC_ORDER.filter((item) => (counts.get(item) ?? 0) > 0),
+    [counts],
+  );
 
   const isFiltered = topic !== "all";
-  const showTopics = topicsEnabled && subjects.length > 1;
 
-  const visible = useMemo(() => {
-    if (!isFiltered) {
-      return remaining;
-    }
+  const matched = useMemo(() => {
+    const list = isFiltered
+      ? posts.filter((post) => topicForPost(post) === topic)
+      : posts;
 
-    return posts
-      .filter((post) => topicForSlug(post.slug) === topic)
-      .sort(byNewest);
-  }, [isFiltered, posts, remaining, topic]);
+    return [...list].sort(byNewest);
+  }, [isFiltered, posts, topic]);
 
-  const startIndex = isFiltered || !feature ? 1 : 2;
+  const featuredMatches =
+    featured !== null && (!isFiltered || topicForPost(featured) === topic);
+
+  const archive = useMemo(
+    () => matched.filter((post) => post.id !== featuredId),
+    [featuredId, matched],
+  );
+
+  const zeroPublished = posts.length === 0;
+
+  const statusText = isFiltered
+    ? `${TOPIC_LABELS[topic]} — ${articleCount(matched.length)}${
+        featuredMatches ? ", including the latest above" : ""
+      }`
+    : `All subjects — ${articleCount(posts.length)}${
+        featuredMatches ? ", including the latest above" : ""
+      }`;
 
   const select = (next: JournalTopicId) => {
     setTopic(next);
@@ -276,17 +201,9 @@ export function JournalIndex({
     }
   };
 
-  const statusText = isFiltered
-    ? `${TOPIC_LABELS[topic]} — ${visible.length} ${
-        visible.length === 1 ? "article" : "articles"
-      }.`
-    : `All subjects — ${posts.length} ${
-        posts.length === 1 ? "article" : "articles"
-      }.`;
-
   return (
     <>
-      {showTopics ? (
+      {subjects.length > 1 ? (
         <section className="lxjn-filter" aria-label={INDEX.filterLabel}>
           <div className="lx-wrap lxjn-filter__inner">
             <p className="lxjn-filter__label">{INDEX.filterLabel}</p>
@@ -329,10 +246,6 @@ export function JournalIndex({
         </section>
       ) : null}
 
-      {!isFiltered && feature ? (
-        <Feature post={feature.post} copy={feature.copy} />
-      ) : null}
-
       <section className="lxjn-index" data-listing>
         <div className="lx-wrap">
           <div className="lxjn-index__head" data-reveal-group>
@@ -343,13 +256,17 @@ export function JournalIndex({
 
             <div className="lxjn-index__aside" data-reveal>
               <p className="lxjn-index__intro">{INDEX.intro}</p>
-              <p className="lxjn-index__status" data-topic-status aria-live="polite">
+              <p
+                className="lxjn-index__status"
+                data-topic-status
+                aria-live="polite"
+              >
                 {statusText}
               </p>
             </div>
           </div>
 
-          {posts.length === 0 ? (
+          {zeroPublished ? (
             <div className="lxjn-empty">
               <h3 className="lxjn-empty__title">{EMPTY.title}</h3>
               <p className="lxjn-empty__copy">{EMPTY.copy}</p>
@@ -358,65 +275,28 @@ export function JournalIndex({
                 <span aria-hidden="true">→</span>
               </Link>
             </div>
+          ) : archive.length === 0 ? (
+            <p className="lxjn-index__solo-note">
+              This subject has one story, and it is featured above.
+            </p>
           ) : (
             <div
-              className={`lxjn-list lxjn-list--${
-                isFiltered ? `topic lxjn-list--${topic}` : "all"
+              className={`lxjn-list${
+                isFiltered ? ` lxjn-list--topic lxjn-list--${topic}` : ""
               }`}
               key={topic}
             >
-              {visible.map((post, index) => (
+              {archive.map((post, index) => (
                 <Entry
                   key={post.id}
                   post={post}
-                  layout={layoutFor(index, visible.length)}
-                  index={startIndex + index}
+                  layout={layoutFor(index, archive.length)}
+                  index={index}
                   animate={hasFiltered}
                 />
               ))}
             </div>
           )}
-
-          {pagination && pagination.pageCount > 1 ? (
-            <nav aria-label="Pagination" className="lx-pager lxjn-pager">
-              {pagination.page > 1 ? (
-                <Link
-                  href={
-                    pagination.page === 2
-                      ? "/blog"
-                      : `/blog?page=${pagination.page - 1}`
-                  }
-                >
-                  Previous
-                </Link>
-              ) : (
-                <span className="lx-pager__spacer" aria-hidden="true" />
-              )}
-
-              <div className="lx-pager__pages">
-                {Array.from({ length: pagination.pageCount }, (_, position) => {
-                  const page = position + 1;
-                  const href = page === 1 ? "/blog" : `/blog?page=${page}`;
-
-                  return (
-                    <Link
-                      key={page}
-                      href={href}
-                      aria-current={page === pagination.page ? "page" : undefined}
-                    >
-                      {pad(page)}
-                    </Link>
-                  );
-                })}
-              </div>
-
-              {pagination.page < pagination.pageCount ? (
-                <Link href={`/blog?page=${pagination.page + 1}`}>Next</Link>
-              ) : (
-                <span className="lx-pager__spacer" aria-hidden="true" />
-              )}
-            </nav>
-          ) : null}
         </div>
       </section>
     </>

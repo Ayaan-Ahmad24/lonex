@@ -13,6 +13,9 @@ const contentSecurityPolicy = buildContentSecurityPolicy({
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The floating dev indicator is a development affordance, not part of the
+  // public site. Compile and runtime errors are still surfaced.
+  devIndicators: false,
   cacheComponents: true,
   partialPrefetching: true,
   images: {
@@ -42,6 +45,10 @@ const nextConfig: NextConfig = {
       },
     },
   },
+
+  allowedDevOrigins: [
+  "*.ngrok-free.app",
+],
 
   async headers() {
     return [

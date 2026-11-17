@@ -70,6 +70,7 @@ export async function verifyCodeAction(
         month: "long",
         year: "numeric",
       }).format(model.registeredAt),
+      image: model.image,
     },
   };
 }

@@ -60,3 +60,4 @@ next-env.d.ts
 /.dev-*.log
 /.prod-server*.log
 /test-artifacts/
+/artifacts/

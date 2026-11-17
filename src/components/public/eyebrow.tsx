@@ -19,7 +19,10 @@ export function Eyebrow({
         tone === "light" ? "text-white/55" : "text-black/55"
       } ${className}`}
     >
-      <span aria-hidden="true" className="h-px w-8 shrink-0 bg-[#CF0A0A]" />
+      <span
+        aria-hidden="true"
+        className="h-px w-8 shrink-0 bg-[var(--site-red,var(--lonex-red))]"
+      />
       {children}
     </p>
   );

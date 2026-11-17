@@ -68,6 +68,9 @@ function PlinthProduct({ view, flip }: { view: ProductView; flip: boolean }) {
         <h3 className="lxb-plinth__name">
           <Link href={card.path}>{card.name}</Link>
         </h3>
+        <p className="lxb-plinth__price">
+          {card.priceLabel ?? "Price on inquiry"}
+        </p>
         <p className="lxb-plinth__summary">{editorial.summary}</p>
 
         <ProductPoints editorial={editorial} />

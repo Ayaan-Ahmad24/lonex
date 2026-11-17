@@ -12,49 +12,46 @@ export function BlogCard({
   const large = size === "large";
 
   return (
-    <article className="group lux-card flex h-full flex-col">
+    <article
+      className={`site-card site-blog-card ${
+        large ? "site-blog-card--large" : ""
+      }`}
+    >
       <Link
         href={post.path}
-        className={`lux-media relative block overflow-hidden bg-[#F5EDED] ${
-          large ? "aspect-[16/9]" : "aspect-[16/10]"
+        className={`site-card__media site-blog-card__media ${
+          large ? "site-blog-card__media--large" : ""
         }`}
         aria-label={post.title}
       >
         <ContentImage
           image={post.cover}
           fallbackLabel="Article image pending"
-          sizes={large ? "(max-width: 1024px) 100vw, 60vw" : "(max-width: 768px) 100vw, 33vw"}
+          sizes={
+            large
+              ? "(max-width: 1024px) 100vw, 60vw"
+              : "(max-width: 768px) 100vw, 33vw"
+          }
         />
       </Link>
 
-      <div className={`flex flex-1 flex-col ${large ? "pt-6" : "pt-5"}`}>
-        <p className="type-eyebrow text-[#CF0A0A]">
+      <div className={`site-card__body ${large ? "pt-6" : ""}`}>
+        <span className="site-blog-card__date">
           {post.publishedLabel || "Journal"}
-        </p>
-        <h3
-          className={`mt-3 font-semibold leading-tight tracking-tight text-black ${
-            large ? "text-2xl sm:text-3xl" : "text-lg"
-          }`}
-        >
-          <Link href={post.path} className="transition-colors hover:text-[#CF0A0A]">
-            {post.title}
-          </Link>
+        </span>
+        <h3 className="site-card__title">
+          <Link href={post.path}>{post.title}</Link>
         </h3>
         {post.excerpt ? (
-          <p
-            className={`mt-3 text-black/55 ${
-              large ? "line-clamp-3 text-base leading-7" : "line-clamp-3 text-sm leading-6"
-            }`}
-          >
+          <p className={`site-card__copy ${large ? "line-clamp-3" : "line-clamp-2"}`}>
             {post.excerpt}
           </p>
         ) : null}
-        <span className="type-eyebrow mt-auto flex items-center gap-2 pt-6 text-black/55 transition-colors group-hover:text-[#CF0A0A]">
-          Read article
-          <span aria-hidden="true" className="arrow-slide">
-            →
-          </span>
-        </span>
+        <div className="site-card__foot">
+          <Link href={post.path} className="site-underline">
+            Read article
+          </Link>
+        </div>
       </div>
     </article>
   );

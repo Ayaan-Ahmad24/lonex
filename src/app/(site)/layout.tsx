@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/public/site-header";
 import { SiteFooter } from "@/components/public/site-footer";
 import { listPublishedCategories } from "@/lib/public/queries";
 import { loadPublicSettings } from "@/lib/public/settings";
+import "../site.css";
 
 /**
  * Public LONEX shell.
@@ -11,6 +12,8 @@ import { loadPublicSettings } from "@/lib/public/settings";
  * The site is database-driven: navigation and contact details follow the CMS,
  * so the shell is rendered per request. All reads are published-only.
  */
+export const instant = false;
+
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   await connection();
 
@@ -20,11 +23,8 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   ]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-black">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:bg-[#CF0A0A] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
-      >
+    <div className="site-shell flex min-h-screen flex-col">
+      <a href="#main-content" className="site-skip">
         Skip to content
       </a>
       <SiteHeader settings={settings} categories={categories} />

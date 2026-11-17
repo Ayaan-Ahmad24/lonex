@@ -132,8 +132,8 @@ const SOLAR: CategoryEditorial = {
         copy: "Solar is not the right answer for every roof. Honest assessment — including when a smaller system or a different approach makes more sense — is part of responsible adoption.",
       },
       {
-        title: "Cleaner, more thoughtful mobility",
-        copy: "Where a property generates its own power, moving through everyday life on electricity becomes easier to imagine and easier to plan for.",
+        title: "Energy that stays local",
+        copy: "Generation close to the point of use makes the connection between a building and its power supply easier to see — and easier to act on.",
       },
       {
         title: "Local skills and participation",
@@ -214,8 +214,8 @@ const BATTERIES: CategoryEditorial = {
         copy: "Not every home needs a battery, and not every battery suits every inverter. Responsible adoption starts with an honest assessment.",
       },
       {
-        title: "Cleaner, more thoughtful mobility",
-        copy: "Stored energy can support more than a building, including the everyday electric journeys that increasingly sit alongside it.",
+        title: "A steadier evening peak",
+        copy: "Using stored energy when demand is highest eases the pressure on the grid at the busiest hour, and makes the household's own pattern easier to plan around.",
       },
       {
         title: "Local skills and participation",
@@ -630,11 +630,10 @@ export function getProductEditorial(
     `${fallbackName} from the LONEX range.`;
 
   return {
-    tagline: summary,
+    tagline: `${fallbackName} — part of the LONEX range.`,
     summary,
     intro: [
-      customerFacingCopy(fallbackDescription) ||
-        `${fallbackName} forms part of the LONEX range, selected for practical use in homes and businesses.`,
+      "Details for this model are published by LONEX as they are confirmed, rather than copied from a generic catalogue.",
       "Speak to LONEX about the site, the system and the details that apply to this model.",
     ],
     benefits: [
@@ -651,7 +650,7 @@ export function getProductEditorial(
         copy: "Ask us for the details that matter to your installation.",
       },
     ],
-    useCases: ["Residential", "Commercial", "Enquiries welcome"],
+    useCases: ["Residential", "Commercial", "System planning"],
     seoDescription: summary,
   };
 }

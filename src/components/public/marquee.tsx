@@ -14,7 +14,10 @@ export function Marquee({
       {[...items, ...items].map((item, index) => (
         <span key={`${item}-${index}`} className="flex items-center">
           <span className="type-eyebrow px-6 text-white/70 sm:px-8">{item}</span>
-          <span aria-hidden="true" className="size-1.5 rotate-45 bg-[#CF0A0A]" />
+          <span
+            aria-hidden="true"
+            className="size-1.5 rotate-45 bg-[var(--site-red,var(--lonex-red))]"
+          />
         </span>
       ))}
     </div>

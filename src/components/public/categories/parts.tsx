@@ -6,6 +6,7 @@ import type {
   PublicProductCard,
   PublicSettings,
 } from "@/lib/public/dto";
+import { formatPhone } from "@/lib/public/contact";
 import type {
   CategoryEditorial,
   EditorialPoint,
@@ -167,6 +168,9 @@ export function RichProductCard({
         <h3 className="lxc-card__name">
           <Link href={card.path}>{card.name}</Link>
         </h3>
+        <p className="lxc-card__price">
+          {card.priceLabel ?? "Price on inquiry"}
+        </p>
         <p className="lxc-card__summary">{editorial.summary}</p>
 
         <ProductPoints editorial={editorial} />
@@ -217,7 +221,7 @@ export function RangeEnquiry({
       ) : null}
       {phone ? (
         <a href={`tel:${phone.replace(/\s+/g, "")}`} className="lxc-enquiry__phone">
-          {phone}
+          {formatPhone(phone)}
         </a>
       ) : null}
       <p className="lxc-enquiry__note">{note}</p>

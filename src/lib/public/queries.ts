@@ -593,6 +593,34 @@ export async function listPublishedBlogPosts(options?: {
   };
 }
 
+/**
+ * Every published post, newest first.
+ *
+ * The journal archive is a complete index, so this query deliberately has no
+ * LIMIT and no OFFSET: a newly published article is visible on the next
+ * request, and the archive grows with the database rather than with the code.
+ */
+export async function listAllPublishedBlogPosts(): Promise<PublicBlogCard[]> {
+  const rows = await db
+    .select({
+      id: blogPosts.id,
+      title: blogPosts.title,
+      slug: blogPosts.slug,
+      excerpt: blogPosts.excerpt,
+      publishedAt: blogPosts.publishedAt,
+      mediaId: mediaAssets.id,
+      mediaAlt: mediaAssets.altText,
+      mediaWidth: mediaAssets.width,
+      mediaHeight: mediaAssets.height,
+    })
+    .from(blogPosts)
+    .leftJoin(mediaAssets, eq(mediaAssets.id, blogPosts.coverMediaId))
+    .where(eq(blogPosts.status, PUBLISHED))
+    .orderBy(desc(blogPosts.publishedAt), desc(blogPosts.id));
+
+  return rows.map(mapBlogCard);
+}
+
 export async function listLatestBlogPosts(limit = 3): Promise<PublicBlogCard[]> {
   const result = await listPublishedBlogPosts({ page: 1, pageSize: limit });
 

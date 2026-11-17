@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 
   return entries.map((entry) => ({
-    url: `${base}${entry.path}`,
+    url: `${base.replace(/\/+$/, "")}${entry.path}`,
     lastModified: entry.lastModified,
   }));
 }

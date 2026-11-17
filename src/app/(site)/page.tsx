@@ -1,29 +1,187 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { connection } from "next/server";
 
-import { BrandMark } from "@/components/public/brand-mark";
-import { ButtonLink } from "@/components/public/button-link";
-import { Container } from "@/components/public/container";
-import { SectionHeading } from "@/components/public/section-heading";
-import type { PublicSettings } from "@/lib/public/dto";
+import { HomeMotion } from "@/components/public/home-motion";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
-import { listPublishedCategories } from "@/lib/public/queries";
+import {
+  listFeaturedProducts,
+  listLatestBlogPosts,
+  listPublishedCategories,
+} from "@/lib/public/queries";
+import type {
+  PublicBlogCard,
+  PublicCategory,
+  PublicProductCard,
+} from "@/lib/public/dto";
+import "../home.css";
+import "../hero.css";
+import { HomeHeroUI } from "@/components/public/hero-ui";
+import { ContentImage } from "@/components/public/content-image";
 
-const HERO_PHOTO =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Phipps_Conservatory_24.jpg/1280px-Phipps_Conservatory_24.jpg";
-const HERO_PHOTO_CREDIT =
-  'Dllu (CC BY-SA 4.0, Wikimedia Commons)';
-const SOLAR_PHOTO =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/A_photovoltaic_power_station_in_the_United_States_%2836130544874%29.jpg/1280px-A_photovoltaic_power_station_in_the_United_States_%2836130544874%29.jpg";
-const SOLAR_PHOTO_CREDIT =
-  'Chris Allan, U.S. Department of Energy (public domain, Wikimedia Commons)';
-const EV_PHOTO =
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Cycling_Amsterdam_03.jpg/1280px-Cycling_Amsterdam_03.jpg";
-const EV_PHOTO_CREDIT =
-  'Alfredo Borba (CC BY-SA 4.0, Wikimedia Commons)';
+const STORY_PHOTO = "/images/lonex-story/story-architecture.webp";
+
+const PRINCIPLES = [
+  {
+    title: "CONNECTED THINKING",
+    copy: "Energy generation, storage and mobility belong to a wider ecosystem. We look at how these possibilities work together rather than treating them as separate conversations.",
+  },
+  {
+    title: "CLARITY IN EVERY DETAIL",
+    copy: "Understanding matters. Product information, technical details and meaningful comparisons should make exploring energy solutions easier and more informed.",
+  },
+  {
+    title: "BUILT AROUND TOMORROW",
+    copy: "Technology continues to evolve. Our perspective stays focused on the opportunities shaping more efficient homes, smarter spaces and changing everyday journeys.",
+  },
+] as const;
+
+const RANGE = [
+  {
+    slug: "solar",
+    verb: "Generate",
+    label: "Solar Panels",
+    composition: "generate",
+    image: "/images/homepage/range-solar.webp",
+    alt: "Ground-mounted solar modules in a dry field at low sun — illustrative visual",
+    sizes: "(max-width: 900px) 100vw, (max-width: 1440px) 31vw, 420px",
+    copy: "Solar modules for homes and commercial sites, imported to specification.",
+  },
+  {
+    slug: "batteries",
+    verb: "Store",
+    label: "Batteries",
+    composition: "store",
+    image: "/images/homepage/range-battery.webp",
+    alt: "A white wall-mounted home battery unit on a stone wall — illustrative visual",
+    sizes: "(max-width: 900px) 100vw, (max-width: 1440px) 31vw, 420px",
+    copy: "Battery systems that hold the day's solar and keep essential loads running after sunset.",
+  },
+  {
+    slug: "ev-bikes",
+    verb: "Move",
+    label: "Electric Bikes",
+    composition: "move",
+    image: "/images/homepage/range-ev.webp",
+    alt: "A black electric bike, full side view, parked on a city street — illustrative visual",
+    sizes: "(max-width: 900px) 100vw, (max-width: 1440px) 31vw, 420px",
+    copy: "Electric bikes for everyday urban travel — quiet, efficient and built around the short trip.",
+  },
+] as const;
+
+function SectionHead({
+  index,
+  label,
+  title,
+  children,
+  dark = false,
+}: {
+  index?: string;
+  label?: string;
+  title: ReactNode;
+  children?: ReactNode;
+  dark?: boolean;
+}) {
+  return (
+    <div className={`lxh-head${dark ? " lxh-head--dark" : ""}`} data-lxh-head>
+      {index || label ? (
+        <p className="lxh-eyebrow lxh-head__eyebrow">
+          {index ? <span>{index}</span> : null}
+          {index && label ? " / " : null}
+          {label}
+        </p>
+      ) : null}
+      <h2 className="lxh-h2 lxh-head__title">{title}</h2>
+      {children ? <div className="lxh-head__aside">{children}</div> : null}
+    </div>
+  );
+}
+
+function categoryForProduct(
+  product: PublicProductCard,
+  categories: PublicCategory[],
+) {
+  return categories.find((category) =>
+    product.path.startsWith(`${category.path}/`),
+  );
+}
+
+function trimToWord(text: string, max: number): string {
+  const cleaned = text.trim();
+
+  if (cleaned.length <= max) {
+    return cleaned;
+  }
+
+  const cut = cleaned.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  const trimmed = (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(
+    /[,.;:—–-]+$/,
+    "",
+  );
+
+  return `${trimmed}…`;
+}
+
+function JournalCard({
+  post,
+  variant,
+  index,
+}: {
+  post: PublicBlogCard;
+  variant: "feature" | "side";
+  index: number;
+}) {
+  const isFeature = variant === "feature";
+
+  return (
+    <Link
+      href={post.path}
+      className={
+        isFeature ? "lxh-journal__feature" : "lxh-journal__side-card"
+      }
+      data-lxh-journal-card
+    >
+      <figure className="lxh-journal__media">
+        {post.cover ? (
+          <Image
+            src={post.cover.url}
+            alt={post.cover.alt}
+            fill
+            sizes={
+              isFeature
+                ? "(max-width: 820px) 100vw, 56vw"
+                : "(max-width: 520px) 100vw, 20vw"
+            }
+            className="lxh-journal__image"
+          />
+        ) : null}
+      </figure>
+
+      <div className="lxh-journal__body">
+        <div className="lxh-journal__meta">
+          <time dateTime={post.publishedAt}>{post.publishedLabel}</time>
+          <span aria-hidden="true">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+        </div>
+        <h3 className="lxh-journal__title">{post.title}</h3>
+        {post.excerpt ? (
+          <p className="lxh-journal__excerpt">
+            {isFeature ? post.excerpt : trimToWord(post.excerpt, 120)}
+          </p>
+        ) : null}
+        <span className="lxh-journal__read">
+          Read the article
+          <span aria-hidden="true"> →</span>
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
@@ -31,7 +189,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return createPageMetadata({
     settings,
-    title: settings.seoTitle || `${settings.siteName} | Power for What's Next.`,
+    title: settings.seoTitle || `${settings.siteName} | Power for what's Next.`,
     description:
       settings.seoDescription ||
       "LONEX connects solar energy, intelligent storage and electric mobility through carefully selected solutions.",
@@ -42,231 +200,403 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   await connection();
-  const settings = await loadPublicSettings();
 
-  const [categories] = await Promise.all([listPublishedCategories()]);
+  const [categories, featured, latestPosts] = await Promise.all([
+    listPublishedCategories(),
+    listFeaturedProducts(6),
+    listLatestBlogPosts(5),
+  ]);
 
-  const brand = {
-    siteName: settings.siteName,
-    logo: settings.logo,
-  } as PublicSettings;
+  const coreRange = RANGE.map((item) => ({
+    ...item,
+    category: categories.find((category) => category.slug === item.slug) ?? null,
+  }));
+
+  const categoryCounts = categories.map((category) => ({
+    ...category,
+    count: featured.filter((product) =>
+      product.path.startsWith(`${category.path}/`),
+    ).length,
+  }));
+
+  // A one-option index is not a filter — it is a label pretending to be one.
+  const shownCategories = categoryCounts.filter(
+    (category) => category.count > 0,
+  );
+
+  // Use the latest editorial-ratio covers so the journal reads as a
+  // photographic spread rather than a list of portrait thumbnails.
+  const posts = latestPosts
+    .filter((post) => {
+      if (!post.cover?.width || !post.cover.height) {
+        return false;
+      }
+
+      const ratio = post.cover.width / post.cover.height;
+      return ratio >= 1.3 && ratio <= 1.9;
+    })
+    .slice(0, 3);
 
   return (
-    <>
-      {/* Nav — one line, edge aligned, wordmark and two actions. */}
-      <nav
-        aria-label="Primary"
-        className="fixed inset-x-0 top-0 z-[300] border-b border-[var(--color-rule)] bg-[var(--color-paper-2)] py-4"
-      >
-        <Container>
-          <div className="flex items-center justify-between">
-            <BrandMark settings={brand} size="header" inverse />
-            <div className="flex items-center gap-8 text-[var(--text-sm)] font-medium">
-              <Link
-                href="/verify"
-                className="text-[var(--color-ink)] hover:text-[var(--color-accent)] underline underline-offset-4"
-              >
-                Verify a model
-              </Link>
-              <Link
-                href="/contact"
-                className="text-[var(--color-ink)] hover:text-[var(--color-accent)] underline underline-offset-4"
-              >
-                Contact LONEX
+    <HomeMotion>
+      <HomeHeroUI settings={null} />
+
+      <div className="lxh-home">
+        {/* A — Generate / Store / Move */}
+        <section className="lxh-intro lxh-range" id="range">
+          <div className="lx-wrap">
+            <div className="lxh-range__head" data-lxh-head>
+              <h2 className="lxh-range__title">Three ways to use power.</h2>
+              <p className="lxh-range__lede">
+                Generate it. Store it. Move with it. One range, held to one
+                standard — three connected possibilities, one forward-looking
+                perspective.
+              </p>
+            </div>
+
+            <div className="lxh-range__chapters">
+              {coreRange.map((item) => {
+                const href = item.category?.path;
+
+                return (
+                  <article
+                    key={item.slug}
+                    className={`lxh-chapter lxh-chapter--${item.composition}`}
+                    data-lxh-chapter
+                  >
+                    <figure className="lxh-chapter__media">
+                      <Image
+                        src={item.image}
+                        alt={item.alt}
+                        fill
+                        sizes={item.sizes}
+                        className="lxh-chapter__image"
+                      />
+                    </figure>
+
+                    <div className="lxh-chapter__copy">
+                      <h3 className="lxh-chapter__verb">{item.verb}</h3>
+                      <p className="lxh-chapter__desc">{item.copy}</p>
+                      {href ? (
+                        <Link href={href} className="lxh-chapter__cta">
+                          Explore {item.label.toLowerCase()}
+                          <span aria-hidden="true" className="lxh-chapter__arrow">
+                            →
+                          </span>
+                        </Link>
+                      ) : null}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* B — The LONEX story */}
+        <section className="lxh-section lxh-story-section" id="story">
+          <div className="lx-wrap">
+            <div className="lxh-story__intro" data-lxh-head>
+              <p className="lxh-story__eyebrow">THE LONEX PERSPECTIVE</p>
+              <h2 className="lxh-story__title">
+                A clearer way to power what comes next.
+              </h2>
+              <div className="lxh-story__lede">
+                <p>
+                  Energy is changing the way we live, work and move. From the
+                  rooftops that capture sunlight to the systems that keep energy
+                  within reach and the journeys that connect our everyday lives,
+                  a new energy landscape is taking shape.
+                </p>
+                <p>
+                  LONEX brings solar energy, intelligent storage and electric
+                  mobility together in one considered experience, shaped by how
+                  each part supports the others.
+                </p>
+              </div>
+            </div>
+
+            <div className="lxh-story__body" data-lxh-story-body>
+              <div className="lxh-story__copy">
+                <h3 className="lxh-story__headline">
+                  More than energy.
+                  <span>A different way forward.</span>
+                </h3>
+                <p>
+                  We believe the future of energy should feel more connected,
+                  more understandable and more accessible. Generating power,
+                  storing it for when it matters and using it to move through
+                  everyday life are not isolated ideas. They are parts of a much
+                  bigger picture.
+                </p>
+                <p>
+                  That is the perspective behind LONEX. We bring together
+                  technologies and solutions that reflect the changing needs of
+                  modern homes, businesses and communities. Every category has
+                  its own purpose, yet each contributes to a more connected
+                  approach to how energy is experienced.
+                </p>
+                <p>
+                  Our focus is on thoughtful selection, meaningful information
+                  and a clear experience that helps people explore possibilities
+                  with confidence. Because progress is not simply about what
+                  technology can do. It is about how naturally it becomes part of
+                  everyday life.
+                </p>
+              </div>
+
+              <figure className="lxh-story__media">
+                <Image
+                  src={STORY_PHOTO}
+                  alt="Solar panels integrated into the tiled roof of a contemporary home"
+                  fill
+                  sizes="(max-width: 900px) 100vw, 52vw"
+                  className="lxh-story__image"
+                />
+              </figure>
+            </div>
+
+            <div className="lxh-principles" data-lxh-principles>
+              {PRINCIPLES.map((principle) => (
+                <div className="lxh-principle" key={principle.title}>
+                  <h3 className="lxh-principle__title">{principle.title}</h3>
+                  <p className="lxh-principle__copy">{principle.copy}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="lxh-story__closing" data-lxh-closing>
+              <p className="lxh-story__closing-line">
+                Built to work{" "}
+                <span>together.</span>
+              </p>
+              <Link href="/about" className="lxh-story__cta">
+                About LONEX
+                <span aria-hidden="true"> →</span>
               </Link>
             </div>
           </div>
-        </Container>
-      </nav>
+        </section>
 
-      {/* Hero — Settled posture, fills the screen under the nav. */}
-      <section
-        className="relative bg-[var(--color-paper)] min-[75svh]:h-[75svh]"
-      >
-        <Container className="relative grid grid-cols-12 gap-[var(--space-2xl)] items-center pt-24 pb-32 lg:pt-32 lg:pb-40">
-          <div className="col-span-12 lg:col-span-6 reveal">
-            <h1 className="text-[var(--text-display)] font-[var(--font-display)] font-[600] tracking-[var(--tracking-display)] leading-[1.02] text-[var(--color-ink)] mb-6 max-w-[20ch]">
-              Power for what&apos;s next.
-            </h1>
-            <p className="text-[var(--text-lead)] leading-[1.6] text-[var(--color-ink-2)] mb-10 max-w-[52ch]">
-              Solar power, storage and electric mobility. Every model registered.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/verify" variant="solid">
-                Verify a model
-              </ButtonLink>
-              <ButtonLink
-                href="#range"
-                variant="outline"
-                className="border-[var(--color-rule)] text-[var(--color-ink)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+        {/* C — Product showcase */}
+        {featured.length > 0 ? (
+          <section className="lxh-section" id="models">
+            <div className="lx-wrap">
+              <SectionHead
+                label="Selected models"
+                title="Models across the range."
               >
-                Explore the range
-              </ButtonLink>
+                <p className="lxh-body">
+                  A selection of models from across solar, storage and electric
+                  mobility. Specifications, documents and pricing are published
+                  only once confirmed for each model.
+                </p>
+                {shownCategories.length > 1 ? (
+                  <ul className="lxh-cat-index" aria-label="Product categories">
+                    {shownCategories.map((category) => (
+                      <li key={category.id}>
+                        <Link href={category.path}>
+                          <span>{category.name}</span>
+                          <span className="lxh-cat-index__count">
+                            {String(category.count).padStart(2, "0")}
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </SectionHead>
+
+              <div className="lxh-products" data-lxh-products>
+                {featured.map((product) => {
+                  const category = categoryForProduct(product, categories);
+
+                  return (
+                    <Link
+                      key={product.id}
+                      href={product.path}
+                      className="lxh-product"
+                    >
+                      <figure className="lxh-product__media">
+                        <ContentImage
+                          image={product.image}
+                          fallbackLabel="Product image"
+                          sizes="(max-width: 900px) 100vw, 50vw"
+                        />
+                      </figure>
+
+                      <div className="lxh-product__body">
+                        <p className="lxh-product__cat">{category?.name}</p>
+                        <h3 className="lxh-product__name">{product.name}</h3>
+                        <p className="lxh-product__price">
+                          {product.priceLabel ?? "Price on inquiry"}
+                        </p>
+                        {product.shortDescription ? (
+                          <p className="lxh-product__note">
+                            {product.shortDescription}
+                          </p>
+                        ) : null}
+                        <span className="lxh-product__cta">
+                          View model
+                          <span aria-hidden="true"> →</span>
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-          <div className="col-span-12 lg:col-span-6 relative aspect-[4/5] overflow-hidden bg-[var(--color-paper-2)]">
-            {/* Hero photograph — a real library photograph, credited in the footer. */}
-            <Image
-              src={HERO_PHOTO}
-              alt="Solar panel array angled towards a soft sunset sky"
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover object-center"
-            />
-          </div>
-        </Container>
-      </section>
+          </section>
+        ) : null}
 
-      {/* Range — categories as split: type beside type, no empty frames. */}
-      <section id="range" className="bg-[var(--color-paper)] py-[var(--section-gap)]">
-        <Container>
-          <SectionHeading
-            title="The range"
-            description="Solar, storage and electric mobility, published when LONEX confirms them."
-            action={
-              <Link
-                href="/verify"
-                className="text-[var(--text-xs)] font-medium text-[var(--color-ink)] underline underline-offset-4 hover:text-[var(--color-accent)]"
-              >
-                Verify a model
-              </Link>
-            }
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[var(--gap-columns)] mt-16">
-            {categories.map((category) => {
-              const isSolar = category.slug === "solar";
-              const isEV = category.slug === "ev-bikes";
-              return (
-                <article
-                  key={category.id}
-                  className="border border-[var(--color-rule)] bg-[var(--color-paper-2)] p-[var(--space-lg)] hover:border-[var(--color-accent)] transition-colors duration-200"
-                >
-                  {isSolar ? (
-                    <div className="mb-4 aspect-[4/5] overflow-hidden bg-[var(--color-paper-3)]">
-                      <Image
-                        src={SOLAR_PHOTO}
-                        alt="Solar panels on stilts across a dry field at dusk"
-                        fill
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        className="object-cover object-center"
-                      />
-                    </div>
-                  ) : isEV ? (
-                    <div className="mb-4 aspect-[4/5] overflow-hidden bg-[var(--color-paper-3)]">
-                      <Image
-                        src={EV_PHOTO}
-                        alt="Woman cycling past a brick facade"
-                        fill
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        className="object-cover object-center"
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className="mb-4 aspect-[4/5] overflow-hidden bg-[var(--color-paper-3)]"
-                      data-slot="battery"
-                      data-alt="Battery storage — a real photograph supplied by LONEX"
-                    ></div>
-                  )}
-                  <h3
-                    className="text-[var(--text-title)] font-[var(--font-body)] font-[500] text-[var(--color-ink)] leading-1.2 mb-3 max-w-[40ch]"
-                  >
-                    {category.name}
-                  </h3>
-                  <p className="text-[var(--text-sm)] leading-[1.6] text-[var(--color-muted)] mb-6 max-w-[65ch]">
-                    {category.description ?? "Published when LONEX confirms it."}
-                  </p>
-                  <Link
-                    href={category.path}
-                    className="text-[var(--text-xs)] font-medium text-[var(--color-accent)] underline underline-offset-4 hover:underline-offset-2"
-                  >
-                    Browse {category.name}
+        {/* D — Model registry */}
+        <section className="lxh-registry" id="registry">
+          <div className="lx-wrap">
+            <div className="lxh-registry__grid" data-lxh-registry>
+              <div className="lxh-registry__copy">
+                <p className="lxh-eyebrow lxh-eyebrow--light">
+                  Model registry
+                </p>
+                <h2 className="lxh-registry__title">
+                  A code confirms the model.
+                  <span>Not the unit.</span>
+                </h2>
+                <p className="lxh-registry__body">
+                  Enter the verification code supplied with a LONEX product
+                  model. A match confirms that the model is registered — not the
+                  condition of a physical unit, and not the seller.
+                </p>
+                <div className="lxh-registry__action">
+                  <Link href="/verify" className="lx-btn lx-btn--red">
+                    Verify a model
                   </Link>
-                </article>
-              );
-            })}
-          </div>
-        </Container>
-      </section>
+                </div>
+              </div>
 
-      {/* Why — a statement at section size. */}
-      <section className="bg-[var(--color-paper-2)] py-[var(--section-gap)]">
-        <Container className="grid gap-[var(--space-2xl)]">
-          <div className="max-w-[60ch]">
-            <h2
-              className="text-[var(--text-section)] font-[var(--font-display)] font-[600] tracking-[var(--tracking-display)] leading-[1.05] text-[var(--color-ink)] mb-6 max-w-[30ch]"
-            >
-              Built on what we can verify
-            </h2>
-            <p className="text-[var(--color-ink-2)] leading-[1.6] max-w-[52ch]">
-              LONEX is an importer, distributor and dealership, not a
-              manufacturer. Nothing appears here until LONEX has confirmed it.
-            </p>
+              <div className="lxh-specimen">
+                <div className="lxh-specimen__head">
+                  <span>Registry check</span>
+                  <span>Illustrative format</span>
+                </div>
+                <p className="lxh-specimen__code">LNX—••••—••••—••••</p>
+                <dl className="lxh-specimen__rows">
+                  <div>
+                    <dt>Record type</dt>
+                    <dd>Product model</dd>
+                  </div>
+                  <div>
+                    <dt>Confirmation</dt>
+                    <dd>Registered model</dd>
+                  </div>
+                  <div>
+                    <dt>Does not confirm</dt>
+                    <dd>Unit condition or seller</dd>
+                  </div>
+                </dl>
+                <p className="lxh-specimen__foot">
+                  Unknown, inactive and malformed codes return the same message.
+                </p>
+              </div>
+            </div>
           </div>
-        </Container>
-      </section>
+        </section>
 
-      {/* Close — contact, the job the visitor came to do. */}
-      <section className="bg-[var(--color-accent-soft)] text-[var(--color-accent-ink)] py-[var(--section-gap-l)]">
-        <Container className="grid gap-[var(--space-2xl)] lg:grid-cols-2 lg:items-center">
-          <div>
-            <h2
-              className="text-[var(--text-display-s)] font-[var(--font-display)] font-[600] tracking-[var(--tracking-display)] leading-[1.02] text-[var(--color-accent-ink)] mb-6 max-w-[24ch]"
-            >
-              Let&apos;s talk about what&apos;s next.
-            </h2>
-            <p className="text-[var(--text-lead)] leading-[1.6] max-w-[52ch] mb-8">
-              LONEX is an importer, distributor and dealership based in
-              Lahore, Pakistan. Solar, storage and electric mobility.
-            </p>
-            <ButtonLink href="/contact" variant="solid">
-              Contact LONEX
-            </ButtonLink>
+        {/* E — Authorized sellers */}
+        <section className="lxh-sellers" id="sellers">
+          <div className="lx-wrap">
+            <div className="lxh-sellers__grid" data-lxh-sellers>
+              <div className="lxh-sellers__copy">
+                <h2 className="lxh-h2 lxh-sellers__title">
+                  Find your next step.
+                </h2>
+                <p className="lxh-body lxh-sellers__body">
+                  Whether you are exploring solar, energy storage or electric
+                  mobility, discover the possibilities that fit your needs.
+                  Connect with LONEX to discuss where to begin.
+                </p>
+                <div className="lxh-sellers__actions">
+                  <Link href="/#range" className="lx-btn">
+                    Explore the range
+                  </Link>
+                  <Link href="/contact" className="lx-link">
+                    Contact LONEX
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
-        </Container>
-      </section>
+        </section>
 
-      <footer className="bg-[var(--color-paper)] border-t border-[var(--color-rule)] py-[var(--space-2xl)]">
-        <Container className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between border-t border-[var(--color-rule)] pt-[var(--space-xl)]">
-          <div className="flex items-center gap-2">
-            <BrandMark settings={brand} size="footer" inverse />
+        {/* F — Journal */}
+        <section className="lxh-section" id="journal">
+          <div className="lx-wrap">
+            <SectionHead
+              label="Journal"
+              title="From the journal."
+            >
+              <p className="lxh-body">
+                Product notes, company updates and articles from LONEX.
+              </p>
+              <div className="lxh-head__link">
+                <Link href="/blog" className="lx-link">
+                  All articles
+                </Link>
+              </div>
+            </SectionHead>
+
+            {posts.length > 0 ? (
+              <div className="lxh-journal" data-lxh-journal>
+                <JournalCard post={posts[0]} variant="feature" index={0} />
+                {posts.length > 1 ? (
+                  <div className="lxh-journal__side">
+                    {posts.slice(1).map((post, index) => (
+                      <JournalCard
+                        key={post.id}
+                        post={post}
+                        variant="side"
+                        index={index + 1}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <p className="lxh-body">
+                The journal is published when LONEX has something confirmed to
+                say.
+              </p>
+            )}
           </div>
-          <nav className="flex gap-8 text-[var(--text-sm)] text-[var(--color-muted)]">
-            <Link
-              href="/verify"
-              className="text-[var(--color-ink)] hover:text-[var(--color-accent)]"
-            >
-              Verify a model
-            </Link>
-            <Link
-              href="/authorized-sellers"
-              className="text-[var(--color-ink)] hover:text-[var(--color-accent)]"
-            >
-              Authorized sellers
-            </Link>
-            <Link
-              href="/about"
-              className="text-[var(--color-ink)] hover:text-[var(--color-accent)]"
-            >
-              About LONEX
-            </Link>
-          </nav>
-          <p className="text-[var(--text-xs)] text-[var(--color-muted)] leading-[1.6]">
-            Photographs: {HERO_PHOTO_CREDIT} · {SOLAR_PHOTO_CREDIT} ·
-            {EV_PHOTO_CREDIT}. LONEX is an importer, distributor and
-            dealership, not a manufacturer. Model codes confirm registration,
-            not the authenticity of a unit.
-          </p>
-        </Container>
-      </footer>
+        </section>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `window.hallmarkSlots = (m) => { for (const [k, v] of Object.entries(m)) { const s = document.querySelector(\`[data-slot="\${k}"]\`); if (!s) continue; const im = new Image(); im.src = typeof v === 'string' ? v : v.src; im.alt = (typeof v === 'object' && v.alt) || s.dataset.alt || ''; s.querySelectorAll(':scope > img').forEach((o) => o.remove()); s.prepend(im); } }; document.querySelectorAll('[data-slot] img').forEach((i) => { if (i.complete && !i.naturalWidth) i.remove(); else i.addEventListener('error', () => i.remove(), { once: true }); });`,
-        }}
-      />
-    </>
+        {/* G — Closing */}
+        <section className="lxh-close" data-lxh-close>
+          <div className="lx-wrap lxh-close__inner">
+            <div className="lxh-close__grid">
+              <h2 className="lxh-close__title">
+                <span>Generate.</span>
+                <span>Store.</span>
+                <span className="lxh-close__move">Move.</span>
+              </h2>
+              <div className="lxh-close__aside">
+                <p className="lxh-close__copy">
+                  Tell us what you are powering. We will tell you what the range
+                  can do — and what it cannot.
+                </p>
+                <div className="lxh-close__actions">
+                  <Link href="/contact" className="lx-btn lx-btn--red">
+                    Talk to LONEX
+                  </Link>
+                  <Link href="/verify" className="lx-btn lx-btn--ghost">
+                    Verify a model
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </HomeMotion>
   );
 }
 

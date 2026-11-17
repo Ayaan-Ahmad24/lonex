@@ -9,18 +9,19 @@ const SIZE_CLASSES: Record<BrandMarkSize, string> = {
   md: "h-14 w-[5.28rem]",
   lg: "h-24 w-36",
   header: "h-10 w-[3.77rem] sm:h-14 sm:w-[5.28rem]",
-  footer: "h-16 w-[6.03rem]",
+  footer: "h-14 w-[5.28rem] sm:h-20 sm:w-[7.54rem]",
   hero: "h-40 w-[15.07rem] sm:h-56 sm:w-[21.1rem]",
 };
 
 /**
  * Official LONEX logo.
  *
- * The supplied artwork contains its own warm-grey (#F5EDED) field, so it is
- * presented on a plate of the same colour rather than recoloured for dark
- * surfaces. The source files (`public/logo.png` and `final logo.png`) are
- * untouched; the header uses a whitespace-trimmed derivative of the same
- * pixels so the wordmark stays legible at navigation size.
+ * The brandbook artwork is shipped with the site and always used in the public
+ * shell. The settings image field stays available to the admin, but a square
+ * test upload must never replace the wordmark in the header.
+ *
+ * The source files (`public/logo.png` and `lonex-logo.png`) are untouched; the
+ * header uses the same artwork, scaled by the plate below.
  */
 export function BrandMark({
   settings,
@@ -33,8 +34,7 @@ export function BrandMark({
   size?: BrandMarkSize;
   className?: string;
 }) {
-  const source = settings.logo?.url ?? "/lonex-logo.png";
-  const isUploaded = Boolean(settings.logo);
+  const source = "/lonex-logo-transparent.png";
 
   return (
     <Link
@@ -53,7 +53,7 @@ export function BrandMark({
           fill
           sizes="200px"
           priority
-          className={isUploaded ? "object-contain p-1" : "object-contain"}
+          className="object-contain"
         />
       </span>
       <span className="sr-only">{settings.siteName}</span>

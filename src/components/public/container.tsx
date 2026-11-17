@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-/** Consistent LONEX page width: 1280–1360px content with responsive gutters. */
+/** Consistent public page width. Gutters grow at wide sizes; the measure does not. */
 export function Container({
   children,
   className = "",
@@ -9,8 +9,6 @@ export function Container({
   className?: string;
 }) {
   return (
-    <div className={`mx-auto w-full max-w-[1360px] px-5 sm:px-8 ${className}`}>
-      {children}
-    </div>
+    <div className={`site-container ${className}`}>{children}</div>
   );
 }

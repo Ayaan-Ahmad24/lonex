@@ -1,13 +1,27 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 
-import { ButtonLink } from "@/components/public/button-link";
-import { Container } from "@/components/public/container";
-import { Eyebrow } from "@/components/public/eyebrow";
-import { SectionHeading } from "@/components/public/section-heading";
+import { PageMotion } from "@/components/public/page-motion";
+import {
+  formatInternational,
+  formatPhone,
+  whatsappHref,
+} from "@/lib/public/contact";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
+import {
+  CLOSING,
+  DIRECT,
+  ENQUIRY,
+  HERO,
+  LOCATION,
+  WHATSAPP_OPENER,
+} from "./content";
+import { EnquiryForm } from "./enquiry-form";
+import "../../home.css";
+import "../../contact.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection();
@@ -15,269 +29,432 @@ export async function generateMetadata(): Promise<Metadata> {
   return createPageMetadata({
     settings,
     title: "Contact",
-    description: "Contact LONEX using the published contact details.",
+    description:
+      "Talk to LONEX about solar, battery storage and electric mobility — by phone, WhatsApp, or an enquiry prepared on this page.",
     path: "/contact",
   });
+}
+
+type ContactRow = {
+  kind: "phone" | "whatsapp" | "office" | "email";
+  index: string;
+  label: string;
+  value: string;
+  meta: string;
+  href: string | null;
+  action: string;
+  external: boolean;
+};
+
+/**
+ * The configured maps URL is only the Google Maps homepage, which would drop
+ * the visitor on an empty map. Fall back to a search for the confirmed address.
+ */
+function resolveMapHref(address: string, configured: string): string | null {
+  const trimmed = configured.trim();
+
+  if (
+    trimmed &&
+    !/^https?:\/\/(www\.)?maps\.google\.com\/?$/i.test(trimmed)
+  ) {
+    return trimmed;
+  }
+
+  if (address.trim()) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      address.trim(),
+    )}`;
+  }
+
+  return null;
 }
 
 export default async function ContactPage() {
   await connection();
   const settings = await loadPublicSettings();
 
-  const whatsappDigits = settings.whatsapp.replace(/[^\d]/g, "");
-  const whatsappHref =
-    whatsappDigits.length >= 6 ? `https://wa.me/${whatsappDigits}` : null;
-  const social = Object.entries(settings.social).filter(([, url]) => url);
+  const whatsappLink = settings.whatsapp
+    ? whatsappHref(settings.whatsapp, WHATSAPP_OPENER)
+    : null;
+  const mapHref = resolveMapHref(settings.address, settings.googleMapsUrl);
+  const phoneHref = settings.contactPhone
+    ? `tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`
+    : null;
 
-  const hasDetails =
-    Boolean(settings.contactEmail) ||
-    Boolean(settings.contactPhone) ||
-    Boolean(whatsappHref) ||
-    Boolean(settings.address);
+  const rows: ContactRow[] = [];
+
+  if (settings.contactPhone && phoneHref) {
+    rows.push({
+      kind: "phone",
+      index: "",
+      label: "Phone",
+      value: formatPhone(settings.contactPhone),
+      meta: "Calls to the Lahore office",
+      href: phoneHref,
+      action: "Call",
+      external: false,
+    });
+  }
+
+  if (whatsappLink) {
+    rows.push({
+      kind: "whatsapp",
+      index: "",
+      label: "WhatsApp",
+      value: formatInternational(settings.whatsapp),
+      meta: "Message the office directly",
+      href: whatsappLink,
+      action: "Chat",
+      external: true,
+    });
+  }
+
+  if (settings.address) {
+    rows.push({
+      kind: "office",
+      index: "",
+      label: "Office",
+      value: settings.address,
+      meta: mapHref ? "Map opens in Google Maps" : "Lahore, Pakistan",
+      href: mapHref,
+      action: "Map",
+      external: true,
+    });
+  }
+
+  // Email is shown only when the owner has configured it.
+  if (settings.contactEmail) {
+    rows.push({
+      kind: "email",
+      index: "",
+      label: "Email",
+      value: settings.contactEmail,
+      meta: "Written enquiries",
+      href: `mailto:${settings.contactEmail}`,
+      action: "Write",
+      external: false,
+    });
+  }
+
+  rows.forEach((row, position) => {
+    row.index = String(position + 1).padStart(2, "0");
+  });
+
+  const [street, ...localityParts] = settings.address.split(",");
+  const locality = localityParts.join(",").trim();
 
   return (
-    <>
-      <section className="relative overflow-hidden border-b border-black/10 bg-[#F5EDED]">
-        <div
-          aria-hidden="true"
-          className="lux-grid-bg pointer-events-none absolute inset-0 opacity-50"
-        />
-        <Container className="relative grid gap-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:py-20">
-          <div className="space-y-7">
-            <nav
-              aria-label="Breadcrumb"
-              className="type-eyebrow flex flex-wrap items-center gap-2 text-black/55"
-            >
-              <Link href="/" className="transition-colors hover:text-[#CF0A0A]">
-                Home
-              </Link>
-              <span aria-hidden="true">/</span>
-              <span className="text-black/60">Contact</span>
-            </nav>
+    <div className="lx-page lxct-page">
+      <PageMotion>
+        {/* Hero ------------------------------------------------------- */}
+        <section className="lxct-hero" data-hero>
+          <div className="lx-wrap lxct-hero__grid">
+            <div className="lxct-hero__copy">
+              <nav aria-label="Breadcrumb" className="lx-crumbs lxct-crumbs">
+                <Link href="/">Home</Link>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">Contact</span>
+              </nav>
 
-            <div className="intro intro-1">
-              <Eyebrow>Contact</Eyebrow>
-            </div>
+              <p className="lxct-eyebrow" data-hero-item>
+                {HERO.eyebrow}
+              </p>
 
-            <h1 className="intro intro-2 type-hero text-black">
-              Talk to
-              <br />
-              LONEX<span className="text-[#CF0A0A]">.</span>
-            </h1>
+              <h1 className="lxct-hero__title">
+                <span className="lxct-hero__line" data-hero-line>
+                  {HERO.lineOne}
+                </span>{" "}
+                <span className="lxct-hero__line" data-hero-line>
+                  {HERO.lineTwo} <em>{HERO.lineTwoAccent}</em>
+                </span>
+              </h1>
 
-            <p className="intro intro-3 type-lead max-w-xl text-black/60">
-              Product, seller and verification enquiries use the contact details
-              published by LONEX.
-            </p>
-          </div>
+              <div className="lxct-hero__intro" data-hero-item>
+                {HERO.intro.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+              </div>
 
-          <div className="reveal border border-black/10 bg-black p-6 text-white sm:p-8">
-            <p className="type-eyebrow text-white/55">Enquiries</p>
-            <ul className="mt-6 divide-y divide-white/10">
-              {[
-                "Product specifications and availability",
-                "Authorized seller information",
-                "Model verification help",
-              ].map((item, index) => (
-                <li
-                  key={item}
-                  className="flex items-center justify-between gap-4 py-4"
-                >
-                  <span className="text-sm text-white/75">{item}</span>
-                  <span className="type-eyebrow text-[#CF0A0A]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Container>
-      </section>
-
-      <section className="py-20 sm:py-28">
-        <Container className="space-y-12">
-          <SectionHeading
-            index="01"
-            eyebrow="Direct lines"
-            title="Published contact information."
-            description="Use the details below. Nothing is displayed until confirmed by LONEX."
-          />
-
-          <div className="grid gap-10 lg:grid-cols-[0.62fr_0.38fr] lg:gap-16">
-            <div>
-              {hasDetails ? (
-                <div className="divide-y divide-black/10 border-y border-black/10">
-                  {settings.contactEmail ? (
-                    <a
-                      href={`mailto:${settings.contactEmail}`}
-                      className="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 py-6 transition-colors hover:text-[#CF0A0A]"
-                    >
-                      <span className="type-eyebrow text-[#CF0A0A]">01</span>
-                      <span>
-                        <span className="type-eyebrow block text-black/55">
-                          Email
-                        </span>
-                        <span className="mt-2 block break-all text-lg font-semibold text-black transition-colors group-hover:text-[#CF0A0A] sm:text-xl">
-                          {settings.contactEmail}
-                        </span>
-                      </span>
-                      <span aria-hidden="true" className="arrow-slide text-lg">
-                        →
-                      </span>
-                    </a>
-                  ) : null}
-
-                  {settings.contactPhone ? (
-                    <a
-                      href={`tel:${settings.contactPhone.replace(/\s+/g, "")}`}
-                      className="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 py-6 transition-colors hover:text-[#CF0A0A]"
-                    >
-                      <span className="type-eyebrow text-[#CF0A0A]">02</span>
-                      <span>
-                        <span className="type-eyebrow block text-black/55">
-                          Phone
-                        </span>
-                        <span className="mt-2 block text-lg font-semibold text-black transition-colors group-hover:text-[#CF0A0A] sm:text-xl">
-                          {settings.contactPhone}
-                        </span>
-                      </span>
-                      <span aria-hidden="true" className="arrow-slide text-lg">
-                        →
-                      </span>
-                    </a>
-                  ) : null}
-
-                  {whatsappHref ? (
-                    <a
-                      href={whatsappHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 py-6 transition-colors hover:text-[#CF0A0A]"
-                    >
-                      <span className="type-eyebrow text-[#CF0A0A]">03</span>
-                      <span>
-                        <span className="type-eyebrow block text-black/55">
-                          WhatsApp
-                        </span>
-                        <span className="mt-2 block text-lg font-semibold text-black transition-colors group-hover:text-[#CF0A0A] sm:text-xl">
-                          {settings.whatsapp}
-                        </span>
-                      </span>
-                      <span aria-hidden="true" className="arrow-slide text-lg">
-                        →
-                      </span>
-                    </a>
-                  ) : null}
-
-                  {settings.address ? (
-                    <div className="grid grid-cols-[2.5rem_1fr] gap-4 py-6">
-                      <span className="type-eyebrow text-[#CF0A0A]">04</span>
-                      <span>
-                        <span className="type-eyebrow block text-black/55">
-                          Address
-                        </span>
-                        <span className="mt-2 block text-base leading-7 text-black/70">
-                          {settings.address}
-                        </span>
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="border border-dashed border-black/20 p-8">
-                  <p className="text-lg font-semibold text-black">
-                    Contact details will be published once confirmed.
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-black/55">
-                    LONEX has not published an email, phone number or address
-                    yet. The verification and seller directories remain
-                    available.
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <ButtonLink href="/verify" variant="outline">
-                      Verify a model
-                    </ButtonLink>
-                    <ButtonLink href="/authorized-sellers" variant="outline">
-                      Authorized sellers
-                    </ButtonLink>
-                  </div>
-                </div>
-              )}
-
-              {social.length > 0 ? (
-                <div className="mt-10 space-y-4">
-                  <p className="type-eyebrow text-black/55">Social</p>
-                  <div className="flex flex-wrap gap-3">
-                    {social.map(([name, url]) => (
-                      <a
-                        key={name}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center border border-black/15 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-black transition-colors hover:border-black hover:bg-black hover:text-white"
-                      >
-                        {name}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-
-            <aside className="space-y-6">
-              <div className="border border-black/10 bg-[#F5EDED] p-6">
-                <p className="type-eyebrow text-[#CF0A0A]">Location</p>
-                <p className="mt-3 text-sm leading-7 text-black/60">
-                  {settings.address ||
-                    "A published location will appear here once confirmed by LONEX."}
-                </p>
-                {settings.googleMapsUrl ? (
+              <div className="lxct-hero__actions" data-hero-item>
+                {whatsappLink ? (
                   <a
-                    href={settings.googleMapsUrl}
+                    href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="type-eyebrow mt-5 inline-flex items-center gap-2 text-black transition-colors hover:text-[#CF0A0A]"
+                    className="lxct-btn lxct-btn--red"
                   >
-                    Open in Google Maps
+                    Message on WhatsApp
                     <span aria-hidden="true">→</span>
                   </a>
-                ) : (
-                  <p className="mt-5 text-xs leading-5 text-black/55">
-                    Map link will be published once confirmed.
-                  </p>
-                )}
-              </div>
-
-              <div className="border border-black/10 bg-white p-6">
-                <p className="type-eyebrow text-black/55">
-                  What to include
-                </p>
-                <ul className="mt-4 space-y-3 text-sm leading-6 text-black/55">
-                  <li>Product or category you are asking about.</li>
-                  <li>The model code if you are verifying a unit.</li>
-                  <li>Your city for seller information.</li>
-                </ul>
-              </div>
-
-              <div className="border border-black/10 bg-black p-6 text-white">
-                <p className="type-eyebrow text-white/55">Verification</p>
-                <p className="mt-3 text-sm leading-7 text-white/65">
-                  A model code check confirms registration with LONEX, not the
-                  authenticity of an individual unit.
-                </p>
-                <Link
-                  href="/verify"
-                  className="type-eyebrow mt-5 inline-flex items-center gap-2 text-white transition-colors hover:text-[#CF0A0A]"
-                >
-                  Verify a model
-                  <span aria-hidden="true">→</span>
+                ) : null}
+                {phoneHref ? (
+                  <a href={phoneHref} className="lxct-btn lxct-btn--outline">
+                    Call {formatPhone(settings.contactPhone)}
+                  </a>
+                ) : null}
+                <Link href="#enquiry" className="lxct-hero__form-link">
+                  Use the form <span aria-hidden="true">↓</span>
                 </Link>
               </div>
-            </aside>
+
+              <dl className="lxct-hero__facts" data-hero-item>
+                {HERO.facts.map((fact) => (
+                  <div key={fact.label}>
+                    <dt>{fact.label}</dt>
+                    <dd>{fact.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <figure className="lxct-hero__figure" data-hero-item>
+              <div className="lxct-hero__media" data-hero-media>
+                <Image
+                  src="/images/lonex-generated-images/lifestyle/family-energy.webp"
+                  alt={HERO.imageAlt}
+                  fill
+                  preload
+                  sizes="(max-width: 900px) 100vw, 46vw"
+                  className="lxct-hero__image"
+                />
+                <span className="lxct-hero__stamp" aria-hidden="true">
+                  LONEX
+                  <span>Lahore</span>
+                </span>
+                <div className="lxct-hero__inset">
+                  <Image
+                    src="/images/lonex-generated-images/lifestyle/ev-charging.webp"
+                    alt={HERO.insetAlt}
+                    fill
+                    sizes="200px"
+                    className="lxct-hero__inset-image"
+                  />
+                </div>
+              </div>
+              <figcaption className="lxct-hero__caption">
+                <span className="lxct-hero__caption-index" aria-hidden="true">
+                  {HERO.captionIndex}
+                </span>
+                <span>{HERO.caption}</span>
+              </figcaption>
+            </figure>
           </div>
-        </Container>
-      </section>
-    </>
+        </section>
+
+        {/* Direct contact --------------------------------------------- */}
+        <section className="lxct-direct" aria-labelledby="direct-title">
+          <div className="lx-wrap">
+            <div className="lxct-direct__head" data-reveal-group>
+              <div data-reveal>
+                <p className="lxct-eyebrow">{DIRECT.eyebrow}</p>
+                <h2 className="lxct-h2" id="direct-title">
+                  {DIRECT.title}
+                </h2>
+              </div>
+              <p className="lxct-direct__intro" data-reveal>
+                {DIRECT.intro}
+              </p>
+            </div>
+
+            <dl className="lxct-register" data-reveal-group>
+              {rows.map((row) => (
+                <div
+                  key={row.kind}
+                  className={`lxct-register__row lxct-register__row--${row.kind}`}
+                  data-reveal
+                >
+                  <dt>
+                    <span aria-hidden="true" className="lxct-register__index">
+                      {row.index}
+                    </span>
+                    {row.label}
+                  </dt>
+                  <dd className="lxct-register__detail">
+                    {row.href && row.kind !== "office" ? (
+                      <a
+                        href={row.href}
+                        className="lxct-register__value"
+                        {...(row.external
+                          ? {
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                            }
+                          : {})}
+                      >
+                        {row.value}
+                      </a>
+                    ) : (
+                      <span className="lxct-register__value">{row.value}</span>
+                    )}
+                    <span className="lxct-register__meta">{row.meta}</span>
+                  </dd>
+                  <dd className="lxct-register__action-cell">
+                    {row.href ? (
+                      <a
+                        href={row.href}
+                        className="lxct-register__action"
+                        {...(row.external
+                          ? {
+                              target: "_blank",
+                              rel: "noopener noreferrer",
+                            }
+                          : {})}
+                      >
+                        {row.action}
+                        <span aria-hidden="true">
+                          {row.external ? "↗" : "→"}
+                        </span>
+                      </a>
+                    ) : null}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <p className="lxct-direct__note" data-reveal>
+              {DIRECT.note}
+            </p>
+          </div>
+        </section>
+
+        {/* Enquiry ---------------------------------------------------- */}
+        <section
+          id="enquiry"
+          className="lxct-enquiry"
+          aria-labelledby="enquiry-title"
+        >
+          <div className="lx-wrap lxct-enquiry__grid" data-reveal-group>
+            <div className="lxct-enquiry__aside" data-reveal>
+              <p className="lxct-eyebrow">{ENQUIRY.eyebrow}</p>
+              <h2 className="lxct-enquiry__title" id="enquiry-title">
+                {ENQUIRY.title}
+              </h2>
+              <p className="lxct-enquiry__intro">{ENQUIRY.intro}</p>
+
+              <ol className="lxct-steps">
+                {ENQUIRY.steps.map((step) => (
+                  <li key={step.index}>
+                    <span className="lxct-steps__index">{step.index}</span>
+                    <div>
+                      <h3 className="lxct-steps__title">{step.title}</h3>
+                      <p className="lxct-steps__copy">{step.copy}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="lxct-enquiry__form" data-reveal>
+              <EnquiryForm
+                whatsapp={settings.whatsapp}
+                phone={settings.contactPhone}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Location --------------------------------------------------- */}
+        <section
+          id="location"
+          className="lxct-location"
+          aria-labelledby="location-title"
+        >
+          <div className="lx-wrap lxct-location__grid" data-reveal-group>
+            <div className="lxct-location__copy" data-reveal>
+              <p className="lxct-eyebrow">{LOCATION.eyebrow}</p>
+              <h2 className="lxct-location__title" id="location-title">
+                {LOCATION.title}
+              </h2>
+              <p className="lxct-location__intro">{LOCATION.intro}</p>
+            </div>
+
+            <div className="lxct-location__plate" data-reveal>
+              <div className="lxct-location__plate-head">
+                <span>Office address</span>
+                <span aria-hidden="true" className="lxct-location__mark">
+                  <span />
+                </span>
+              </div>
+
+              <address className="lxct-location__address">
+                <span className="lxct-location__street">{street}</span>{" "}
+                {locality ? (
+                  <span className="lxct-location__locality">{locality}</span>
+                ) : null}
+              </address>
+
+              <div className="lxct-location__actions">
+                {mapHref ? (
+                  <a
+                    href={mapHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="lxct-btn lxct-btn--dark"
+                  >
+                    {LOCATION.mapLabel}
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ) : null}
+                {phoneHref ? (
+                  <a href={phoneHref} className="lxct-link">
+                    Call {formatPhone(settings.contactPhone)}
+                  </a>
+                ) : null}
+              </div>
+              <p className="lxct-location__note">{LOCATION.mapNote}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Closing ---------------------------------------------------- */}
+        <section className="lxct-close" aria-labelledby="closing-title">
+          <div className="lxct-close__media" data-reveal-image>
+            <Image
+              src="/images/lonex-generated-images/hero/hero-solar-home-wide.webp"
+              alt=""
+              fill
+              sizes="100vw"
+              className="lxct-close__image"
+            />
+          </div>
+          <div aria-hidden="true" className="lxct-close__scrim" />
+
+          <div className="lx-wrap lxct-close__grid" data-reveal-group>
+            <div data-reveal>
+              <p className="lxct-eyebrow lxct-eyebrow--light">
+                {CLOSING.eyebrow}
+              </p>
+              <h2 className="lxct-close__title" id="closing-title">
+                {CLOSING.title}
+              </h2>
+              <p className="lxct-close__copy">{CLOSING.copy}</p>
+            </div>
+
+            <div className="lxct-close__actions" data-reveal>
+              {whatsappLink ? (
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lxct-btn lxct-btn--light"
+                >
+                  Message on WhatsApp
+                  <span aria-hidden="true">→</span>
+                </a>
+              ) : null}
+              {phoneHref ? (
+                <a
+                  href={phoneHref}
+                  className="lxct-btn lxct-btn--outline-light"
+                >
+                  Call the office
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      </PageMotion>
+    </div>
   );
 }
 

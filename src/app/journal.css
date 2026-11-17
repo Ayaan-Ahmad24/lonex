@@ -324,8 +324,20 @@
   color: var(--lx-red);
 }
 
-.lxjn-cover__more {
+.lxjn-cover__excerpt {
+  display: -webkit-box;
+  max-width: 46ch;
   margin: 0;
+  overflow: hidden;
+  color: var(--lx-muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.lxjn-cover__more {
+  margin: 4px 0 0;
 }
 
 /* ---------- Subject filter ---------- */
@@ -748,11 +760,15 @@
 }
 
 .lxjn-entry__copy {
+  display: -webkit-box;
   max-width: 46ch;
   margin: 0 0 16px;
+  overflow: hidden;
   color: var(--lx-muted);
   font-size: 0.9375rem;
   line-height: 1.62;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .lxjn-entry__more {
@@ -814,6 +830,16 @@
 }
 
 /* ---------- Empty state ---------- */
+
+.lxjn-index__solo-note {
+  max-width: 52ch;
+  margin: 0;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--lxjn-hair);
+  color: var(--lx-muted);
+  font-size: 1rem;
+  line-height: 1.64;
+}
 
 .lxjn-empty {
   max-width: 640px;

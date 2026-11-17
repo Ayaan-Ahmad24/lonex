@@ -19,21 +19,22 @@ export function ImagePlaceholder({
     <div
       role="img"
       aria-label={label}
-      className={`relative flex h-full w-full flex-col overflow-hidden bg-[#F5EDED] ${className}`}
+      className={`site-placeholder ${className}`}
     >
-      <span aria-hidden="true" className="lux-grid-bg absolute inset-0 opacity-70" />
-      <span aria-hidden="true" className="absolute inset-0">
+      <span aria-hidden="true" className="site-placeholder__grid" />
+      <span aria-hidden="true" className="site-placeholder__logo">
         <Image
           src="/lonex-logo.png"
           alt=""
-          fill
-          sizes="(max-width: 768px) 80vw, 40vw"
-          className="object-contain p-[12%] opacity-[0.16]"
+          width={148}
+          height={100}
+          sizes="148px"
+          className="h-auto w-[7.5rem]"
         />
       </span>
-      <span className="relative mt-auto flex items-center justify-between gap-3 border-t border-black/10 bg-[#F5EDED]/80 px-4 py-3 backdrop-blur-[1px]">
-        <span className="type-eyebrow text-black/55">{label}</span>
-        <span aria-hidden="true" className="size-1.5 shrink-0 rotate-45 bg-[#CF0A0A]" />
+      <span className="site-placeholder__label">
+        <span>{label}</span>
+        <span aria-hidden="true" className="site-placeholder__rule" />
       </span>
     </div>
   );
@@ -47,13 +48,18 @@ export function ContentImage({
   image,
   fallbackLabel,
   sizes,
-  priority = false,
+  preload = false,
+  alt,
+  fit = "cover",
   className = "",
 }: {
   image: PublicImage | null;
   fallbackLabel?: string;
   sizes: string;
-  priority?: boolean;
+  preload?: boolean;
+  /** Accessible description that should replace the stored alt text. */
+  alt?: string;
+  fit?: "cover" | "contain";
   className?: string;
 }) {
   if (!image) {
@@ -63,11 +69,11 @@ export function ContentImage({
   return (
     <Image
       src={image.url}
-      alt={image.alt}
+      alt={alt ?? image.alt}
       fill
       sizes={sizes}
-      priority={priority}
-      className={`object-cover ${className}`}
+      preload={preload}
+      className={`${fit === "contain" ? "object-contain" : "object-cover"} ${className}`}
     />
   );
 }

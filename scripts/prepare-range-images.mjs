@@ -41,17 +41,6 @@ const plates = [
     grade: { saturation: 0.9, brightness: 0.99, linear: [1.03, -4] },
     alt: "Wall-mounted inverter and two floor-standing home battery units — illustrative visual",
   },
-  {
-    // Electric scooter on a city street. A 16:7 band keeps the open paving
-    // and planting on the left for the overlay copy.
-    out: "move-scooter.webp",
-    src: "public/images/lonex-generated-images/categories/electric-mobility.webp",
-    crop: { left: 0, top: 50, width: 1000, height: 437 },
-    width: 2000,
-    quality: 84,
-    grade: { saturation: 0.88, brightness: 0.97, linear: [1.04, -6] },
-    alt: "An electric scooter parked on a city street — illustrative visual",
-  },
 ];
 
 await mkdir(OUT_DIR, { recursive: true });

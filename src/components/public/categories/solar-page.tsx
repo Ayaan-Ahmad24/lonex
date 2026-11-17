@@ -56,7 +56,6 @@ export function SolarPage({
         </div>
         <div aria-hidden="true" className="lxc-hero__scrim" />
         <div aria-hidden="true" className="lxc-hero__rules" />
-        <div aria-hidden="true" className="lxc-hero__rule lxc-hero__rule--red" />
 
         <div className="lx-wrap lxc-hero__inner">
           <div className="lxc-hero__top">

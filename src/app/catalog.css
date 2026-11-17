@@ -387,6 +387,19 @@
   line-height: 1.6;
 }
 
+/* Price label or the explicit "Price on inquiry" so a card never reads as
+   unfinished when the owner has hidden the price. */
+.lxb-plinth__price,
+.lxe-plate-product__price,
+.lxc-card__price {
+  margin: 0 0 16px;
+  color: var(--lx-ink);
+  font-family: var(--lx-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .lxc-card__use {
   margin-top: 20px;
 }
@@ -535,9 +548,9 @@
   position: relative;
   display: flex;
   align-items: flex-end;
-  min-height: min(88vh, 820px);
+  min-height: min(82vh, 760px);
   overflow: hidden;
-  background: #0b0a09;
+  background: #2c2823;
   color: #fff;
   isolation: isolate;
 }
@@ -585,16 +598,6 @@
     100% 33.3333%;
   opacity: 0.55;
   mask-image: linear-gradient(to top, #000 12%, transparent 92%);
-}
-
-.lxc-hero__rule {
-  position: absolute;
-  z-index: -1;
-  left: var(--lx-pad);
-  top: clamp(72px, 13vh, 132px);
-  width: 2px;
-  height: clamp(48px, 7vw, 88px);
-  background: var(--lx-red);
 }
 
 .lxc-hero__inner {
@@ -698,13 +701,13 @@
 /* Solar intro ------------------------------------------------------ */
 
 .lxc-intro {
-  padding-block: clamp(56px, 8vw, 120px);
+  padding-block: clamp(48px, 6vw, 88px);
 }
 
 .lxc-intro__grid {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
-  gap: clamp(28px, 6vw, 96px);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: clamp(20px, 4vw, 64px);
   align-items: start;
 }
 
@@ -934,7 +937,7 @@
   position: relative;
   display: flex;
   align-items: flex-end;
-  min-height: min(92vh, 860px);
+  min-height: min(84vh, 780px);
   overflow: hidden;
   isolation: isolate;
 }
@@ -943,6 +946,7 @@
   position: absolute;
   inset: 0;
   z-index: -2;
+  background: #2c2823;
 }
 
 .lxb-hero__image {
@@ -1033,12 +1037,14 @@
 }
 
 .lxb-hero .lx-btn--ghost {
-  border-color: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
 }
 
 .lxb-hero .lx-btn--ghost:hover {
   border-color: #fff;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .lxb-hero__flow {
@@ -1127,13 +1133,13 @@
 /* Batteries intro -------------------------------------------------- */
 
 .lxb-intro {
-  padding-block: clamp(56px, 8vw, 112px);
+  padding-block: clamp(48px, 6vw, 88px);
 }
 
 .lxb-intro__grid {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
-  gap: clamp(28px, 6vw, 96px);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+  gap: clamp(20px, 4vw, 64px);
   align-items: start;
 }
 
@@ -1400,6 +1406,12 @@
   color: rgba(255, 255, 255, 0.48);
 }
 
+/* The plinth copy sits on the dark storage panel, so the shared ink-coloured
+   price would disappear. Keep it light, matching the other copy on the card. */
+.lxb-plinth__price {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .lxb-plinth .lxc-cases li {
   border-color: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.82);
@@ -1547,11 +1559,11 @@
   position: relative;
   display: flex;
   align-items: flex-end;
-  min-height: min(92vh, 860px);
+  min-height: min(84vh, 780px);
   /* The copy plate is translated out of the frame, so the section must not
      clip its overflow; the photograph itself is inset and cannot escape. */
   margin-bottom: clamp(36px, 6vw, 88px);
-  background: #14120f;
+  background: #2c2823;
   color: #fff;
   isolation: isolate;
 }
@@ -2071,9 +2083,9 @@
 .lxg-hero--media {
   display: flex;
   align-items: flex-end;
-  min-height: min(76vh, 700px);
+  min-height: min(72vh, 660px);
   padding-block: clamp(28px, 5vh, 48px) clamp(36px, 6vh, 64px);
-  background: #0c0b0a;
+  background: #2c2823;
   color: #fff;
   isolation: isolate;
 }
@@ -2431,11 +2443,7 @@
 
 @media (max-width: 720px) {
   .lxc-hero {
-    min-height: min(86vh, 700px);
-  }
-
-  .lxc-hero__rule {
-    display: none;
+    min-height: min(84vh, 680px);
   }
 
   .lxc-hero__copy,

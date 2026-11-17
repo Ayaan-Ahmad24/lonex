@@ -15,7 +15,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "admin:create": "tsx scripts/create-admin.ts",
-    "seed:content": "tsx scripts/seed-client-content.ts"
+    "seed:content": "tsx scripts/seed-client-content.ts",
+    "seed:demo": "tsx scripts/seed-demo-content.ts",
+    "seed:demo:remove": "tsx scripts/seed-demo-content.ts --remove"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.15",
@@ -28,6 +30,7 @@
     "drizzle-orm": "^0.45.4",
     "gsap": "^3.15.1",
     "htmlparser2": "^12.0.0",
+    "lottie-react": "^3.1.2",
     "mysql2": "^3.24.6",
     "next": "16.4.4",
     "react": "19.3.0",

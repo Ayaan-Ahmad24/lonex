@@ -1,120 +1,402 @@
 "use client";
 
-import { useActionState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useActionState, useEffect, useRef, useState } from "react";
+
 import { verifyCodeAction } from "./actions";
 import { initialVerifyState, type VerifyState } from "./state";
 
+/**
+ * Public registry check.
+ *
+ * `verifyCodeAction` is the only lookup path and its rules are unchanged. The
+ * wrapper exists so a dropped connection or an unavailable database produces a
+ * readable state instead of an error page, without altering any outcome the
+ * server returns for a valid, invalid or throttled request.
+ */
+async function verifyWithFallback(
+  previous: VerifyState,
+  formData: FormData,
+): Promise<VerifyState> {
+  try {
+    return await verifyCodeAction(previous, formData);
+  } catch {
+    return {
+      status: "unavailable",
+      message:
+        "The registry could not be reached. Check your connection and try again, or contact LONEX and we will check the model with you.",
+    };
+  }
+}
+
+const STATE_TITLES: Record<
+  Exclude<VerifyState["status"], "idle" | "success">,
+  string
+> = {
+  error: "No match returned.",
+  throttled: "Too many attempts.",
+  unavailable: "Registry unavailable.",
+};
+
+const ERROR_CHECKS = [
+  "Compare each character with the label. The 12-character body excludes I, L, O and U.",
+  "Dashes and spaces are ignored, so the exact transcription does not matter.",
+  "If the label is damaged, contact LONEX with the model name and a photograph.",
+];
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M5 12.5 9.6 17 19 7.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function AlertIcon({ kind }: { kind: "error" | "throttled" | "unavailable" }) {
+  if (kind === "throttled") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.2" stroke="currentColor" strokeWidth="1.4" />
+        <path
+          d="M12 7.6V12l3.1 1.9"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
+  if (kind === "unavailable") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M12 3.5v9"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <circle cx="12" cy="17.4" r="1.1" fill="currentColor" />
+        <circle cx="12" cy="12" r="8.6" stroke="currentColor" strokeWidth="1.4" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.4" stroke="currentColor" strokeWidth="1.4" />
+      <path
+        d="M12 7.8v5.1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="16.2" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function VerifyForm() {
   const [state, formAction, pending] = useActionState<VerifyState, FormData>(
-    verifyCodeAction,
+    verifyWithFallback,
     initialVerifyState,
   );
 
+  // A result can be dismissed without clearing the action state, so the panel
+  // returns to its input state until the next submission.
+  const [dismissed, setDismissed] = useState(false);
+  const active = dismissed ? initialVerifyState : state;
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const lastStatus = useRef<VerifyState["status"]>("idle");
+  // React resets the uncontrolled field once an action completes, so remember
+  // the submitted code to make "Retry the check" possible after a dropped
+  // connection.
+  const lastCode = useRef("");
+
+  useEffect(() => {
+    if (active.status === "idle" || active.status === lastStatus.current) {
+      return;
+    }
+
+    lastStatus.current = active.status;
+
+    // A failed check should leave an empty field, so the next code can be
+    // typed straight away instead of editing the rejected one.
+    if (active.status === "error" && inputRef.current) {
+      inputRef.current.value = "";
+    }
+
+    resultRef.current?.focus({ preventScroll: true });
+  }, [active.status]);
+
+  const reset = () => {
+    setDismissed(true);
+    lastStatus.current = "idle";
+    lastCode.current = "";
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+
+    inputRef.current?.focus({ preventScroll: true });
+  };
+
+  const retry = () => {
+    if (inputRef.current && !inputRef.current.value) {
+      inputRef.current.value = lastCode.current;
+    }
+
+    formRef.current?.requestSubmit();
+  };
+
   return (
-    <div className="space-y-6">
-      <form action={formAction} className="space-y-5">
-        <div>
-          <label htmlFor="code" className="type-eyebrow block text-black/60">
-            Verification code
-          </label>
-          <p className="mt-2 text-sm leading-6 text-black/55">
-            Find the code on the product label or accompanying documentation.
-          </p>
-          <input
-            id="code"
-            name="code"
-            type="text"
-            inputMode="text"
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck={false}
-            placeholder="LNX-XXXX-XXXX-XXXX"
-            maxLength={40}
-            required
-            className="mt-4 h-14 w-full border border-black/15 bg-white px-4 font-mono text-base uppercase tracking-[0.18em] text-black outline-none transition-colors focus:border-[#CF0A0A]"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={pending}
-          className="btn-sheen inline-flex h-14 w-full items-center justify-center gap-3 bg-[#CF0A0A] px-7 text-[13px] font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-        >
-          {pending ? (
-            <>
-              <span
-                aria-hidden="true"
-                className="spinner size-4 rounded-full border-2 border-white/30 border-t-white"
-              />
-              Checking
-            </>
-          ) : (
-            <>
-              Verify code
-              <span aria-hidden="true">→</span>
-            </>
-          )}
-        </button>
-      </form>
-
-      <div aria-live="polite">
-        {state.status === "success" && state.model ? (
-          <div className="overflow-hidden border border-black/10 bg-black text-white">
-            <div className="flex items-start gap-3 border-b border-white/10 px-5 py-4">
-              <span
-                aria-hidden="true"
-                className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-[#CF0A0A] text-sm font-semibold text-white"
-              >
-                ✓
-              </span>
-              <p className="text-sm font-semibold leading-6">
-                {state.message}
-              </p>
-            </div>
-            <dl className="grid gap-4 p-5 text-sm sm:grid-cols-3">
-              <div>
-                <dt className="type-eyebrow text-white/55">Model</dt>
-                <dd className="mt-2">
-                  <Link
-                    href={state.model.productPath}
-                    className="font-semibold text-white underline decoration-[#CF0A0A] decoration-2 underline-offset-4"
-                  >
-                    {state.model.productName}
-                  </Link>
-                </dd>
-              </div>
-              <div>
-                <dt className="type-eyebrow text-white/55">Category</dt>
-                <dd className="mt-2 text-white/75">
-                  {state.model.categoryName}
-                </dd>
-              </div>
-              <div>
-                <dt className="type-eyebrow text-white/55">Registered</dt>
-                <dd className="mt-2 text-white/75">
-                  {state.model.registeredLabel}
-                </dd>
-              </div>
-            </dl>
-          </div>
-        ) : null}
-
-        {state.status === "error" || state.status === "throttled" ? (
-          <div
-            role="alert"
-            className="border border-[#CF0A0A]/30 bg-[#F5EDED] p-4 text-sm leading-6 text-[#9e0707]"
-          >
-            {state.message}
-          </div>
-        ) : null}
+    <div className="lxv-panel" id="verify">
+      <div className="lxv-panel__top">
+        <span className="lxv-panel__label">
+          <span aria-hidden="true" className="lxv-pulse" />
+          Model registry
+        </span>
+        <span className="lxv-panel__tag">Public check</span>
       </div>
+      <span
+        aria-hidden="true"
+        className={`lxv-panel__progress${pending ? " is-active" : ""}`}
+      />
 
-      <p className="border-l-2 border-[#CF0A0A] bg-[#F5EDED] p-4 text-sm leading-6 text-black/60">
-        A successful check confirms that this model is registered with LONEX. It
-        does not by itself prove that a physical unit is genuine. Verification
-        codes are single-model identifiers and are never displayed publicly.
-      </p>
+      <div className="lxv-panel__body">
+        <p className="lxv-eyebrow">Verification</p>
+        <h2 className="lxv-panel__title">Check a model code.</h2>
+        <p className="lxv-panel__intro">
+          Enter the code supplied with the model. The registry returns a match,
+          a generic response, or a message that the check could not run.
+        </p>
+
+        <form
+          ref={formRef}
+          action={formAction}
+          className="lxv-form"
+          onSubmit={() => {
+            lastCode.current = inputRef.current?.value ?? "";
+            setDismissed(false);
+          }}
+        >
+          <div className="lxv-field">
+            <div className="lxv-field__head">
+              <label htmlFor="code">Verification code</label>
+              <span className="lxv-field__format">LNX-XXXX-XXXX-XXXX</span>
+            </div>
+
+            <div className="lxv-input">
+              <span aria-hidden="true" className="lxv-input__sigil">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M7 11V8.6a5 5 0 0 1 10 0V11"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                  <rect
+                    x="4.6"
+                    y="10.8"
+                    width="14.8"
+                    height="9.4"
+                    stroke="currentColor"
+                    strokeWidth="1.3"
+                  />
+                  <path
+                    d="M12 14.3v2.4"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+              <input
+                ref={inputRef}
+                id="code"
+                name="code"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                placeholder="LNX-XXXX-XXXX-XXXX"
+                maxLength={40}
+                required
+                aria-describedby="code-help"
+                aria-invalid={active.status === "error"}
+                disabled={pending}
+                className="lxv-input__control"
+              />
+            </div>
+
+            <p id="code-help" className="lxv-field__help">
+              Case-insensitive. Dashes and spaces are optional.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="lxv-submit"
+            aria-disabled={pending}
+          >
+            {pending ? (
+              <>
+                <span aria-hidden="true" className="lxv-spinner" />
+                Checking registry
+              </>
+            ) : (
+              <>
+                Verify model
+                <span aria-hidden="true" className="lxv-submit__arrow">
+                  →
+                </span>
+              </>
+            )}
+          </button>
+
+          <p className="lxv-form__note">
+            <span aria-hidden="true" className="lxv-form__dot" />
+            A match confirms model registration, not the authenticity of a
+            physical unit.
+          </p>
+        </form>
+
+        <div
+          ref={resultRef}
+          tabIndex={-1}
+          aria-live="polite"
+          aria-atomic="true"
+          aria-busy={pending}
+          className="lxv-live"
+        >
+          {active.status === "success" && active.model ? (
+            <div className="lxv-result">
+              <div className="lxv-result__status">
+                <span aria-hidden="true" className="lxv-result__icon">
+                  <CheckIcon />
+                </span>
+                <div>
+                  <p className="lxv-result__kicker">Registry match</p>
+                  <p className="lxv-result__message">{active.message}</p>
+                </div>
+              </div>
+
+              <div className="lxv-result__model">
+                <div className="lxv-result__media">
+                  {active.model.image ? (
+                    <Image
+                      src={active.model.image.url}
+                      alt={active.model.image.alt}
+                      fill
+                      sizes="112px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <span className="lxv-result__fallback" aria-hidden="true">
+                      LX
+                    </span>
+                  )}
+                </div>
+
+                <div className="lxv-result__id">
+                  <p className="lxv-result__label">Registered model</p>
+                  <Link
+                    href={active.model.productPath}
+                    className="lxv-result__name"
+                  >
+                    {active.model.productName}
+                    <span aria-hidden="true">↗</span>
+                  </Link>
+                </div>
+              </div>
+
+              <dl className="lxv-result__meta">
+                <div>
+                  <dt>Category</dt>
+                  <dd>{active.model.categoryName}</dd>
+                </div>
+                <div>
+                  <dt>Registered</dt>
+                  <dd>{active.model.registeredLabel}</dd>
+                </div>
+              </dl>
+
+              <p className="lxv-result__caveat">
+                Registration confirms the model. Condition, history and the
+                seller remain separate checks.
+              </p>
+
+              <div className="lxv-result__actions">
+                <Link
+                  href={active.model.productPath}
+                  className="lxv-result__button"
+                >
+                  View product
+                  <span aria-hidden="true">↗</span>
+                </Link>
+                <button type="button" onClick={reset} className="lxv-link">
+                  Check another code
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {active.status === "error" ||
+          active.status === "throttled" ||
+          active.status === "unavailable" ? (
+            <div
+              className={`lxv-state lxv-state--${active.status}`}
+              role={active.status === "error" ? "alert" : "status"}
+            >
+              <span aria-hidden="true" className="lxv-state__icon">
+                <AlertIcon kind={active.status} />
+              </span>
+              <div className="lxv-state__copy">
+                <p className="lxv-state__title">
+                  {STATE_TITLES[active.status]}
+                </p>
+                <p className="lxv-state__message">{active.message}</p>
+
+                {active.status === "error" ? (
+                  <ul className="lxv-state__checks">
+                    {ERROR_CHECKS.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                <div className="lxv-state__actions">
+                  {active.status === "error" ? (
+                    <button type="button" onClick={reset} className="lxv-link">
+                      Try another code
+                    </button>
+                  ) : null}
+                  {active.status === "unavailable" ? (
+                    <button type="button" onClick={retry} className="lxv-link">
+                      Retry the check
+                    </button>
+                  ) : null}
+                  <Link href="/contact" className="lxv-link">
+                    Contact LONEX
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

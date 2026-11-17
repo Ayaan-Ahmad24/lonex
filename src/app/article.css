@@ -214,10 +214,10 @@
   max-width: 15.5ch;
   margin: 0;
   color: var(--lx-ink);
-  font-size: clamp(2.9rem, 5.8vw, 6rem);
+  font-size: clamp(2.6rem, 4.6vw, 4.5rem);
   font-weight: 500;
-  line-height: 0.9;
-  letter-spacing: -0.055em;
+  line-height: 0.94;
+  letter-spacing: -0.05em;
   text-wrap: balance;
 }
 
