@@ -38,16 +38,16 @@ export const PILLARS = [
   {
     id: "move",
     index: "03",
-    name: "Electric Bikes",
+    name: "Electric Scooters",
     shortName: "Move",
-    href: "/ev-bikes",
+    href: "/electric-scooters",
     title: "Turn power into passage.",
-    copy: "Electric bikes make short journeys quieter and simpler. For errands, commutes and the distances that are too far to walk but too short to justify a car, they offer a practical alternative that can be charged from the same supply as the rest of a property.",
+    copy: "Electric scooters make short journeys quieter and simpler. For errands, commutes and the distances that are too far to walk but too short to justify a car, they offer a practical alternative that can be charged from the same supply as the rest of a property.",
     detail:
-      "We focus on how the bike will be used — the length of the journey, the surface, where it will be stored, and how it will be charged — rather than on performance language that rarely survives a daily routine.",
+      "We focus on how the scooter will be used — the length of the journey, the surface, where it will be stored, and how it will be charged — rather than on performance language that rarely survives a daily routine.",
     points: ["Short urban journeys", "Everyday errands and commutes"],
     image: "/images/v2/move-city.webp",
-    alt: "A black electric bicycle parked in a covered city rack",
+    alt: "A black electric scooter parked in a covered city rack",
   },
 ] as const;
 
@@ -88,7 +88,7 @@ export const COMMITMENTS = [
 export const RANGE_LINKS = [
   { label: "Solar Panels", href: "/solar", meta: "Generate" },
   { label: "Batteries", href: "/batteries", meta: "Store" },
-  { label: "Electric Bikes", href: "/ev-bikes", meta: "Move" },
+  { label: "Electric Scooters", href: "/electric-scooters", meta: "Move" },
 ] as const;
 
 export const STORY = {

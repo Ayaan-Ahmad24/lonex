@@ -23,7 +23,7 @@ type OpenMenu = MenuKey | null;
 
 const DESKTOP_QUERY = "(min-width: 960px)";
 
-const CATEGORY_ORDER = ["solar", "batteries", "ev-bikes"] as const;
+const CATEGORY_ORDER = ["solar", "batteries", "electric-scooters"] as const;
 
 const CATEGORY_META: Record<
   string,
@@ -33,7 +33,7 @@ const CATEGORY_META: Record<
     index: "01",
     verb: "Generate",
     description:
-      "Solar modules selected and imported for residential and commercial systems.",
+      "Solar modules built for residential and commercial systems.",
     image: "/images/lonex-generated-images/categories/solar-panels.webp",
   },
   batteries: {
@@ -42,13 +42,13 @@ const CATEGORY_META: Record<
     description: "Battery systems for backup power and solar storage.",
     image: "/images/lonex-generated-images/categories/home-storage.webp",
   },
-  "ev-bikes": {
+  "electric-scooters": {
     index: "03",
     verb: "Move",
-    description: "Electric bikes for everyday urban travel.",
+    description: "Electric scooters for everyday urban travel.",
     // The category cover in the CMS is a scooter render. The range photograph
-    // is the real e-bike, so the dropdown always uses it for this tile.
-    image: "/images/homepage/range-ev.webp",
+    // is the real scooter, so the dropdown always uses it for this tile.
+    image: "/images/homepage/range-scooter.webp",
   },
 };
 
@@ -89,10 +89,10 @@ function buildMegaItems(categories: PublicCategory[]): MegaItem[] {
           meta?.description ??
           category.description?.split(". ")[0] ??
           "Explore the range.",
-        // The EV category cover is a scooter; use the real e-bike photograph
-        // for that tile. Other categories keep their CMS cover.
+        // The EV category cover is a scooter; use the real scooter photograph
+        // for that tile.
         imageSrc:
-          category.slug === "ev-bikes"
+          category.slug === "electric-scooters"
             ? (meta?.image ?? category.cover?.url ?? null)
             : (category.cover?.url ?? meta?.image ?? null),
       };

@@ -4,7 +4,9 @@ import { z } from "zod";
  * Safe structured rich text for blog articles.
  *
  * Articles are stored as typed blocks, never raw HTML. Version 2 adds inline
- * marks (bold, italic, underline, links), H4 headings and horizontal rules.
+ * marks (bold, italic, underline, links), H4 headings, horizontal rules and
+ * inline figures. The figure block is additive: documents written before it
+ * existed still validate and render exactly as they did.
  * Version 1 documents created before Sprint 07 are still accepted and are
  * upgraded in memory when read, so no database migration is required.
  *
@@ -50,6 +52,31 @@ export function safeHref(value: string | undefined): string | null {
   }
 
   return null;
+}
+
+const imageSrcSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(1000)
+  .refine(
+    (value) =>
+      !FORBIDDEN_MARKUP.test(value) &&
+      !value.includes("\\") &&
+      !/[\s"'<>]/.test(value) &&
+      (/^https:\/\/[^\s]+$/i.test(value) || /^\/[^/\s]/.test(value)),
+    "Images must use https:// or a site-relative path.",
+  );
+
+/** Normalise an image source from imported HTML. Returns null when unsafe. */
+export function safeImageSrc(value: string | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = imageSrcSchema.safeParse(value);
+
+  return parsed.success ? parsed.data : null;
 }
 
 const inlineTextSchema = z
@@ -99,12 +126,34 @@ export const horizontalRuleBlockSchema = z.object({
   type: z.literal("hr"),
 });
 
+/**
+ * An inline figure inside the reading column.
+ *
+ * `alt` is required because the public renderer never has surrounding text to
+ * explain the photograph. `width` and `height` are optional: when the editor
+ * knows the intrinsic size it stores them so the layout can reserve space and
+ * the source is served at its real size rather than a forced large variant.
+ */
+export const imageBlockSchema = z.object({
+  type: z.literal("image"),
+  src: imageSrcSchema,
+  alt: z
+    .string()
+    .trim()
+    .min(1, "Describe the image for screen readers.")
+    .max(300),
+  caption: z.string().trim().max(500).optional(),
+  width: z.number().int().positive().max(20000).optional(),
+  height: z.number().int().positive().max(20000).optional(),
+});
+
 export const richTextBlockSchema = z.discriminatedUnion("type", [
   paragraphBlockSchema,
   headingBlockSchema,
   listBlockSchema,
   quoteBlockSchema,
   horizontalRuleBlockSchema,
+  imageBlockSchema,
 ]);
 
 export type RichTextBlock = z.infer<typeof richTextBlockSchema>;
@@ -208,6 +257,8 @@ function documentTextLength(document: RichTextDocument): number {
       for (const item of block.items) {
         total += item.reduce((sum, span) => sum + span.text.length, 0);
       }
+    } else if (block.type === "image") {
+      total += block.caption?.length ?? 0;
     } else if (block.type !== "hr") {
       total += block.spans.reduce((sum, span) => sum + span.text.length, 0);
     }
@@ -454,6 +505,26 @@ export function richTextDocumentToHtml(document: RichTextDocument): string {
           return `<blockquote><p>${spansToHtml(block.spans)}</p></blockquote>`;
         case "hr":
           return "<hr>";
+        case "image": {
+          const attributes = [
+            `src="${escapeHtml(block.src)}"`,
+            `alt="${escapeHtml(block.alt)}"`,
+          ];
+
+          if (block.width) {
+            attributes.push(`width="${block.width}"`);
+          }
+
+          if (block.height) {
+            attributes.push(`height="${block.height}"`);
+          }
+
+          const caption = block.caption
+            ? `<figcaption>${escapeHtml(block.caption)}</figcaption>`
+            : "";
+
+          return `<figure data-article-image><img ${attributes.join(" ")}>${caption}</figure>`;
+        }
         default:
           return "";
       }
@@ -469,7 +540,7 @@ export function richTextToPlainText(
   const parts: string[] = [];
 
   for (const block of document.blocks) {
-    if (block.type === "hr") {
+    if (block.type === "hr" || block.type === "image") {
       continue;
     }
 

@@ -22,6 +22,7 @@ export async function createSeller(
         phone: input.phone,
         whatsapp: input.whatsapp || null,
         googleMapsUrl: input.googleMapsUrl || null,
+        imageMediaId: input.imageMediaId ?? null,
         sortOrder: input.sortOrder,
         status: input.status,
       })
@@ -64,6 +65,7 @@ export async function updateSeller(
         phone: input.phone,
         whatsapp: input.whatsapp || null,
         googleMapsUrl: input.googleMapsUrl || null,
+        imageMediaId: input.imageMediaId ?? null,
         sortOrder: input.sortOrder,
         status: input.status,
       })

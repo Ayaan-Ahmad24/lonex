@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { connection } from "next/server";
 
 import { HomeMotion } from "@/components/public/home-motion";
+import { BlogCard } from "@/components/public/blog-card";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
 import {
@@ -12,17 +13,22 @@ import {
   listLatestBlogPosts,
   listPublishedCategories,
 } from "@/lib/public/queries";
-import type {
-  PublicBlogCard,
-  PublicCategory,
-  PublicProductCard,
-} from "@/lib/public/dto";
+import type { PublicCategory, PublicProductCard } from "@/lib/public/dto";
+import { TOPIC_LABELS, topicForPost } from "./blog/content";
 import "../home.css";
 import "../hero.css";
 import { HomeHeroUI } from "@/components/public/hero-ui";
 import { ContentImage } from "@/components/public/content-image";
 
-const STORY_PHOTO = "/images/lonex-story/story-architecture.webp";
+/**
+ * The single reference for the Perspective photograph.
+ *
+ * Swapping the picture is a file change only: the frame keeps the same
+ * aspect ratio, crop and placement, so a replacement needs no design edit.
+ */
+const PERSPECTIVE_IMAGE = "/images/lonex-story/story-architecture.webp";
+const PERSPECTIVE_IMAGE_WIDTH = 1320;
+const PERSPECTIVE_IMAGE_HEIGHT = 1650;
 
 const PRINCIPLES = [
   {
@@ -48,7 +54,7 @@ const RANGE = [
     image: "/images/homepage/range-solar.webp",
     alt: "Ground-mounted solar modules in a dry field at low sun — illustrative visual",
     sizes: "(max-width: 900px) 100vw, (max-width: 1440px) 31vw, 420px",
-    copy: "Solar modules for homes and commercial sites, imported to specification.",
+    copy: "Solar modules for homes and commercial sites, built to specification.",
   },
   {
     slug: "batteries",
@@ -61,14 +67,14 @@ const RANGE = [
     copy: "Battery systems that hold the day's solar and keep essential loads running after sunset.",
   },
   {
-    slug: "ev-bikes",
+    slug: "electric-scooters",
     verb: "Move",
-    label: "Electric Bikes",
+    label: "Electric Scooters",
     composition: "move",
-    image: "/images/homepage/range-ev.webp",
-    alt: "A black electric bike, full side view, parked on a city street — illustrative visual",
+    image: "/images/homepage/range-scooter.webp",
+    alt: "A black electric scooter parked on a city street — illustrative visual",
     sizes: "(max-width: 900px) 100vw, (max-width: 1440px) 31vw, 420px",
-    copy: "Electric bikes for everyday urban travel — quiet, efficient and built around the short trip.",
+    copy: "Electric scooters for everyday urban travel — quiet, efficient and built around the short trip.",
   },
 ] as const;
 
@@ -106,80 +112,6 @@ function categoryForProduct(
 ) {
   return categories.find((category) =>
     product.path.startsWith(`${category.path}/`),
-  );
-}
-
-function trimToWord(text: string, max: number): string {
-  const cleaned = text.trim();
-
-  if (cleaned.length <= max) {
-    return cleaned;
-  }
-
-  const cut = cleaned.slice(0, max);
-  const lastSpace = cut.lastIndexOf(" ");
-  const trimmed = (lastSpace > 0 ? cut.slice(0, lastSpace) : cut).replace(
-    /[,.;:—–-]+$/,
-    "",
-  );
-
-  return `${trimmed}…`;
-}
-
-function JournalCard({
-  post,
-  variant,
-  index,
-}: {
-  post: PublicBlogCard;
-  variant: "feature" | "side";
-  index: number;
-}) {
-  const isFeature = variant === "feature";
-
-  return (
-    <Link
-      href={post.path}
-      className={
-        isFeature ? "lxh-journal__feature" : "lxh-journal__side-card"
-      }
-      data-lxh-journal-card
-    >
-      <figure className="lxh-journal__media">
-        {post.cover ? (
-          <Image
-            src={post.cover.url}
-            alt={post.cover.alt}
-            fill
-            sizes={
-              isFeature
-                ? "(max-width: 820px) 100vw, 56vw"
-                : "(max-width: 520px) 100vw, 20vw"
-            }
-            className="lxh-journal__image"
-          />
-        ) : null}
-      </figure>
-
-      <div className="lxh-journal__body">
-        <div className="lxh-journal__meta">
-          <time dateTime={post.publishedAt}>{post.publishedLabel}</time>
-          <span aria-hidden="true">
-            {String(index + 1).padStart(2, "0")}
-          </span>
-        </div>
-        <h3 className="lxh-journal__title">{post.title}</h3>
-        {post.excerpt ? (
-          <p className="lxh-journal__excerpt">
-            {isFeature ? post.excerpt : trimToWord(post.excerpt, 120)}
-          </p>
-        ) : null}
-        <span className="lxh-journal__read">
-          Read the article
-          <span aria-hidden="true"> →</span>
-        </span>
-      </div>
-    </Link>
   );
 }
 
@@ -296,69 +228,76 @@ export default async function HomePage() {
         {/* B — The LONEX story */}
         <section className="lxh-section lxh-story-section" id="story">
           <div className="lx-wrap">
-            <div className="lxh-story__intro" data-lxh-head>
-              <p className="lxh-story__eyebrow">THE LONEX PERSPECTIVE</p>
-              <h2 className="lxh-story__title">
-                A clearer way to power what comes next.
-              </h2>
-              <div className="lxh-story__lede">
-                <p>
-                  Energy is changing the way we live, work and move. From the
-                  rooftops that capture sunlight to the systems that keep energy
-                  within reach and the journeys that connect our everyday lives,
-                  a new energy landscape is taking shape.
-                </p>
-                <p>
-                  LONEX brings solar energy, intelligent storage and electric
-                  mobility together in one considered experience, shaped by how
-                  each part supports the others.
-                </p>
-              </div>
-            </div>
-
             <div className="lxh-story__body" data-lxh-story-body>
-              <div className="lxh-story__copy">
-                <h3 className="lxh-story__headline">
-                  More than energy.
-                  <span>A different way forward.</span>
-                </h3>
-                <p>
-                  We believe the future of energy should feel more connected,
-                  more understandable and more accessible. Generating power,
-                  storing it for when it matters and using it to move through
-                  everyday life are not isolated ideas. They are parts of a much
-                  bigger picture.
-                </p>
-                <p>
-                  That is the perspective behind LONEX. We bring together
-                  technologies and solutions that reflect the changing needs of
-                  modern homes, businesses and communities. Every category has
-                  its own purpose, yet each contributes to a more connected
-                  approach to how energy is experienced.
-                </p>
-                <p>
-                  Our focus is on thoughtful selection, meaningful information
-                  and a clear experience that helps people explore possibilities
-                  with confidence. Because progress is not simply about what
-                  technology can do. It is about how naturally it becomes part of
-                  everyday life.
-                </p>
-              </div>
-
               <figure className="lxh-story__media">
                 <Image
-                  src={STORY_PHOTO}
-                  alt="Solar panels integrated into the tiled roof of a contemporary home"
-                  fill
-                  sizes="(max-width: 900px) 100vw, 52vw"
+                  src={PERSPECTIVE_IMAGE}
+                  alt="Solar panels on a LONEX home"
+                  width={PERSPECTIVE_IMAGE_WIDTH}
+                  height={PERSPECTIVE_IMAGE_HEIGHT}
+                  sizes="(max-width: 959px) 100vw, 46vw"
                   className="lxh-story__image"
                 />
               </figure>
+
+              <div className="lxh-story__panel">
+                <div className="lxh-story__intro" data-lxh-head>
+                  <p className="lxh-story__eyebrow">THE LONEX PERSPECTIVE</p>
+                  <h2 className="lxh-story__title">
+                    A clearer way to power what comes next.
+                  </h2>
+                  <div className="lxh-story__lede">
+                    <p>
+                      Energy is changing the way we live, work and move. From the
+                      rooftops that capture sunlight to the systems that keep
+                      energy within reach and the journeys that connect our
+                      everyday lives, a new energy landscape is taking shape.
+                    </p>
+                    <p>
+                      The range begins with us. Our solar panels leave
+                      production lines we run ourselves, and our batteries and
+                      electric rides are put together here in Pakistan — close
+                      enough that the people who build them can be asked a
+                      question and answer it.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="lxh-story__copy">
+                  <h3 className="lxh-story__headline">
+                    More than energy.
+                    <span>A different way forward.</span>
+                  </h3>
+                  <p>
+                    We believe the future of energy should feel more connected,
+                    more understandable and more accessible. Generating power,
+                    storing it for when it matters and using it to move through
+                    everyday life are not isolated ideas. They are parts of a
+                    much bigger picture.
+                  </p>
+                  <p>
+                    That is the perspective behind LONEX. We bring together
+                    technologies and solutions that reflect the changing needs of
+                    modern homes, businesses and communities. Every category has
+                    its own purpose, yet each contributes to a more connected
+                    approach to how energy is experienced.
+                  </p>
+                  <p>
+                    Because the parts are ours to make and ours to answer for, we
+                    can be precise about what each one is, what it will do and
+                    where its limits lie — and we can stay with that knowledge
+                    long after the product leaves us.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="lxh-principles" data-lxh-principles>
-              {PRINCIPLES.map((principle) => (
+              {PRINCIPLES.map((principle, index) => (
                 <div className="lxh-principle" key={principle.title}>
+                  <span className="lxh-principle__numeral">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                   <h3 className="lxh-principle__title">{principle.title}</h3>
                   <p className="lxh-principle__copy">{principle.copy}</p>
                 </div>
@@ -530,35 +469,28 @@ export default async function HomePage() {
         {/* F — Journal */}
         <section className="lxh-section" id="journal">
           <div className="lx-wrap">
-            <SectionHead
-              label="Journal"
-              title="From the journal."
-            >
-              <p className="lxh-body">
-                Product notes, company updates and articles from LONEX.
-              </p>
-              <div className="lxh-head__link">
-                <Link href="/blog" className="lx-link">
-                  All articles
-                </Link>
-              </div>
-            </SectionHead>
+            <div className="lxh-journal__head">
+              <SectionHead label="Journal" title="From the journal.">
+                <p className="lxh-body">
+                  Product notes, company updates and articles from LONEX.
+                </p>
+                <div className="lxh-head__link">
+                  <Link href="/blog" className="lx-link">
+                    All articles
+                  </Link>
+                </div>
+              </SectionHead>
+            </div>
 
             {posts.length > 0 ? (
               <div className="lxh-journal" data-lxh-journal>
-                <JournalCard post={posts[0]} variant="feature" index={0} />
-                {posts.length > 1 ? (
-                  <div className="lxh-journal__side">
-                    {posts.slice(1).map((post, index) => (
-                      <JournalCard
-                        key={post.id}
-                        post={post}
-                        variant="side"
-                        index={index + 1}
-                      />
-                    ))}
-                  </div>
-                ) : null}
+                {posts.map((post) => (
+                  <BlogCard
+                    key={post.id}
+                    post={post}
+                    category={TOPIC_LABELS[topicForPost(post)]}
+                  />
+                ))}
               </div>
             ) : (
               <p className="lxh-body">

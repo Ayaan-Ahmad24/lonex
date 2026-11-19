@@ -44,6 +44,13 @@ export type CategoryEditorial = {
     lede: string;
     enquiryNote: string;
   };
+  charging?: {
+    eyebrow: string;
+    title: string;
+    lede: string;
+    items: EditorialPoint[];
+    note: string;
+  };
   community: {
     lede: string;
     pillars: EditorialPoint[];
@@ -73,7 +80,7 @@ const SOLAR: CategoryEditorial = {
   heroLines: ["Daylight,", "put to work."],
   heroIntro: [
     "Solar turns a roof, a shed or a commercial building into a place where electricity is generated on site. For many properties it is the most direct way to take part in the energy transition — producing power where it is used rather than waiting for the grid to change.",
-    "LONEX selects solar modules for residential and commercial installations. The focus is on the whole arrangement: how the array is sized, how it is mounted, where the power goes and how the system can grow.",
+    "LONEX builds solar modules for residential and commercial installations. The focus is on the whole arrangement: how the array is sized, how it is mounted, where the power goes and how the system can grow.",
   ],
   heroMeta: ["Residential", "Commercial", "System planning"],
   primaryCta: "Explore solar models",
@@ -147,7 +154,7 @@ const SOLAR: CategoryEditorial = {
     body: "Send us the roof, the load and the ambition. We will help you work out what the system can — and cannot — do.",
   },
   seoDescription:
-    "Solar modules for residential and commercial rooftops, selected and planned by LONEX as part of a complete generating system.",
+    "Solar modules for residential and commercial rooftops, built and planned by LONEX as part of a complete generating system.",
 };
 
 const BATTERIES: CategoryEditorial = {
@@ -232,56 +239,80 @@ const BATTERIES: CategoryEditorial = {
     "Home battery systems and hybrid inverters from LONEX, planned around the way a household generates, stores and uses electricity.",
 };
 
-const EV_BIKES: CategoryEditorial = {
+const ELECTRIC_SCOOTERS: CategoryEditorial = {
   eyebrow: "Electric mobility",
-  heroLines: ["The short trip,", "reconsidered."],
+  heroLines: ["The city,", "within reach."],
   heroIntro: [
-    "Most journeys are short. The commute, the school run, the errand across town — distances a car is often used for simply because it is there. An electric bike offers another way to cover them: quiet, compact and powered by electricity.",
-    "LONEX supplies electric bikes for everyday urban travel. The aim is practical mobility for the journeys where a bike makes sense — not a claim that it replaces every trip.",
+    "Most journeys are short. The commute, the school run, the errand across town — distances a car is often used for simply because it is there. An electric scooter offers another way to cover them: quiet, compact and powered by electricity.",
+    "LONEX supplies electric scooters for everyday urban travel. The aim is practical mobility for the journeys where a scooter makes sense — not a claim that it replaces every trip.",
   ],
   heroMeta: ["Everyday journeys", "Urban travel", "Short distances"],
-  primaryCta: "Explore electric bikes",
+  primaryCta: "Explore electric scooters",
   secondaryCta: "Make an enquiry",
   intro: {
     eyebrow: "A different measure of distance",
     title: "Less friction between here and there.",
     body: [
-      "Electric mobility is less about speed than about removing reasons not to go. A powered bike takes the effort out of a short trip, carries a bag or a passenger, and parks where a car cannot.",
-      "For the right journey, that changes the calculation. The choice should be made on distance, route, weather, cargo and confidence — not on a promise that one vehicle suits every day.",
+      "Electric mobility is less about speed than about removing reasons not to go. A scooter takes the effort out of a short trip, carries a bag or a passenger where the model allows, and parks where a car cannot.",
+      "For the right journey, that changes the calculation. The choice should be made on distance, route, weather, carrying needs and confidence — not on a promise that one vehicle suits every day.",
     ],
     link: { label: "See the energy behind it", href: "/solar" },
   },
   benefits: {
     eyebrow: "The case for electric mobility",
     title: "Built around the journeys that repeat.",
-    lede: "The value of an electric bike shows up in routine, not in extremes. Four practical reasons sit behind it.",
+    lede: "The value of an electric scooter shows up in routine, not in extremes. Four practical reasons sit behind it.",
     items: [
       {
         title: "Everyday urban mobility",
-        copy: "A compact electric bike fits the rhythm of a city: door to door, without the search for a parking space or the wait in traffic.",
+        copy: "A compact electric scooter fits the rhythm of a city: door to door, without the search for a parking space or the wait in traffic.",
       },
       {
         title: "Convenient short-distance travel",
-        copy: "Errands, commutes and school runs are often only a few kilometres. An electric bike is sized for those distances and ready without a special trip to refuel.",
+        copy: "Errands, commutes and school runs are often only a few kilometres. An electric scooter is sized for those distances and ready without a special trip to refuel.",
       },
       {
         title: "The benefits of electric drive",
-        copy: "Electric assistance makes hills and headwinds less of a barrier, so a wider range of people can consider two wheels for practical journeys.",
+        copy: "Electric power removes the effort from routine journeys, so a wider range of people can consider two wheels for practical travel.",
       },
       {
         title: "A practical alternative for suitable journeys",
-        copy: "It is not a replacement for every car journey. It is a credible option where distance, weather, cargo and route allow — and the choice should be made honestly.",
+        copy: "It is not a replacement for every car journey. It is a credible option where distance, weather, carrying needs and route allow — and the choice should be made honestly.",
       },
     ],
   },
   products: {
-    eyebrow: "The electric mobility range",
-    title: "Two bikes for the everyday.",
-    lede: "One is built around daily urban travel. The other is shaped for the commute. Both begin with the journey rather than the specification sheet.",
+    eyebrow: "The electric scooter range",
+    title: "Built for the everyday route.",
+    lede: "Each model is presented with the information LONEX has confirmed. The figures that matter are published on the product page for that unit.",
     enquiryNote: "Model-specific details are confirmed for the individual unit.",
   },
+  charging: {
+    eyebrow: "Charging and everyday use",
+    title: "A routine, not a ritual.",
+    lede: "An electric scooter is only practical if charging and storage fit the pace of an ordinary week. These are the questions worth settling before you buy.",
+    items: [
+      {
+        title: "Charge where you park",
+        copy: "Charging usually happens where the scooter stands — at home or at work. Confirm the socket, the cable route and whether the battery can be removed before you plan the routine.",
+      },
+      {
+        title: "Fit it around the week",
+        copy: "Charging belongs in the hours when the scooter is standing still. The right pattern depends on the charger supplied with the model and the distance you actually cover.",
+      },
+      {
+        title: "Plan the storage",
+        copy: "A scooter needs somewhere secure and weather-aware to stand. Ground-floor access, lifts and shared parking all shape whether the routine is easy or awkward.",
+      },
+      {
+        title: "Ask for the model figures",
+        copy: "Charging time and range are details of a specific model. Ask for them for the exact unit you are considering rather than relying on a category-level claim.",
+      },
+    ],
+    note: "Charging time, range and battery details are confirmed per model by LONEX. Nothing on this page assumes a figure.",
+  },
   community: {
-    lede: "Mobility shapes a neighbourhood. Quieter streets, shorter trips and more people moving under their own power change how a place feels as much as how it functions.",
+    lede: "Mobility shapes a neighbourhood. Quieter streets, shorter trips and more people moving through the city change how a place feels as much as how it functions.",
     pillars: [
       {
         title: "Energy awareness and education",
@@ -289,15 +320,15 @@ const EV_BIKES: CategoryEditorial = {
       },
       {
         title: "More informed purchasing decisions",
-        copy: "Range, support, servicing and local conditions matter more than headline claims. Clear information helps riders choose a bike that fits their actual journeys.",
+        copy: "Range, support, servicing and local conditions matter more than headline claims. Clear information helps riders choose a scooter that fits their actual journeys.",
       },
       {
         title: "Responsible technology adoption",
-        copy: "An electric bike should match the rider, the route and the load. Responsible adoption means saying so when a different solution is the better one.",
+        copy: "An electric scooter should match the rider, the route and the load. Responsible adoption means saying so when a different solution is the better one.",
       },
       {
         title: "Cleaner, more thoughtful mobility",
-        copy: "Every short trip taken on an electric bike is a trip not taken by a larger vehicle. The effect is cumulative, and it begins with practical choices.",
+        copy: "Every short trip taken on an electric scooter is a trip not taken by a larger vehicle. The effect is cumulative, and it begins with practical choices.",
       },
       {
         title: "Local skills and participation",
@@ -308,16 +339,16 @@ const EV_BIKES: CategoryEditorial = {
   },
   closing: {
     title: "Start with the journey.",
-    body: "Tell us where you need to go, how often and what you carry. We will help you work out whether an electric bike is the right answer.",
+    body: "Tell us where you need to go, how often and where the scooter will be charged. We will help you work out whether an electric scooter is the right answer.",
   },
   seoDescription:
-    "Electric bikes from LONEX for everyday urban journeys, short-distance travel and practical electric mobility.",
+    "Electric scooters from LONEX for everyday urban journeys, short-distance travel and practical electric mobility in the city.",
 };
 
 export const CATEGORY_EDITORIAL: Record<string, CategoryEditorial> = {
   solar: SOLAR,
   batteries: BATTERIES,
-  "ev-bikes": EV_BIKES,
+  "electric-scooters": ELECTRIC_SCOOTERS,
 };
 
 const PRODUCTS: Record<string, ProductEditorial> = {
@@ -443,17 +474,17 @@ const PRODUCTS: Record<string, ProductEditorial> = {
     seoDescription:
       "A LONEX hybrid inverter for solar and storage systems, coordinating generation, battery charging and household demand.",
   },
-  "electric-bike": {
-    tagline: "An electric bike for the everyday journey.",
+  "electric-scooter": {
+    tagline: "An electric scooter for the everyday journey.",
     summary:
-      "A powered bike for short urban trips, everyday errands and the regular commute.",
+      "A powered scooter for short urban trips, everyday errands and the regular commute.",
     intro: [
-      "This electric bike is designed around short urban trips: the commute, the errand, the school run. Electric assistance reduces the effort of getting there, which makes the bike a realistic option for more people and more days.",
+      "This electric scooter is designed around short urban trips: the commute, the errand, the school run. Electric power removes the effort of getting there, which makes the scooter a realistic option for more people and more days.",
       "It belongs to the LONEX electric mobility range and is offered for everyday travel. Model-specific details — including battery, motor and range — are confirmed for the individual unit rather than assumed from the category.",
     ],
     benefits: [
       {
-        title: "Powered assistance",
+        title: "Powered for the city",
         copy: "An electric drive supports the rider, making short journeys easier and less dependent on physical effort.",
       },
       {
@@ -468,14 +499,14 @@ const PRODUCTS: Record<string, ProductEditorial> = {
     useCases: ["Daily commuting", "Short errands", "Local urban travel"],
     note: "Range and performance depend on the specific model and on how it is ridden.",
     seoDescription:
-      "A LONEX electric bike for everyday urban journeys, short errands and the regular commute.",
+      "A LONEX electric scooter for everyday urban journeys, short errands and the regular commute.",
   },
-  "electric-commuter-bike": {
-    tagline: "A commuter electric bike for shorter daily journeys.",
+  "electric-commuter-scooter": {
+    tagline: "A commuter electric scooter for shorter daily journeys.",
     summary:
-      "A focused commuter bike for the regular trip to work and the short journeys around it.",
+      "A focused commuter scooter for the regular trip to work and the short journeys around it.",
     intro: [
-      "The commute is the journey an electric bike can change most. It is repeated, predictable and often short enough that a car is more vehicle than the trip requires.",
+      "The commute is the journey an electric scooter can change most. It is repeated, predictable and often short enough that a car is more vehicle than the trip requires.",
       "This commuter model is offered for shorter daily journeys in urban conditions. As with every model in the range, the details that matter — battery, motor and range — are confirmed for the individual unit.",
     ],
     benefits: [
@@ -485,7 +516,7 @@ const PRODUCTS: Record<string, ProductEditorial> = {
       },
       {
         title: "Quiet electric drive",
-        copy: "Electric assistance makes the ride calmer and less strenuous, particularly on hills and into wind.",
+        copy: "Electric power makes the ride calmer and less strenuous, particularly on longer or busier routes.",
       },
       {
         title: "Simple to live with",
@@ -495,7 +526,7 @@ const PRODUCTS: Record<string, ProductEditorial> = {
     useCases: ["Daily commuting", "Short-distance travel", "Urban errands"],
     note: "Range and performance depend on the specific model and on how it is ridden.",
     seoDescription:
-      "A LONEX commuter electric bike for shorter daily journeys and practical urban travel.",
+      "A LONEX commuter electric scooter for shorter daily journeys and practical urban travel.",
   },
 };
 

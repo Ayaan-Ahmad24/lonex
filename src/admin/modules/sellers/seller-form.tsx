@@ -9,6 +9,7 @@ import {
   Textarea,
 } from "@/admin/core/ui/form-fields";
 import { SubmitButton } from "@/admin/core/ui/submit-button";
+import { SellerImageUploader } from "./seller-image-uploader";
 import { createSellerAction, updateSellerAction } from "./actions";
 
 export type SellerFormValues = {
@@ -19,6 +20,9 @@ export type SellerFormValues = {
   phone: string;
   whatsapp: string;
   googleMapsUrl: string;
+  imageMediaId: number | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
   sortOrder: number;
   status: string;
 };
@@ -104,6 +108,17 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               maxLength={500}
             />
           </FormField>
+          {/* Full-width image uploader so the preview area stays large. */}
+          <div className="sm:col-span-2">
+            <SellerImageUploader
+              imageMediaId={seller?.imageMediaId ?? null}
+              imageUrl={seller?.imageUrl ?? null}
+              imageAlt={seller?.imageAlt ?? null}
+              onImageMediaIdChange={() => {
+                // The hidden input inside SellerImageUploader submits with the form.
+              }}
+            />
+          </div>
           <FormField label="Sort order" htmlFor="sortOrder">
             <TextInput
               id="sortOrder"

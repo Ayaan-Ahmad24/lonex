@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import { Node, mergeAttributes } from "@tiptap/core";
+import type { DOMOutputSpec } from "@tiptap/pm/model";
 import StarterKit from "@tiptap/starter-kit";
-import { safeHref } from "@/lib/content/rich-text";
+import { safeHref, safeImageSrc } from "@/lib/content/rich-text";
 
 type EditorMode = "visual" | "html" | "preview";
 
@@ -24,12 +26,130 @@ const ALLOWED_TAGS = new Set([
   "a",
   "hr",
   "br",
+  "figure",
+  "figcaption",
+  "img",
 ]);
 
-const VOID_TAGS = new Set(["hr", "br"]);
+const VOID_TAGS = new Set(["hr", "br", "img"]);
 
 const UNSAFE_SOURCE =
   /<\s*\/?\s*(script|iframe|object|embed|form|svg|style|link|meta|input|button|textarea|select)\b|\son[a-z]+\s*=|\b(?:href|src|action|formaction)\s*=\s*["']?\s*(?:javascript|vbscript|data)\s*:/i;
+
+function readDimension(value: string | null): number | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= 20000
+    ? parsed
+    : null;
+}
+
+/**
+ * Inline figure node.
+ *
+ * `@tiptap/extension-image` is not part of this project and adding a dependency
+ * is out of scope, so the editor keeps its own atom node. It round-trips the
+ * same `<figure data-article-image>` markup the server sanitizer accepts and
+ * the public renderer reads. Attributes are never interpreted as HTML.
+ */
+const ArticleImage = Node.create({
+  name: "articleImage",
+  group: "block",
+  atom: true,
+  draggable: true,
+  selectable: true,
+
+  addAttributes() {
+    return {
+      src: { default: null },
+      alt: { default: "" },
+      caption: { default: null },
+      width: { default: null },
+      height: { default: null },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: "figure",
+        getAttrs: (element) => {
+          if (!(element instanceof HTMLElement)) {
+            return false;
+          }
+
+          const image = element.querySelector("img");
+          const src = safeImageSrc(image?.getAttribute("src") ?? undefined);
+
+          if (!image || !src) {
+            return false;
+          }
+
+          return {
+            src,
+            alt: image.getAttribute("alt") ?? "",
+            caption:
+              element.querySelector("figcaption")?.textContent?.trim() || null,
+            width: readDimension(image.getAttribute("width")),
+            height: readDimension(image.getAttribute("height")),
+          };
+        },
+      },
+      {
+        tag: "img[src]",
+        getAttrs: (element) => {
+          if (!(element instanceof HTMLElement)) {
+            return false;
+          }
+
+          const src = safeImageSrc(element.getAttribute("src") ?? undefined);
+
+          return src
+            ? { src, alt: element.getAttribute("alt") ?? "" }
+            : false;
+        },
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    const { caption, width, height, ...rest } = HTMLAttributes;
+    const imageAttributes = mergeAttributes(rest);
+
+    if (width) {
+      imageAttributes.width = width;
+    }
+
+    if (height) {
+      imageAttributes.height = height;
+    }
+
+    const children: DOMOutputSpec[] = [["img", imageAttributes]];
+
+    if (caption) {
+      children.push(["figcaption", {}, String(caption)]);
+    }
+
+    return ["figure", { "data-article-image": "" }, ...children];
+  },
+});
+
+/** Read intrinsic dimensions so the stored figure has a stable aspect ratio. */
+function measureImage(
+  src: string,
+): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    const image = new window.Image();
+    image.onload = () =>
+      resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onerror = () => resolve(null);
+    image.src = src;
+  });
+}
 
 /**
  * Check the HTML/Source textarea before it is sent to Tiptap or the server.
@@ -55,7 +175,7 @@ export function validateHtmlSource(source: string): string | null {
     const selfClosing = /\/>\s*$/.test(raw);
 
     if (!ALLOWED_TAGS.has(name)) {
-      return `Unsupported tag <${name}>. Use paragraphs, H2–H4, lists, quotes, links, bold, italic, underline and horizontal rules.`;
+      return `Unsupported tag <${name}>. Use paragraphs, H2–H4, lists, quotes, links, images, bold, italic, underline and horizontal rules.`;
     }
 
     if (VOID_TAGS.has(name) || selfClosing) {
@@ -155,6 +275,7 @@ export function BlogEditor({
           defaultProtocol: "https",
         },
       }),
+      ArticleImage,
     ],
     content: initialHtml,
     editorProps: {
@@ -269,6 +390,75 @@ export function BlogEditor({
     setError(null);
   }
 
+  async function insertImage() {
+    if (!editor) {
+      return;
+    }
+
+    const input = window.prompt(
+      "Image URL (a site path such as /images/… or a full https:// URL)",
+      "/images/",
+    );
+
+    if (input === null) {
+      return;
+    }
+
+    const src = safeImageSrc(input);
+
+    if (!src) {
+      setError(
+        "Images must use https:// or a site-relative path beginning with /.",
+      );
+      return;
+    }
+
+    const altInput = window.prompt(
+      "Alt text (required — describe what the image shows)",
+      "",
+    );
+
+    if (altInput === null) {
+      return;
+    }
+
+    const alt = altInput.trim();
+
+    if (!alt) {
+      setError("Alt text is required so the image is described to screen readers.");
+      return;
+    }
+
+    const captionInput = window.prompt(
+      "Caption (optional, shown in small text below the image)",
+      "",
+    );
+
+    if (captionInput === null) {
+      return;
+    }
+
+    const caption = captionInput.trim();
+    const size = await measureImage(src);
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "articleImage",
+        attrs: {
+          src,
+          alt,
+          caption: caption || null,
+          width: size?.width ?? null,
+          height: size?.height ?? null,
+        },
+      })
+      .run();
+
+    setError(null);
+  }
+
   function clearFormatting() {
     editor
       ?.chain()
@@ -379,6 +569,13 @@ export function BlogEditor({
                 onClick={() => editor.chain().focus().setHorizontalRule().run()}
               />
               <ToolButton
+                label="Image"
+                title="Insert an image with alt text and an optional caption"
+                onClick={() => {
+                  void insertImage();
+                }}
+              />
+              <ToolButton
                 label="Clear"
                 title="Clear formatting"
                 onClick={clearFormatting}
@@ -430,8 +627,9 @@ export function BlogEditor({
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-mono text-[13px] leading-6 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
           />
           <p className="text-xs text-slate-500">
-            Supported tags: p, h2–h4, strong, em, u, ul, ol, li, blockquote, a
-            and hr. Switch to Visual to apply source changes.
+            Supported tags: p, h2–h4, strong, em, u, ul, ol, li, blockquote, a,
+            figure/figcaption/img and hr. Switch to Visual to apply source
+            changes.
           </p>
         </div>
       ) : null}

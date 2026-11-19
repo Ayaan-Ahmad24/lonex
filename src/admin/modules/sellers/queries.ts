@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
-import { authorizedSellers } from "@/db/schema";
+import { authorizedSellers, mediaAssets } from "@/db/schema";
 import { pageCountFor } from "@/admin/core/crud/list-params";
 import type { ListParams, ListResult } from "@/admin/core/crud/types";
 
@@ -12,6 +12,9 @@ export type SellerListRow = {
   status: string;
   sortOrder: number;
   updatedAt: Date;
+  imageMediaId: number | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
 };
 
 export async function listSellers(
@@ -66,15 +69,21 @@ export async function listSellers(
       status: authorizedSellers.status,
       sortOrder: authorizedSellers.sortOrder,
       updatedAt: authorizedSellers.updatedAt,
+      imageMediaId: authorizedSellers.imageMediaId,
     })
     .from(authorizedSellers)
+    .leftJoin(mediaAssets, eq(mediaAssets.id, authorizedSellers.imageMediaId))
     .where(where)
     .orderBy(direction(sortColumn), asc(authorizedSellers.id))
     .limit(params.pageSize)
     .offset((page - 1) * params.pageSize);
 
   return {
-    rows,
+    rows: rows.map((row) => ({
+      ...row,
+      imageUrl: row.imageMediaId ? `/admin/media/${row.imageMediaId}/file` : null,
+      imageAlt: null,
+    })),
     total,
     page,
     pageSize: params.pageSize,
@@ -84,10 +93,32 @@ export async function listSellers(
 
 export async function getSellerById(id: number) {
   const [row] = await db
-    .select()
+    .select({
+      id: authorizedSellers.id,
+      name: authorizedSellers.name,
+      city: authorizedSellers.city,
+      address: authorizedSellers.address,
+      phone: authorizedSellers.phone,
+      whatsapp: authorizedSellers.whatsapp,
+      googleMapsUrl: authorizedSellers.googleMapsUrl,
+      imageMediaId: authorizedSellers.imageMediaId,
+      imageAlt: mediaAssets.altText,
+      sortOrder: authorizedSellers.sortOrder,
+      status: authorizedSellers.status,
+      createdAt: authorizedSellers.createdAt,
+      updatedAt: authorizedSellers.updatedAt,
+    })
     .from(authorizedSellers)
+    .leftJoin(mediaAssets, eq(mediaAssets.id, authorizedSellers.imageMediaId))
     .where(eq(authorizedSellers.id, id))
     .limit(1);
 
-  return row ?? null;
+  if (!row) {
+    return null;
+  }
+
+  return {
+    ...row,
+    imageUrl: row.imageMediaId ? `/admin/media/${row.imageMediaId}/file` : null,
+  };
 }

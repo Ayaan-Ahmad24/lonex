@@ -6,7 +6,7 @@
    Prefixes:
      lxc-  shared category editorial parts, solar experience
      lxb-  batteries experience (charcoal)
-     lxe-  electric bikes experience (warm sand)
+     lxe-  electric scooters experience (warm sand)
      lxg-  generic category fallback
      lxp-  product detail page
    ------------------------------------------------------------------ */
@@ -1552,7 +1552,7 @@
 }
 
 /* ==================================================================
-   Electric bikes — warm sand, cinematic hero with copy plate
+   Electric scooters — warm sand, cinematic hero with copy plate
    ================================================================== */
 
 .lxe-hero {
@@ -1693,7 +1693,7 @@
   border-left: 1px solid rgba(23, 20, 18, 0.2);
 }
 
-/* E-bike intro ----------------------------------------------------- */
+/* Electric scooter intro ----------------------------------------------------- */
 
 .lxe-intro {
   padding-block: clamp(40px, 6vw, 88px) clamp(56px, 8vw, 112px);
@@ -1734,7 +1734,7 @@
   line-height: 1.68;
 }
 
-/* E-bike benefits -------------------------------------------------- */
+/* Electric scooter benefits -------------------------------------------------- */
 
 .lxe-benefits {
   padding-block: clamp(56px, 8vw, 112px);
@@ -1809,7 +1809,7 @@
   line-height: 1.65;
 }
 
-/* E-bike products -------------------------------------------------- */
+/* Electric scooter products -------------------------------------------------- */
 
 .lxe-products {
   padding-block: clamp(56px, 8vw, 112px);
@@ -1996,7 +1996,7 @@
   max-width: 560px;
 }
 
-/* E-bike community ------------------------------------------------- */
+/* Electric scooter community ------------------------------------------------- */
 
 .lxe-community__media {
   position: relative;

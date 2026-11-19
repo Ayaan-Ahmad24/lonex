@@ -15,6 +15,7 @@ import { StatusBadge } from "@/admin/core/ui/badge";
 import { buttonClassName } from "@/admin/core/ui/button";
 import { formatDate } from "@/admin/core/ui/format";
 import { listSellers, type SellerListRow } from "@/admin/modules/sellers/queries";
+import { MediaThumb } from "@/admin/modules/media/media-thumb";
 
 const SORTS = ["sortOrder", "name", "city", "status", "updatedAt"] as const;
 
@@ -34,15 +35,38 @@ export default async function SellersPage({
 
   const columns: DataTableColumn<SellerListRow>[] = [
     {
+      key: "image",
+      header: "",
+      className: "w-14",
+      render: (row) => {
+        if (row.imageUrl) {
+          return (
+            <MediaThumb
+              src={row.imageUrl}
+              alt={row.name}
+              className="h-12 w-12 rounded-lg border border-lonex-line object-contain bg-lonex-paper"
+            />
+          );
+        }
+        return (
+          <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-lonex-line bg-lonex-line-soft text-[10px] font-semibold uppercase tracking-wide text-lonex-muted">
+            {row.name.charAt(0)}
+          </span>
+        );
+      },
+    },
+    {
       key: "name",
       header: "Seller",
       render: (row) => (
-        <Link
-          href={`/admin/sellers/${row.id}`}
-          className="font-medium text-lonex-ink hover:underline"
-        >
-          {row.name}
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/sellers/${row.id}`}
+            className="font-medium text-lonex-ink hover:underline"
+          >
+            {row.name}
+          </Link>
+        </div>
       ),
     },
     { key: "city", header: "City", render: (row) => row.city },

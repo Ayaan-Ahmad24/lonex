@@ -192,6 +192,7 @@ export default async function AuthorizedSellersPage({
             {sellers.length > 0 ? (
               <div className="lxs-list">
                 <div aria-hidden="true" className="lxs-list__head">
+                  <span />
                   <span>Business</span>
                   <span>Address</span>
                   <span>Contact</span>

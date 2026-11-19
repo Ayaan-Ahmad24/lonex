@@ -134,6 +134,26 @@ export function RichTextRenderer({
                 className="border-0 border-t border-black/15"
               />
             );
+          case "image":
+            return (
+              <figure key={index} className="space-y-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={block.src}
+                  alt={block.alt}
+                  width={block.width}
+                  height={block.height}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-auto w-full bg-black/5"
+                />
+                {block.caption ? (
+                  <figcaption className="text-sm leading-6 text-black/55">
+                    {block.caption}
+                  </figcaption>
+                ) : null}
+              </figure>
+            );
           case "paragraph":
           default:
             return <p key={index}>{renderSpans(block.spans)}</p>;

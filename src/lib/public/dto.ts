@@ -73,6 +73,7 @@ export type PublicSeller = {
   phone: string;
   whatsapp: string | null;
   googleMapsUrl: string | null;
+  image: PublicImage | null;
 };
 
 export type PublicBlogCard = {

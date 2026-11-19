@@ -19,7 +19,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 const YEAR = new Date().getFullYear();
 
 /** The range is listed in the order the brand tells it: generate, store, move. */
-const EXPLORE_ORDER = ["solar", "batteries", "ev-bikes"];
+const EXPLORE_ORDER = ["solar", "batteries", "electric-scooters"];
 
 function SocialIcon({ network }: { network: SocialNetwork }) {
   if (network === "instagram") {

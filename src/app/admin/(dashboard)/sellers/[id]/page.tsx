@@ -53,6 +53,9 @@ export default async function EditSellerPage({
           phone: seller.phone,
           whatsapp: seller.whatsapp ?? "",
           googleMapsUrl: seller.googleMapsUrl ?? "",
+          imageMediaId: seller.imageMediaId ?? null,
+          imageUrl: seller.imageUrl ?? null,
+          imageAlt: seller.imageAlt ?? null,
           sortOrder: seller.sortOrder,
           status: seller.status,
         }}

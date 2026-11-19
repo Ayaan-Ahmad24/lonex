@@ -5,7 +5,7 @@ import { connection } from "next/server";
 
 import { PageMotion } from "@/components/public/page-motion";
 import { BatteriesPage } from "@/components/public/categories/batteries-page";
-import { EvBikesPage } from "@/components/public/categories/ev-bikes-page";
+import { ElectricScootersPage } from "@/components/public/categories/electric-scooters-page";
 import { GenericCategoryPage } from "@/components/public/categories/generic-page";
 import { SolarPage } from "@/components/public/categories/solar-page";
 import { getCategoryEditorial } from "@/lib/public/editorial";
@@ -100,8 +100,8 @@ export default async function CategoryPage({
           <SolarPage {...props} />
         ) : category.slug === "batteries" ? (
           <BatteriesPage {...props} />
-        ) : category.slug === "ev-bikes" ? (
-          <EvBikesPage {...props} />
+        ) : category.slug === "electric-scooters" ? (
+          <ElectricScootersPage {...props} />
         ) : (
           <GenericCategoryPage {...props} />
         )}

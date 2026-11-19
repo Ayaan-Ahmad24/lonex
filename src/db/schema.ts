@@ -325,6 +325,14 @@ export const authorizedSellers = mysqlTable(
     phone: varchar("phone", { length: 50 }).notNull(),
     whatsapp: varchar("whatsapp", { length: 50 }),
     googleMapsUrl: varchar("google_maps_url", { length: 500 }),
+    /**
+     * Optional primary business image (logo or photograph). References the
+     * existing media library; the bytes are never stored in this table.
+     * Nullable so sellers created before the feature keep working unchanged.
+     */
+    imageMediaId: int("image_media_id").references(() => mediaAssets.id, {
+      onDelete: "set null",
+    }),
     sortOrder: int("sort_order").notNull().default(0),
     status: varchar("status", { length: 20 }).notNull().default("active"),
     createdAt: timestamp("created_at", { fsp: 3 }).notNull().defaultNow(),
@@ -339,6 +347,7 @@ export const authorizedSellers = mysqlTable(
       table.status,
       table.sortOrder,
     ),
+    index("authorized_sellers_image_idx").on(table.imageMediaId),
   ],
 );
 

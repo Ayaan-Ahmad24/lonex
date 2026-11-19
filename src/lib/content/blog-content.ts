@@ -4,6 +4,7 @@ import {
   RICH_TEXT_VERSION,
   richTextDocumentSchema,
   safeHref,
+  safeImageSrc,
   type InlineSpan,
   type RichTextBlock,
   type RichTextDocument,
@@ -34,6 +35,9 @@ const ALLOWED_TAGS = [
   "a",
   "hr",
   "br",
+  "figure",
+  "figcaption",
+  "img",
 ];
 
 const UNSAFE_HTML =
@@ -63,6 +67,8 @@ const BLOCK_TAGS = new Set([
   "ol",
   "blockquote",
   "hr",
+  "figure",
+  "img",
   "div",
   "section",
   "article",
@@ -174,6 +180,70 @@ function blockSpans(node: HtmlNode): InlineSpan[] {
   return trimSpans(collectInline(node.children ?? [], {}));
 }
 
+function childTag(node: HtmlNode, name: string): HtmlNode | null {
+  return (
+    (node.children ?? []).find(
+      (child) => child.type === "tag" && tagName(child) === name,
+    ) ?? null
+  );
+}
+
+function positiveDimension(value: string | undefined): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  return Number.isInteger(parsed) && parsed > 0 && parsed <= 20000
+    ? parsed
+    : undefined;
+}
+
+function plainTextOf(node: HtmlNode | null): string {
+  if (!node) {
+    return "";
+  }
+
+  return normalizeText(
+    collectInline(node.children ?? [], {})
+      .map((span) => span.text)
+      .join(""),
+  ).trim();
+}
+
+/**
+ * Build an image block from an `<img>` element.
+ *
+ * The caption comes from the surrounding `<figcaption>` when the editor emitted
+ * a figure. Missing alt text is not invented: the block is still created and
+ * the strict schema asks the author to describe the image before it can save.
+ */
+function imageBlock(
+  node: HtmlNode,
+  captionNode: HtmlNode | null = null,
+): RichTextBlock | null {
+  const src = safeImageSrc(node.attribs?.src);
+
+  if (!src) {
+    return null;
+  }
+
+  const width = positiveDimension(node.attribs?.width);
+  const height = positiveDimension(node.attribs?.height);
+  const alt = normalizeText(node.attribs?.alt ?? "").trim();
+  const caption = plainTextOf(captionNode);
+
+  return {
+    type: "image",
+    src,
+    alt,
+    ...(caption ? { caption } : {}),
+    ...(width ? { width } : {}),
+    ...(height ? { height } : {}),
+  };
+}
+
 function appendBlocks(nodes: HtmlNode[], blocks: RichTextBlock[]): void {
   let inline: HtmlNode[] = [];
 
@@ -215,7 +285,22 @@ function appendBlocks(nodes: HtmlNode[], blocks: RichTextBlock[]): void {
 
     flushInline();
 
-    if (tag === "p") {
+    if (tag === "img") {
+      const image = imageBlock(node);
+
+      if (image) {
+        blocks.push(image);
+      }
+    } else if (tag === "figure") {
+      const media = childTag(node, "img");
+      const image = media ? imageBlock(media, childTag(node, "figcaption")) : null;
+
+      if (image) {
+        blocks.push(image);
+      } else {
+        appendBlocks(node.children ?? [], blocks);
+      }
+    } else if (tag === "p") {
       const spans = blockSpans(node);
 
       if (spans.length > 0) {
@@ -257,9 +342,13 @@ function appendBlocks(nodes: HtmlNode[], blocks: RichTextBlock[]): void {
 export function sanitizeArticleHtml(html: string): string {
   return sanitizeHtml(html, {
     allowedTags: ALLOWED_TAGS,
-    allowedAttributes: { a: ["href"] },
+    allowedAttributes: {
+      a: ["href"],
+      figure: ["data-article-image"],
+      img: ["src", "alt", "width", "height"],
+    },
     allowedSchemes: ["https"],
-    allowedSchemesByTag: { a: ["https"] },
+    allowedSchemesByTag: { a: ["https"], img: ["https"] },
     allowProtocolRelative: false,
     disallowedTagsMode: "discard",
     transformTags: {
@@ -295,7 +384,7 @@ export function parseRichTextHtml(input: string): RichTextParseResult {
     return {
       ok: false,
       reason:
-        "Article content must contain text, a heading, a list, a quote or a horizontal rule.",
+        "Article content must contain text, a heading, a list, a quote, an image or a horizontal rule.",
     };
   }
 

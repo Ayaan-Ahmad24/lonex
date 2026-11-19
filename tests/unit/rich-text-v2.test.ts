@@ -73,6 +73,62 @@ describe("rich-text v2 schema", () => {
     expect(result?.blocks).toHaveLength(8);
   });
 
+  it("accepts an image block with alt, caption and dimensions", () => {
+    const doc: RichTextDocument = {
+      version: RICH_TEXT_VERSION,
+      blocks: [
+        {
+          type: "image",
+          src: "/images/v2/craft-panel.webp",
+          alt: "A panel being fitted",
+          caption: "Fitting a panel.",
+          width: 1600,
+          height: 900,
+        },
+      ],
+    };
+
+    const result = parseStoredRichText(doc);
+
+    expect(result).not.toBeNull();
+    const image = result?.blocks[0] as Extract<
+      RichTextBlock,
+      { type: "image" }
+    >;
+    expect(image.type).toBe("image");
+    expect(image.src).toBe("/images/v2/craft-panel.webp");
+    expect(image.alt).toBe("A panel being fitted");
+    expect(image.caption).toBe("Fitting a panel.");
+    expect(image.width).toBe(1600);
+    expect(image.height).toBe(900);
+  });
+
+  it("rejects an image block without alt text", () => {
+    const doc = {
+      version: RICH_TEXT_VERSION,
+      blocks: [
+        { type: "image", src: "/images/v2/craft-panel.webp", alt: "" },
+      ],
+    };
+
+    expect(parseStoredRichText(doc)).toBeNull();
+  });
+
+  it("rejects an image block with an unsafe source", () => {
+    const doc = {
+      version: RICH_TEXT_VERSION,
+      blocks: [
+        {
+          type: "image",
+          src: "javascript:alert(1)",
+          alt: "Not allowed",
+        },
+      ],
+    };
+
+    expect(parseStoredRichText(doc)).toBeNull();
+  });
+
   it("supports inline marks and links", () => {
     const doc: RichTextDocument = {
       version: RICH_TEXT_VERSION,
@@ -239,6 +295,65 @@ describe("rich-text HTML serialization", () => {
     expect(html).toContain("&lt;script&gt;");
     expect(html).not.toContain("<script>");
   });
+
+  it("serializes an image block as a figure", () => {
+    const doc: RichTextDocument = {
+      version: RICH_TEXT_VERSION,
+      blocks: [
+        {
+          type: "image",
+          src: "/images/v2/craft-panel.webp",
+          alt: "A panel being fitted",
+          caption: "Fitting a panel.",
+          width: 1600,
+          height: 900,
+        },
+      ],
+    };
+
+    const html = richTextDocumentToHtml(doc);
+
+    expect(html).toContain("<figure data-article-image>");
+    expect(html).toContain('src="/images/v2/craft-panel.webp"');
+    expect(html).toContain('alt="A panel being fitted"');
+    expect(html).toContain('width="1600"');
+    expect(html).toContain('height="900"');
+    expect(html).toContain("<figcaption>Fitting a panel.</figcaption>");
+  });
+
+  it("round-trips an image block through HTML", () => {
+    const doc: RichTextDocument = {
+      version: RICH_TEXT_VERSION,
+      blocks: [
+        { type: "paragraph", spans: [{ text: "Before" }] },
+        {
+          type: "image",
+          src: "/images/v2/craft-panel.webp",
+          alt: "A panel being fitted",
+          caption: "Fitting a panel.",
+          width: 1600,
+          height: 900,
+        },
+        { type: "paragraph", spans: [{ text: "After" }] },
+      ],
+    };
+
+    const result = parseRichTextHtml(richTextDocumentToHtml(doc));
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const image = result.document.blocks[1] as Extract<
+        RichTextBlock,
+        { type: "image" }
+      >;
+      expect(image.type).toBe("image");
+      expect(image.src).toBe("/images/v2/craft-panel.webp");
+      expect(image.alt).toBe("A panel being fitted");
+      expect(image.caption).toBe("Fitting a panel.");
+      expect(image.width).toBe(1600);
+      expect(image.height).toBe(900);
+    }
+  });
 });
 
 describe("safeHref", () => {
@@ -367,6 +482,56 @@ describe("parseRichTextHtml (server sanitizer)", () => {
       expect(listBlock.ordered).toBe(false);
       expect(result.document.blocks[1].type).toBe("quote");
     }
+  });
+
+  it("supports an inline figure with a caption", () => {
+    const result: RichTextParseResult = parseRichTextHtml(
+      '<p>Intro</p><figure data-article-image><img src="/images/v2/craft-panel.webp" alt="A panel being fitted" width="1600" height="900"><figcaption>Fitting a panel.</figcaption></figure>',
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const image = result.document.blocks[1] as Extract<
+        RichTextBlock,
+        { type: "image" }
+      >;
+      expect(image.type).toBe("image");
+      expect(image.src).toBe("/images/v2/craft-panel.webp");
+      expect(image.alt).toBe("A panel being fitted");
+      expect(image.caption).toBe("Fitting a panel.");
+      expect(image.width).toBe(1600);
+      expect(image.height).toBe(900);
+    }
+  });
+
+  it("supports a bare image element", () => {
+    const result: RichTextParseResult = parseRichTextHtml(
+      '<img src="https://example.com/photo.jpg" alt="A rooftop array">',
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.document.blocks[0].type).toBe("image");
+    }
+  });
+
+  it("rejects an image without alt text", () => {
+    const result: RichTextParseResult = parseRichTextHtml(
+      '<img src="/images/v2/craft-panel.webp">',
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toContain("Describe the image");
+    }
+  });
+
+  it("rejects a data: image source", () => {
+    const result: RichTextParseResult = parseRichTextHtml(
+      '<img src="data:image/png;base64,AAAA" alt="Inline data">',
+    );
+
+    expect(result.ok).toBe(false);
   });
 
   it("rejects empty input", () => {

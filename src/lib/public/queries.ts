@@ -477,8 +477,12 @@ export async function listPublishedSellers(
       phone: authorizedSellers.phone,
       whatsapp: authorizedSellers.whatsapp,
       googleMapsUrl: authorizedSellers.googleMapsUrl,
+      imageMediaId: authorizedSellers.imageMediaId,
+      imageStorageKey: mediaAssets.storageKey,
+      imageAlt: mediaAssets.altText,
     })
     .from(authorizedSellers)
+    .leftJoin(mediaAssets, eq(mediaAssets.id, authorizedSellers.imageMediaId))
     .where(
       normalizedCity
         ? and(
@@ -493,7 +497,24 @@ export async function listPublishedSellers(
       asc(authorizedSellers.name),
     );
 
-  return rows;
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    city: row.city,
+    address: row.address,
+    phone: row.phone,
+    whatsapp: row.whatsapp,
+    googleMapsUrl: row.googleMapsUrl,
+    image: row.imageMediaId
+      ? {
+          id: row.imageMediaId,
+          url: `/media/${row.imageMediaId}`,
+          alt: row.imageAlt ?? row.name,
+          width: null,
+          height: null,
+        }
+      : null,
+  }));
 }
 
 export async function listSellerCities(): Promise<string[]> {

@@ -12,7 +12,7 @@ export const HERO = {
   lineTwo: "things",
   lineTwoAccent: "forward.",
   intro: [
-    "A rooftop system, a battery that covers the evening, an electric bike for the daily route — they are separate decisions that tend to meet in the same conversation. Tell us what you are planning and we will help you work out the next step.",
+    "A rooftop system, a battery that covers the evening, an electric scooter for the daily route — they are separate decisions that tend to meet in the same conversation. Tell us what you are planning and we will help you work out the next step.",
     "LONEX is based in Lahore. Share the property, the journeys or the system you have in mind, and we will answer with the details that apply to it.",
   ],
   facts: [
@@ -74,8 +74,8 @@ export const CATEGORIES = [
     hint: "Storage and evening supply",
   },
   {
-    id: "electric-bikes",
-    label: "Electric Bikes",
+    id: "electric-scooters",
+    label: "Electric Scooters",
     hint: "Daily journeys and charging",
   },
   {

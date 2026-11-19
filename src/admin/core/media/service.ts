@@ -1,6 +1,7 @@
 import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  authorizedSellers,
   blogPosts,
   categories,
   mediaAssets,
@@ -194,6 +195,15 @@ export async function findMediaReferences(mediaId: number): Promise<string[]> {
 
   for (const post of blogRows) {
     references.push(`Blog post "${post.title}" cover image`);
+  }
+
+  const sellerRows = await db
+    .select({ name: authorizedSellers.name })
+    .from(authorizedSellers)
+    .where(eq(authorizedSellers.imageMediaId, mediaId));
+
+  for (const seller of sellerRows) {
+    references.push(`Authorized seller "${seller.name}" image`);
   }
 
   const imageRows = await db

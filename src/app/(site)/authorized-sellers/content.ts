@@ -65,10 +65,10 @@ export const RANGE_LINKS = [
     alt: "Home battery units and an inverter mounted against an interior wall",
   },
   {
-    name: "Electric Bikes",
-    href: "/ev-bikes",
+    name: "Electric Scooters",
+    href: "/electric-scooters",
     line: "Electric two-wheelers for short urban journeys and everyday errands.",
     image: "/images/lonex-step-1/move-mobility.webp",
-    alt: "An electric bicycle parked in a covered rack",
+    alt: "An electric scooter parked in a covered rack",
   },
 ] as const;

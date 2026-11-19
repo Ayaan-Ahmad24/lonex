@@ -71,7 +71,7 @@ export default async function AboutPage() {
                 </p>
                 <p>
                   Based in Lahore, our work spans solar generation, battery
-                  storage and electric mobility — selecting the range,
+                  storage and electric mobility — building the range,
                   explaining its limits, and helping each customer find the
                   combination that fits.
                 </p>

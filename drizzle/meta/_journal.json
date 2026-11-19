@@ -50,6 +50,13 @@
       "when": 1793787498322,
       "tag": "0006_lonex_modules",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1795066048810,
+      "tag": "0007_seller_image",
+      "breakpoints": true
     }
   ]
 }

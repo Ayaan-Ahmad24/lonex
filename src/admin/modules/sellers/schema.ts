@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   formInteger,
+  formOptionalId,
   formText,
   parseForm,
   type ParsedForm,
@@ -40,6 +41,12 @@ export const sellerSchema = z.object({
   phone: phoneSchema,
   whatsapp: optionalPhone,
   googleMapsUrl: optionalHttps,
+  imageMediaId: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .nullable(),
   sortOrder: z.number().int().min(-100000).max(100000).default(0),
   status: z.enum(["active", "inactive"]).default("active"),
 });
@@ -54,6 +61,7 @@ export function parseSellerForm(formData: FormData): ParsedForm<SellerInput> {
     phone: formText(formData.get("phone")),
     whatsapp: formText(formData.get("whatsapp")),
     googleMapsUrl: formText(formData.get("googleMapsUrl")),
+    imageMediaId: formOptionalId(formData.get("imageMediaId")),
     sortOrder: formInteger(formData.get("sortOrder")),
     status: formText(formData.get("status")) || "active",
   });

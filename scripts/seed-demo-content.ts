@@ -20,7 +20,7 @@ config({ path: ".env.local", quiet: true });
  *
  * Idempotency:
  *   - Categories are matched by their approved slugs (solar, batteries,
- *     ev-bikes) and never duplicated.
+ *     electric-scooters) and never duplicated.
  *   - Products are matched by (category_id, slug).
  *   - Public paths are matched by path.
  *   - Product images are matched by (product_id, media_id).
@@ -41,7 +41,7 @@ type SpecGroup = { name: string; rows: SpecRow[] };
 type DemoImage = { file: string; alt: string };
 
 type DemoProduct = {
-  categorySlug: "solar" | "batteries" | "ev-bikes";
+  categorySlug: "solar" | "batteries" | "electric-scooters";
   slug: string;
   name: string;
   shortDescription: string;
@@ -101,10 +101,10 @@ const CATEGORY_SEEDS = [
     },
   },
   {
-    slug: "ev-bikes",
-    name: "Electric Bikes",
+    slug: "electric-scooters",
+    name: "Electric Scooters",
     description:
-      "Electric bikes for everyday urban travel.",
+      "Electric scooters for everyday urban travel.",
     sortOrder: 20,
     cover: {
       file: "categories/electric-mobility.webp",
@@ -222,21 +222,21 @@ const PRODUCTS: DemoProduct[] = [
     specs: [],
   },
   {
-    categorySlug: "ev-bikes",
-    slug: "electric-bike",
-    name: "Electric Bike",
+    categorySlug: "electric-scooters",
+    slug: "electric-scooter",
+    name: "Electric Scooter",
     shortDescription:
-      "An electric bike for everyday urban journeys.",
+      "An electric scooter for everyday urban journeys.",
     description: PRODUCT_DESCRIPTION,
-    seoTitle: "An electric bike for everyday urban journeys. | LONEX",
+    seoTitle: "An electric scooter for everyday urban journeys. | LONEX",
     seoDescription:
-      "An electric bike for everyday urban journeys.",
+      "An electric scooter for everyday urban journeys.",
     sortOrder: 10,
     featuredSortOrder: 30,
     images: [
       {
-        file: "demo-products/demo-electric-bike.webp",
-        alt: "an electric bike concept",
+        file: "demo-products/demo-electric-scooter.webp",
+        alt: "an electric scooter concept",
       },
       {
         file: "lifestyle/ev-charging.webp",
@@ -246,15 +246,15 @@ const PRODUCTS: DemoProduct[] = [
     specs: [],
   },
   {
-    categorySlug: "ev-bikes",
-    slug: "electric-commuter-bike",
-    name: "Electric Commuter Bike",
+    categorySlug: "electric-scooters",
+    slug: "electric-commuter-scooter",
+    name: "Electric Commuter Scooter",
     shortDescription:
-      "A commuter electric bike for shorter daily journeys.",
+      "A commuter electric scooter for shorter daily journeys.",
     description: PRODUCT_DESCRIPTION,
-    seoTitle: "A commuter electric bike for shorter daily journeys. | LONEX",
+    seoTitle: "A commuter electric scooter for shorter daily journeys. | LONEX",
     seoDescription:
-      "A commuter electric bike for shorter daily journeys.",
+      "A commuter electric scooter for shorter daily journeys.",
     sortOrder: 20,
     featuredSortOrder: 60,
     images: [
@@ -414,7 +414,7 @@ An electric bike still has tyres, brakes, a chain or belt and a frame. The elect
 - A removable pack if charging access is limited.
 - Clear documentation and a registration route for the model.
 
-[Explore electric bikes](/ev-bikes)
+[Explore electric scooters](/electric-scooters)
 `,
   },
 ];
@@ -660,7 +660,7 @@ async function main(): Promise<void> {
 
     // Preserve the approved slugs. Only refresh the legacy display label and
     // empty descriptions; an administrator's later copy is never overwritten.
-    if (seed.slug === "ev-bikes" && existing.name === "EV Bikes") {
+    if (seed.slug === "electric-scooters" && existing.name === "EV Bikes") {
       updates.name = seed.name;
     }
 
@@ -1037,7 +1037,7 @@ async function removeDemoContent(ctx: RemovalContext): Promise<void> {
     .innerJoin(categories, eq(categories.id, products.categoryId))
     .where(
       and(
-        inArray(categories.slug, ["solar", "batteries", "ev-bikes"]),
+        inArray(categories.slug, ["solar", "batteries", "electric-scooters"]),
         inArray(products.slug, PRODUCT_SLUGS),
       ),
     );

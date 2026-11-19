@@ -59,7 +59,7 @@ function renderSpans(spans: InlineSpan[]): ReactNode {
 
 /**
  * A paragraph that contains nothing but a link is the stored form of a closing
- * action ("Verify a model", "Find a seller", "Explore electric bikes"). It is
+ * action ("Verify a model", "Find a seller", "Explore the range"). It is
  * promoted to a labelled callout so it reads as a next step, not a stray link.
  */
 function singleLink(block: RichTextBlock): InlineSpan | null {
@@ -155,6 +155,34 @@ export function ArticleBody({
 
     if (block.type === "hr") {
       blocks.push(<hr key={key} className="lxad-rule" />);
+
+      return;
+    }
+
+    if (block.type === "image") {
+      blocks.push(
+        <figure key={key} className="lxad-figure">
+          <div className="lxad-figure__media">
+            {/* The stored source is used as-is: no derivative is requested, so
+                a small photograph is never upscaled into a huge variant. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={block.src}
+              alt={block.alt}
+              width={block.width}
+              height={block.height}
+              loading="lazy"
+              decoding="async"
+              className="lxad-figure__img"
+            />
+          </div>
+          {block.caption ? (
+            <figcaption className="lxad-figure__cap">
+              {block.caption}
+            </figcaption>
+          ) : null}
+        </figure>,
+      );
 
       return;
     }

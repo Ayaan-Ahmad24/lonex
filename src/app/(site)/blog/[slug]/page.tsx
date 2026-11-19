@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 
 import { ContentImage } from "@/components/public/content-image";
+import { BlogCard } from "@/components/public/blog-card";
 import { JsonLd } from "@/components/public/json-ld";
 import { PageMotion } from "@/components/public/page-motion";
 import { createPageMetadata, notFoundMetadata } from "@/lib/public/seo";
@@ -32,10 +33,6 @@ import "../../../home.css";
 import "../../../article.css";
 
 type Params = { slug: string };
-
-function pad(value: number): string {
-  return String(value).padStart(2, "0");
-}
 
 export async function generateMetadata({
   params,
@@ -144,29 +141,6 @@ export default async function BlogDetailPage({
                   {standfirstFor(post)}
                 </p>
               </div>
-
-              <aside className="lxad-hero__aside" data-hero-item>
-                <p className="lxad-hero__aside-label">Filed under</p>
-                <p className="lxad-hero__topic">{topic}</p>
-
-                <dl className="lxad-hero__facts">
-                  <div>
-                    <dt>Published</dt>
-                    <dd>
-                      <time dateTime={post.publishedAt}>
-                        {post.publishedLabel}
-                      </time>
-                    </dd>
-                  </div>
-                </dl>
-
-                <p className="lxad-hero__link">
-                  <Link href="/blog" className="lxad-textlink">
-                    {ARTICLE.allArticles}
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                </p>
-              </aside>
             </div>
           </div>
 
@@ -220,44 +194,80 @@ export default async function BlogDetailPage({
         <nav className="lxad-pager" aria-label={ARTICLE.pagerLabel}>
           <div className="lx-wrap lxad-pager__grid">
             <div className="lxad-pager__cell">
+              <p className="lxad-pager__label">{ARTICLE.previousLabel}</p>
+
               {older ? (
                 <Link href={older.path} className="lxad-pager__link">
-                  <span className="lxad-pager__label">
-                    {ARTICLE.previousLabel}
+                  <span className="lxad-pager__thumb">
+                    <ContentImage
+                      image={older.cover}
+                      fallbackLabel={older.title}
+                      sizes="(max-width: 620px) 100vw, 44vw"
+                    />
                   </span>
-                  <span className="lxad-pager__title">{older.title}</span>
-                  <span className="lxad-pager__meta">
-                    {topicLabelFor(older)} · {older.publishedLabel}
+                  <span className="lxad-pager__body">
+                    <span className="lxad-pager__meta">
+                      <span>{topicLabelFor(older)}</span>
+                      <time dateTime={older.publishedAt}>
+                        {older.publishedLabel}
+                      </time>
+                    </span>
+                    <span className="lxad-pager__title">{older.title}</span>
+                    <span className="lxad-pager__read">
+                      Read article <span aria-hidden="true">→</span>
+                    </span>
                   </span>
                 </Link>
               ) : (
-                <Link href="/blog" className="lxad-pager__link">
-                  <span className="lxad-pager__label">
-                    {ARTICLE.journalLabel}
-                  </span>
+                <Link
+                  href="/blog"
+                  className="lxad-pager__link lxad-pager__link--plain"
+                >
                   <span className="lxad-pager__title">
                     {ARTICLE.allArticles}
+                  </span>
+                  <span className="lxad-pager__read">
+                    {ARTICLE.journalLabel} <span aria-hidden="true">→</span>
                   </span>
                 </Link>
               )}
             </div>
 
             <div className="lxad-pager__cell lxad-pager__cell--next">
+              <p className="lxad-pager__label">{ARTICLE.nextLabel}</p>
+
               {newer ? (
                 <Link href={newer.path} className="lxad-pager__link">
-                  <span className="lxad-pager__label">{ARTICLE.nextLabel}</span>
-                  <span className="lxad-pager__title">{newer.title}</span>
-                  <span className="lxad-pager__meta">
-                    {topicLabelFor(newer)} · {newer.publishedLabel}
+                  <span className="lxad-pager__thumb">
+                    <ContentImage
+                      image={newer.cover}
+                      fallbackLabel={newer.title}
+                      sizes="(max-width: 620px) 100vw, 44vw"
+                    />
+                  </span>
+                  <span className="lxad-pager__body">
+                    <span className="lxad-pager__meta">
+                      <span>{topicLabelFor(newer)}</span>
+                      <time dateTime={newer.publishedAt}>
+                        {newer.publishedLabel}
+                      </time>
+                    </span>
+                    <span className="lxad-pager__title">{newer.title}</span>
+                    <span className="lxad-pager__read">
+                      Read article <span aria-hidden="true">→</span>
+                    </span>
                   </span>
                 </Link>
               ) : (
-                <Link href="/blog" className="lxad-pager__link">
-                  <span className="lxad-pager__label">
-                    {ARTICLE.journalLabel}
-                  </span>
+                <Link
+                  href="/blog"
+                  className="lxad-pager__link lxad-pager__link--plain"
+                >
                   <span className="lxad-pager__title">
                     {ARTICLE.allArticles}
+                  </span>
+                  <span className="lxad-pager__read">
+                    {ARTICLE.journalLabel} <span aria-hidden="true">→</span>
                   </span>
                 </Link>
               )}
@@ -284,37 +294,11 @@ export default async function BlogDetailPage({
                 </p>
               </div>
 
-              <div className="lxad-related__list">
-                {related.map((item, position) => (
-                  <article
-                    key={item.id}
-                    className="lxad-related__item"
-                    data-reveal
-                  >
-                    <Link href={item.path} className="lxad-related__link">
-                      <span className="lxad-related__num" aria-hidden="true">
-                        {pad(position + 1)}
-                      </span>
-
-                      <span className="lxad-related__body">
-                        <span className="lxad-related__meta">
-                          <span>{topicLabelFor(item)}</span>
-                          <time dateTime={item.publishedAt}>
-                            {item.publishedLabel}
-                          </time>
-                        </span>
-                        <span className="lxad-related__name">{item.title}</span>
-                      </span>
-
-                      <span className="lxad-related__thumb">
-                        <ContentImage
-                          image={item.cover}
-                          fallbackLabel={item.title}
-                          sizes="(max-width: 620px) 96px, 200px"
-                        />
-                      </span>
-                    </Link>
-                  </article>
+              <div className="lxad-related__grid">
+                {related.map((item) => (
+                  <div key={item.id} className="lxad-related__cell" data-reveal>
+                    <BlogCard post={item} category={topicLabelFor(item)} />
+                  </div>
                 ))}
               </div>
             </div>

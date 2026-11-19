@@ -2448,29 +2448,23 @@ a.lx-def:hover dd {
   --lxs-space: clamp(48px, 5vw, 80px);
 }
 
-/* Introduction — eyebrow, then the heading and the introduction sharing
-   one row. */
+/* Introduction — eyebrow, heading and the opening paragraphs share the text
+   column beside the photograph. */
 .lxh-story__intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 430px);
-  align-items: start;
-  justify-content: space-between;
-  column-gap: clamp(32px, 4vw, 64px);
-  margin-bottom: var(--lxs-space);
+  margin-bottom: clamp(26px, 3vw, 40px);
 }
 
 .lxh-story__eyebrow {
-  grid-column: 1 / -1;
-  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 14px;
   margin: 0 0 clamp(20px, 2.4vw, 32px);
-  font-family: var(--lx-mono);
+  font-family: var(--font-poppins);
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.16em;
   color: var(--lx-ink);
+  text-transform: uppercase;
 }
 
 .lxh-story__eyebrow::before {
@@ -2482,10 +2476,9 @@ a.lx-def:hover dd {
 }
 
 .lxh-story__title {
-  grid-column: 1;
-  grid-row: 2;
-  margin: 0;
-  max-width: 18ch;
+  margin: 0 0 clamp(18px, 2vw, 26px);
+  max-width: 15ch;
+  font-family: var(--font-poppins);
   font-size: var(--lxs-title);
   font-weight: 500;
   line-height: 1.02;
@@ -2494,12 +2487,10 @@ a.lx-def:hover dd {
 }
 
 .lxh-story__lede {
-  grid-column: 2;
-  grid-row: 2;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 430px;
+  max-width: 46ch;
   color: var(--lx-muted);
   font-size: var(--lxs-lead);
   line-height: 1.6;
@@ -2509,13 +2500,17 @@ a.lx-def:hover dd {
   margin: 0;
 }
 
-/* Storytelling — an asymmetric editorial pair: a narrow column of text
-   beside a tall architectural frame. */
+/* Storytelling — the photograph and the written statement sit side by side
+   on wide screens and stack, image first, on narrow ones. */
 .lxh-story__body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  column-gap: clamp(32px, 4.4vw, 72px);
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: clamp(26px, 3.4vw, 34px);
   align-items: start;
+}
+
+.lxh-story__panel {
+  min-width: 0;
 }
 
 .lxh-story__copy {
@@ -2547,24 +2542,47 @@ a.lx-def:hover dd {
   margin-bottom: 0;
 }
 
+/* The frame fixes the crop so a replacement photograph needs no layout
+   change. The ratio is landscape, matching the production artwork. */
 .lxh-story__media {
+  grid-column: 1;
+  grid-row: 1;
   position: relative;
   margin: 0;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--lx-stone);
 }
 
 .lxh-story__image {
-  object-position: center 46%;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 58%;
 }
 
-.lxh-story__media {
-  transition: transform 620ms var(--lx-ease);
-}
+/* From here the photograph takes one side and the whole statement the other. */
+@media (min-width: 960px) {
+  .lxh-story__body {
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+    column-gap: clamp(32px, 4.4vw, 72px);
+    row-gap: 0;
+  }
 
-.lxh-story__media:hover {
-  transform: scale(1.03);
+  .lxh-story__media {
+    grid-column: 1;
+    grid-row: 1;
+    /* The photograph stays beside the statement while the text passes it. */
+    position: sticky;
+    top: clamp(88px, 7vw, 112px);
+    align-self: center;
+  }
+
+  .lxh-story__panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 
 /* Brand principles — three editorial columns divided by hairlines. */
@@ -2577,10 +2595,10 @@ a.lx-def:hover dd {
 
 .lxh-principle {
   min-width: 0;
-  padding: clamp(22px, 2.6vw, 34px) clamp(0px, 2.6vw, 44px) 0 0;
+  padding: clamp(28px, 3.2vw, 44px) clamp(0px, 2.6vw, 44px) 0 0;
 }
 
-.lxh-principle + .lx-principle {
+.lxh-principle + .lxh-principle {
   padding-left: clamp(0px, 2.6vw, 44px);
   border-left: 1px solid var(--lx-line);
 }
@@ -2605,6 +2623,17 @@ a.lx-def:hover dd {
   color: var(--lx-muted);
   font-size: var(--lxs-body);
   line-height: 1.62;
+}
+
+.lxh-principle__numeral {
+  display: block;
+  margin-bottom: clamp(14px, 1.4vw, 18px);
+  font-family: var(--font-poppins);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--lx-red);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Closing statement — a quiet typographic full stop. */
@@ -2946,133 +2975,141 @@ a.lx-def:hover dd {
 
 /* ---------- F. Journal ---------- */
 
+/* The section rule: a red hairline under the head, the way the reference
+   publication separates a news band from the page above it. */
+.lxh-journal__head {
+  margin-bottom: clamp(30px, 3.6vw, 48px);
+  padding-bottom: clamp(16px, 1.8vw, 24px);
+  border-bottom: 2px solid var(--lx-red);
+}
+
+.lxh-journal__head .lxh-head {
+  margin-bottom: 0;
+}
+
 .lxh-journal {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: clamp(28px, 3.4vw, 48px) var(--lxh-gap);
-  align-items: start;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(30px, 3.6vw, 52px) var(--lxh-gap);
+  align-items: stretch;
 }
 
-.lxh-journal__feature {
-  grid-column: 1 / span 7;
+.lxh-journal-card {
+  display: flex;
   min-width: 0;
-  color: inherit;
-  text-decoration: none;
 }
 
-.lxh-journal__side {
-  grid-column: 9 / span 4;
+/* The visible card surface sits on the link, not the article: the entrance
+   animation writes a transform to the article and a hover lift must not
+   fight it. */
+.lxh-journal-card__link {
   display: flex;
   flex-direction: column;
-  gap: clamp(28px, 3vw, 42px);
-  min-width: 0;
-}
-
-.lxh-journal__side-card {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 16px;
-  align-items: start;
-  min-width: 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--lx-line);
+  width: 100%;
   color: inherit;
   text-decoration: none;
+  background: var(--lx-paper);
+  box-shadow: 0 1px 2px rgba(20, 0, 0, 0.05);
+  transition:
+    transform 300ms var(--lx-ease),
+    box-shadow 300ms var(--lx-ease);
+}
+
+.lxh-journal-card__link:hover,
+.lxh-journal-card__link:focus-visible {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 46px -30px rgba(20, 0, 0, 0.38);
 }
 
 .lxh-journal__media {
   position: relative;
   margin: 0;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--lx-stone);
 }
 
-.lxh-journal__feature .lxh-journal__media {
-  aspect-ratio: 4 / 3;
+/* Slow zoom on the photograph itself. The frame is animated once on entry,
+   so the hover motion lives on the image to keep the two independent. */
+.lxh-journal__image {
+  transition: transform 900ms var(--lx-ease);
 }
 
-.lxh-journal__side-card .lxh-journal__media {
-  aspect-ratio: 4 / 5;
+.lxh-journal-card__link:hover .lxh-journal__image,
+.lxh-journal-card__link:focus-visible .lxh-journal__image {
+  transform: scale(1.05);
 }
 
-.lxh-journal__media {
-  transition: transform 620ms var(--lx-ease);
-}
-
-.lxh-journal__body {
-  min-width: 0;
-}
-
-.lxh-journal__feature .lxh-journal__body {
-  padding-top: 18px;
-}
-
-.lxh-journal__meta {
+.lxh-journal-card__body {
   display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px 18px 20px;
+}
+
+.lxh-journal-card__meta {
+  display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 4px 12px;
+  margin: 0;
   font-family: var(--lx-mono);
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
+  line-height: 1.4;
+}
+
+.lxh-journal-card__topic {
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--lx-red);
+}
+
+.lxh-journal-card__date {
   color: var(--lx-muted);
+  font-size: 0.6875rem;
+  letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
 }
 
-.lxh-journal__title {
-  margin: 12px 0 0;
-  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
-  font-weight: 500;
-  line-height: 1.06;
-  letter-spacing: -0.03em;
-  transition: color 200ms var(--lx-ease);
+.lxh-journal-card__title {
+  margin: 10px 0 0;
+  font-size: clamp(1.1875rem, 0.5vw + 1.05rem, 1.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   overflow-wrap: break-word;
 }
 
-.lxh-journal__side-card .lxh-journal__title {
-  margin-top: 10px;
-  font-size: clamp(1rem, 0.8vw + 0.8rem, 1.2rem);
-  line-height: 1.16;
-  letter-spacing: -0.015em;
-}
-
-.lxh-journal__excerpt {
-  margin: 14px 0 0;
-  max-width: 52ch;
+.lxh-journal-card__excerpt {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin: 10px 0 0;
   color: var(--lx-muted);
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font-size: 0.875rem;
+  line-height: 1.55;
 }
 
-.lxh-journal__side-card .lxh-journal__excerpt {
-  margin-top: 8px;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-}
-
-.lxh-journal__read {
+.lxh-journal-card__read {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  margin-top: 16px;
+  margin-top: auto;
+  padding-top: 18px;
   font-family: var(--lx-mono);
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--lx-ink);
+  transition: color 200ms var(--lx-ease);
 }
 
-.lxh-journal__side-card .lxh-journal__read {
-  margin-top: 10px;
-}
-
-.lxh-journal__feature:hover .lxh-journal__media,
-.lxh-journal__side-card:hover .lxh-journal__media {
-  transform: scale(1.035);
-}
-
-.lxh-journal__feature:hover .lxh-journal__title,
-.lxh-journal__side-card:hover .lxh-journal__title {
+.lxh-journal-card__link:hover .lxh-journal-card__read,
+.lxh-journal-card__link:focus-visible .lxh-journal-card__read {
   color: var(--lx-red);
 }
 
@@ -3173,14 +3210,6 @@ a.lx-def:hover dd {
     grid-column: 9 / span 4;
   }
 
-  .lxh-story__intro {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
-  }
-
-  .lxh-story__body {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
   .lxh-registry__copy {
     grid-column: 1 / span 7;
   }
@@ -3195,6 +3224,10 @@ a.lx-def:hover dd {
 
   .lxh-sellers__panel {
     grid-column: 8 / span 5;
+  }
+
+  .lxh-journal {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -3231,41 +3264,21 @@ a.lx-def:hover dd {
     max-width: 46ch;
   }
 
-  /* Story — the introduction and the storytelling pair stack. */
-  .lxh-story__intro {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    row-gap: clamp(16px, 2.4vw, 22px);
-  }
-
-  .lxh-story__eyebrow {
-    grid-row: 1;
-    margin-bottom: 0;
-  }
-
+  /* Story — the stack keeps the photograph above the text, full width. */
   .lxh-story__title {
-    grid-column: 1;
-    grid-row: 2;
     max-width: 20ch;
   }
 
   .lxh-story__lede {
-    grid-column: 1;
-    grid-row: 3;
     max-width: 52ch;
-  }
-
-  .lxh-story__body {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: clamp(24px, 3.4vw, 34px);
   }
 
   .lxh-story__media {
     aspect-ratio: 4 / 3;
   }
 
-  .lxh-story__image {
-    object-position: center 54%;
+  .lxh-story__panel {
+    grid-row: 2;
   }
 
   .lxh-principles {
@@ -3273,12 +3286,12 @@ a.lx-def:hover dd {
   }
 
   .lxh-principle,
-  .lxh-principle + .lx-principle {
+  .lxh-principle + .lxh-principle {
     padding: 22px 0 26px;
     border-left: 0;
   }
 
-  .lxh-principle + .lx-principle {
+  .lxh-principle + .lxh-principle {
     border-top: 1px solid var(--lx-line);
   }
 
@@ -3318,23 +3331,11 @@ a.lx-def:hover dd {
     aspect-ratio: 4 / 3;
   }
 
+  /* One card per column: a 16:9 image in a half-width column would leave the
+     title and the excerpt with too little measure. */
   .lxh-journal {
     grid-template-columns: minmax(0, 1fr);
-    gap: 30px;
-  }
-
-  .lxh-journal__feature,
-  .lxh-journal__side {
-    grid-column: 1 / -1;
-  }
-
-  .lxh-journal__side-card {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    padding-top: 18px;
-  }
-
-  .lxh-journal__side-card .lxh-journal__media {
-    aspect-ratio: 4 / 3;
+    gap: clamp(24px, 3.4vw, 34px);
   }
 
   .lxh-close__title {
@@ -3385,25 +3386,8 @@ a.lx-def:hover dd {
     aspect-ratio: 1 / 1;
   }
 
-  .lxh-journal__side-card {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-  }
-
-  .lxh-journal__side-card .lxh-journal__media {
-    aspect-ratio: 16 / 9;
-  }
-
-  .lxh-journal__side-card .lxh-journal__body {
-    padding-top: 0;
-  }
-
-  .lxh-journal__excerpt {
-    font-size: 0.875rem;
-  }
-
-  .lxh-journal__feature .lxh-journal__media {
-    aspect-ratio: 4 / 3;
+  .lxh-journal-card__body {
+    padding: 14px 16px 18px;
   }
 
   .lxh-close__title {
@@ -3429,10 +3413,9 @@ a.lx-def:hover dd {
   }
 
   .lxh-product:hover .lxh-product__media,
-  .lxh-journal__feature:hover .lxh-journal__media,
-  .lxh-journal__side-card:hover .lxh-journal__media,
-  .lxh-chapter:hover .lxh-chapter__image,
-  .lxh-story__media:hover {
+  .lxh-journal-card__link:hover,
+  .lxh-journal-card__link:hover .lxh-journal__image,
+  .lxh-chapter:hover .lxh-chapter__image {
     transform: none;
   }
 }

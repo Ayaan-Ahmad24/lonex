@@ -3,6 +3,7 @@ import "server-only";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  authorizedSellers,
   blogPosts,
   categories,
   mediaAssets,
@@ -90,6 +91,22 @@ async function isReferencedByPublishedContent(mediaId: number): Promise<boolean>
     .limit(1);
 
   if (blogCover.length > 0) {
+    return true;
+  }
+
+  // An active seller's published image is public directory content.
+  const sellerImage = await db
+    .select({ id: authorizedSellers.id })
+    .from(authorizedSellers)
+    .where(
+      and(
+        eq(authorizedSellers.imageMediaId, mediaId),
+        eq(authorizedSellers.status, "active"),
+      ),
+    )
+    .limit(1);
+
+  if (sellerImage.length > 0) {
     return true;
   }
 

@@ -140,7 +140,7 @@ export const POST_NOTES: Record<string, PostNote> = {
   "electric-mobility-and-the-changing-urban-journey": {
     kicker: "Mobility / City riding",
     standfirst:
-      "Most city journeys are short, repeated and familiar: a commute, a school run, a trip to the market. That pattern — not the open road — is where an electric bike proves its worth.",
+      "Most city journeys are short, repeated and familiar: a commute, a school run, a trip to the market. That pattern — not the open road — is where an electric scooter proves its worth.",
   },
   "how-to-read-a-solar-module-nameplate": {
     kicker: "Solar / Module data",
@@ -211,7 +211,7 @@ export const CLOSING = {
   links: [
     { label: "Solar", meta: "Modules for rooftops", href: "/solar" },
     { label: "Batteries", meta: "Storage for the evening", href: "/batteries" },
-    { label: "Electric bikes", meta: "Short urban journeys", href: "/ev-bikes" },
+    { label: "Electric scooters", meta: "Short urban journeys", href: "/electric-scooters" },
   ],
   latestLabel: "Most recent",
 } as const;

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "mcp": {
+    "vercel": {
+      "type": "remote",
+      "url": "https://mcp.vercel.com",
+      "enabled": true,
+    },
+  },
+  "provider": {
+    "RadoxAI": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Radox AI",
+      "options": {
+        "baseURL": "https://radoxai.com/v1",
+        "apiKey": "cc_oZeKmHLwOv82XEOJedv2x6lAJ2bY7mMJ5Pxv8IeywfKNQe4k",
+      },
+      "models": {
+        "claude-opus-4.8": {
+          "name": "claude-opus-4.8",
+        },
+      },
+    },
+  },
+}

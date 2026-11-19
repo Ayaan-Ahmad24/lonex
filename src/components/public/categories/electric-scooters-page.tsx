@@ -16,16 +16,16 @@ import {
 import type { CategoryPageProps } from "./parts";
 
 const HERO_IMAGE = {
-  src: "/images/lonex-step-1/move-mobility.webp",
-  alt: "An electric bicycle parked at a stainless steel rack in a covered city courtyard",
+  src: "/images/lonex-range/move-scooter.webp",
+  alt: "A black electric scooter parked on a city street beside a modern building",
 };
 
 const COMMUNITY_IMAGE = {
-  src: "/images/categories/mobility.webp",
-  alt: "A rider travelling through a city street past pedestrians",
+  src: "/images/lonex-generated-images/lifestyle/ev-charging.webp",
+  alt: "Electric scooter charging connector at sunset",
 };
 
-export function EvBikesPage({
+export function ElectricScootersPage({
   category,
   products,
   settings,
@@ -34,7 +34,7 @@ export function EvBikesPage({
   const whatsapp = settings.whatsapp
     ? whatsappHref(
         settings.whatsapp,
-        "Hello LONEX, I would like to discuss an electric bike.",
+        "Hello LONEX, I would like to discuss an electric scooter.",
       )
     : null;
 
@@ -98,7 +98,7 @@ export function EvBikesPage({
               </Link>
             </div>
 
-            <ul className="lxe-plate__meta" aria-label="Where electric bikes apply">
+            <ul className="lxe-plate__meta" aria-label="Where electric scooters apply">
               {editorial.heroMeta.map((item) => (
                 <li key={item} data-hero-item>
                   {item}
@@ -255,7 +255,7 @@ export function EvBikesPage({
             <div className="lxc-empty" data-reveal>
               <h3 className="lxc-h3">Current availability</h3>
               <p className="lxc-body">
-                Talk to LONEX about the electric bikes available for your
+                Talk to LONEX about the electric scooters available for your
                 journeys.
               </p>
               <div className="lx-actions">
@@ -277,6 +277,38 @@ export function EvBikesPage({
           </div>
         </div>
       </section>
+
+      {editorial.charging ? (
+        <section className="lxe-charging">
+          <div className="lx-wrap">
+            <header className="lxe-charging__head" data-reveal-group>
+              <p className="lxc-eyebrow" data-reveal>
+                <span aria-hidden="true" className="lxc-eyebrow__mark" />
+                {editorial.charging.eyebrow}
+              </p>
+              <h2 className="lxe-charging__title" data-reveal>
+                {editorial.charging.title}
+              </h2>
+              <p className="lxe-charging__lede" data-reveal>
+                {editorial.charging.lede}
+              </p>
+            </header>
+
+            <div className="lxe-charging__grid" data-reveal-group>
+              {editorial.charging.items.map((item) => (
+                <article className="lxe-benefit" key={item.title} data-reveal>
+                  <h3 className="lxe-benefit__title">{item.title}</h3>
+                  <p className="lxe-benefit__copy">{item.copy}</p>
+                </article>
+              ))}
+            </div>
+
+            <p className="lxe-products__note" data-reveal>
+              {editorial.charging.note}
+            </p>
+          </div>
+        </section>
+      ) : null}
 
       <section className="lxe-community">
         <figure className="lxe-community__media" data-reveal-image>
