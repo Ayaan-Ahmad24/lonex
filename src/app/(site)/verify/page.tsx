@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { PageMotion } from "@/components/public/page-motion";
-import { formatPhone, whatsappHref } from "@/lib/public/contact";
+import { formatPhone, telHref } from "@/lib/public/contact";
+import { verificationEnquiry } from "@/lib/public/enquiries";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
 import { VerifyForm } from "./verify-form";
@@ -33,11 +34,9 @@ export default async function VerifyPage() {
   await connection();
   const settings = await loadPublicSettings();
 
-  const whatsapp = settings.whatsapp
-    ? whatsappHref(
-        settings.whatsapp,
-        "Hello LONEX, I need help checking a model verification code.",
-      )
+  const emailEnquiry = verificationEnquiry(settings.contactEmail);
+  const phoneHref = settings.contactPhone
+    ? telHref(settings.contactPhone)
     : null;
 
   return (
@@ -294,21 +293,21 @@ export default async function VerifyPage() {
                 <Link href="/contact" className="lxv-btn lxv-btn--dark">
                   Contact LONEX
                 </Link>
-                {whatsapp ? (
+                {emailEnquiry ? (
                   <a
-                    href={whatsapp}
+                    href={emailEnquiry}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="lxv-btn lxv-btn--outline"
                   >
-                    WhatsApp
+                    Email Enquiry
                   </a>
                 ) : null}
               </div>
 
-              {settings.contactPhone ? (
+              {phoneHref ? (
                 <a
-                  href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
+                  href={phoneHref}
                   className="lxv-help__phone"
                 >
                   <span>Call</span>

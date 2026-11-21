@@ -6,18 +6,39 @@ import type {
   PublicProductCard,
   PublicSettings,
 } from "@/lib/public/dto";
-import { formatPhone } from "@/lib/public/contact";
+import { formatPhone, telHref } from "@/lib/public/contact";
 import type {
   CategoryEditorial,
   EditorialPoint,
   ProductEditorial,
 } from "@/lib/public/editorial";
-import { COMMUNITY_TITLE } from "@/lib/public/editorial";
+import { COMMUNITY_TITLE, getProductEditorial } from "@/lib/public/editorial";
 
 export type ProductView = {
   card: PublicProductCard;
   editorial: ProductEditorial;
 };
+
+/**
+ * Pair each product with the editorial copy used by the category layouts.
+ * Every category page needs the same projection, so it lives here instead of
+ * being rebuilt in each bespoke layout.
+ */
+export function buildProductViews(
+  category: PublicCategory,
+  products: PublicProductCard[],
+): ProductView[] {
+  return products.map((card) => ({
+    card,
+    editorial: getProductEditorial(
+      card.slug,
+      category.slug,
+      card.name,
+      card.shortDescription,
+      null,
+    ),
+  }));
+}
 
 export type CategoryPageProps = {
   category: PublicCategory;
@@ -196,32 +217,34 @@ export function RichProductCard({
 export function RangeEnquiry({
   categoryName,
   note,
-  whatsapp,
+  email,
   phone,
 }: {
   categoryName: string;
   note: string;
-  whatsapp: string | null;
+  email: string | null;
   phone: string | null;
 }) {
+  const tel = phone ? telHref(phone) : null;
+
   return (
     <div className="lxc-enquiry__actions">
       <Link href="/contact" className="lx-btn lx-btn--red">
         Enquire about {categoryName}
       </Link>
-      {whatsapp ? (
+      {email ? (
         <a
-          href={whatsapp}
+          href={email}
           target="_blank"
           rel="noopener noreferrer"
           className="lx-btn lx-btn--ghost"
         >
-          Message on WhatsApp
+          Email Enquiry
         </a>
       ) : null}
-      {phone ? (
-        <a href={`tel:${phone.replace(/\s+/g, "")}`} className="lxc-enquiry__phone">
-          {formatPhone(phone)}
+      {tel ? (
+        <a href={tel} className="lxc-enquiry__phone">
+          {formatPhone(phone ?? "")}
         </a>
       ) : null}
       <p className="lxc-enquiry__note">{note}</p>
@@ -233,12 +256,12 @@ export function CategoryClose({
   title,
   body,
   categoryName,
-  whatsapp,
+  email,
 }: {
   title: string;
   body: string;
   categoryName: string;
-  whatsapp: string | null;
+  email: string | null;
 }) {
   return (
     <section className="lxc-close">
@@ -261,14 +284,14 @@ export function CategoryClose({
             <Link href="/contact" className="lx-btn lx-btn--red">
               Talk to LONEX
             </Link>
-            {whatsapp ? (
+            {email ? (
               <a
-                href={whatsapp}
+                href={email}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="lx-btn lx-btn--ghost"
               >
-                WhatsApp
+                Email Enquiry
               </a>
             ) : null}
           </div>

@@ -13,7 +13,7 @@ import {
 import { recordAudit } from "@/lib/audit";
 import { getServerEnv } from "@/lib/env";
 import type { ListParams, ListResult } from "../crud/types";
-import { pageCountFor } from "../crud/list-params";
+import { clampPage, pageCountFor } from "../crud/list-params";
 import { newStorageKey, createLocalMediaStorage } from "./storage";
 import { validateUpload } from "./validation";
 
@@ -61,7 +61,7 @@ export async function listMedia(
     .from(mediaAssets)
     .where(where);
   const total = Number(countRow?.total ?? 0);
-  const page = Math.min(params.page, pageCountFor(total, params.pageSize));
+  const page = clampPage(params.page, total, params.pageSize);
 
   const rows = await db
     .select({

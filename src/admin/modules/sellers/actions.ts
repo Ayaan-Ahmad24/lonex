@@ -4,17 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { authorizeAction } from "@/admin/core/guards";
 import { flashPath } from "@/admin/core/ui/flash";
+import {
+  deniedState,
+  firstFieldError,
+  readEntityId,
+} from "@/admin/core/crud/action-helpers";
 import { failure, success, type ActionState } from "@/admin/core/crud/types";
 import { parseSellerForm } from "./schema";
 import { createSeller, deleteSeller, updateSeller } from "./service";
 
-function denied(status: 401 | 403): ActionState {
-  return failure(
-    status === 401
-      ? "Your session expired. Sign in again."
-      : "You do not have permission to change sellers.",
-  );
-}
+const FORBIDDEN_MESSAGE = "You do not have permission to change sellers.";
 
 export async function createSellerAction(
   _previous: ActionState,
@@ -23,16 +22,13 @@ export async function createSellerAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const parsed = parseSellerForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
   const result = await createSeller(access.user.id, parsed.data);
@@ -54,22 +50,19 @@ export async function updateSellerAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
-  const id = Number(formData.get("id"));
+  const id = readEntityId(formData);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!id) {
     return failure("Seller not found.");
   }
 
   const parsed = parseSellerForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
   const result = await updateSeller(access.user.id, id, parsed.data);
@@ -93,12 +86,12 @@ export async function deleteSellerAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
-  const id = Number(formData.get("id"));
+  const id = readEntityId(formData);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!id) {
     return failure("Seller not found.");
   }
 

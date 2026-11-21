@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, like } from "drizzle-orm";
 import { db } from "@/db";
 import { blogPosts } from "@/db/schema";
-import { pageCountFor } from "@/admin/core/crud/list-params";
+import { clampPage, pageCountFor } from "@/admin/core/crud/list-params";
 import type { ListParams, ListResult } from "@/admin/core/crud/types";
 import {
   parseStoredRichText,
@@ -37,7 +37,7 @@ export async function listBlogPosts(
     .from(blogPosts)
     .where(where);
   const total = Number(countRow?.total ?? 0);
-  const page = Math.min(params.page, pageCountFor(total, params.pageSize));
+  const page = clampPage(params.page, total, params.pageSize);
 
   const direction = params.direction === "asc" ? asc : desc;
   const sortColumn =

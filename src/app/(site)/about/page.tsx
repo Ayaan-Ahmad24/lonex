@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 
 import { PageMotion } from "@/components/public/page-motion";
-import { formatPhone } from "@/lib/public/contact";
+import { formatPhone, telHref } from "@/lib/public/contact";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
 import {
@@ -33,6 +33,9 @@ export default async function AboutPage() {
   await connection();
   const settings = await loadPublicSettings();
   const [generate, store, move] = PILLARS;
+  const phoneHref = settings.contactPhone
+    ? telHref(settings.contactPhone)
+    : null;
 
   return (
     <div className="lx-page lxa-page">
@@ -106,8 +109,8 @@ export default async function AboutPage() {
             <figure className="lxa-hero__figure" data-hero-item>
               <div className="lxa-hero__media">
                 <Image
-                  src="/images/lonex-story/story-architecture.webp"
-                  alt="Terracotta roof tiles meeting a dark solar array beneath a pale sky"
+                  src="/images/about2nd.png"
+                  alt="A house with solar panels across its terracotta roof, surrounded by trees beneath a blue sky"
                   fill
                   preload
                   sizes="(max-width: 900px) 100vw, 46vw"
@@ -500,9 +503,9 @@ export default async function AboutPage() {
                   Contact LONEX
                   <span aria-hidden="true">→</span>
                 </Link>
-                {settings.contactPhone ? (
+                {phoneHref ? (
                   <a
-                    href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
+                    href={phoneHref}
                     className="lxa-close__phone"
                   >
                     {formatPhone(settings.contactPhone)}

@@ -531,6 +531,86 @@ const PRODUCTS: Record<string, ProductEditorial> = {
 };
 
 /**
+ * Category-level selling points and applications.
+ *
+ * A product page's advantages are decided by the category the product belongs
+ * to, not by its individual slug, so every current and future model inherits
+ * the right copy as soon as it is published in a category. The per-slug
+ * `PRODUCTS` entries above remain as optional editorial overrides for a model
+ * that needs to say something different.
+ *
+ * The copy stays at the level of the category: it names what the product is
+ * for and what to compare, and leaves every figure to the product record.
+ */
+const CATEGORY_PRODUCT_CONTENT: Record<
+  string,
+  Pick<ProductEditorial, "benefits" | "useCases" | "note">
+> = {
+  solar: {
+    benefits: [
+      {
+        title: "Designed for Solar Generation",
+        copy: "High-efficiency solar modules designed to deliver dependable energy generation.",
+      },
+      {
+        title: "Performance Matched to Your Project",
+        copy: "Choose the appropriate module according to installation layout, roof conditions and system requirements.",
+      },
+      {
+        title: "Technical Specifications That Matter",
+        copy: "Compare wattage, efficiency and module specifications to make an informed selection.",
+      },
+    ],
+    useCases: [
+      "Residential Rooftops",
+      "Commercial Solar",
+      "Ground-Mounted Projects",
+    ],
+    note: "Module layout, mounting and system sizing are confirmed for the property during planning.",
+  },
+  batteries: {
+    benefits: [
+      {
+        title: "Energy Storage for Everyday Needs",
+        copy: "Store solar energy and make it available when your property needs it.",
+      },
+      {
+        title: "Designed Around Your Energy Demand",
+        copy: "Select storage capacity according to consumption, backup requirements and system configuration.",
+      },
+      {
+        title: "Storage Performance You Can Understand",
+        copy: "Review battery capacity, chemistry, voltage and cycle-life specifications before choosing.",
+      },
+    ],
+    useCases: [
+      "Home Backup",
+      "Solar Energy Storage",
+      "Residential Energy Management",
+    ],
+    note: "Backup capability and storage sizing depend on the whole installation and are confirmed during system design.",
+  },
+  "electric-scooters": {
+    benefits: [
+      {
+        title: "Made for Everyday Mobility",
+        copy: "Electric transportation designed around practical everyday journeys.",
+      },
+      {
+        title: "Range That Fits Your Journey",
+        copy: "Compare battery capacity, motor specifications and available riding range.",
+      },
+      {
+        title: "Comfort, Control and Convenience",
+        copy: "Choose a scooter based on your commuting needs, speed requirements and riding preferences.",
+      },
+    ],
+    useCases: ["Daily Commuting", "Urban Mobility", "Personal Transportation"],
+    note: "Range and performance depend on the specific model and on how it is ridden.",
+  },
+};
+
+/**
  * Sentences that belong to the content-management process rather than to the
  * customer. Records written before this layer existed still carry a few of
  * them, so they are removed from any fallback copy that reaches a page.
@@ -645,6 +725,7 @@ export function getCategoryEditorial(
 
 export function getProductEditorial(
   slug: string,
+  categorySlug: string,
   fallbackName: string,
   fallbackShortDescription: string | null,
   fallbackDescription: string | null,
@@ -660,6 +741,8 @@ export function getProductEditorial(
     customerFacingCopy(fallbackDescription) ||
     `${fallbackName} from the LONEX range.`;
 
+  const categoryContent = CATEGORY_PRODUCT_CONTENT[categorySlug];
+
   return {
     tagline: `${fallbackName} — part of the LONEX range.`,
     summary,
@@ -667,7 +750,7 @@ export function getProductEditorial(
       "Details for this model are published by LONEX as they are confirmed, rather than copied from a generic catalogue.",
       "Speak to LONEX about the site, the system and the details that apply to this model.",
     ],
-    benefits: [
+    benefits: categoryContent?.benefits ?? [
       {
         title: "Selected by LONEX",
         copy: "Part of a considered range rather than a catalogue of unrelated products.",
@@ -681,7 +764,12 @@ export function getProductEditorial(
         copy: "Ask us for the details that matter to your installation.",
       },
     ],
-    useCases: ["Residential", "Commercial", "System planning"],
+    useCases: categoryContent?.useCases ?? [
+      "Residential",
+      "Commercial",
+      "System planning",
+    ],
+    note: categoryContent?.note,
     seoDescription: summary,
   };
 }

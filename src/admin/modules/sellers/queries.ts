@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
 import { authorizedSellers, mediaAssets } from "@/db/schema";
-import { pageCountFor } from "@/admin/core/crud/list-params";
+import { clampPage, pageCountFor } from "@/admin/core/crud/list-params";
 import type { ListParams, ListResult } from "@/admin/core/crud/types";
 
 export type SellerListRow = {
@@ -46,7 +46,7 @@ export async function listSellers(
     .from(authorizedSellers)
     .where(where);
   const total = Number(countRow?.total ?? 0);
-  const page = Math.min(params.page, pageCountFor(total, params.pageSize));
+  const page = clampPage(params.page, total, params.pageSize);
 
   const direction = params.direction === "asc" ? asc : desc;
   const sortColumn =

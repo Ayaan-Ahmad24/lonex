@@ -6,11 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import type { PublicCategory, PublicSettings } from "@/lib/public/dto";
-import {
-  formatInternational,
-  formatPhone,
-  whatsappHref,
-} from "@/lib/public/contact";
+import { formatPhone, telHref } from "@/lib/public/contact";
 import { resolveSocialLinks, type SocialNetwork } from "@/lib/public/social";
 import { BrandMark } from "./brand-mark";
 
@@ -82,12 +78,14 @@ export function SiteFooter({
   categories: PublicCategory[];
 }) {
   const root = useRef<HTMLElement>(null);
-  const whatsapp = settings.whatsapp ? whatsappHref(settings.whatsapp) : null;
 
   // The CMS wins when a profile is configured; otherwise the platform
   // landing page keeps the footer complete. No unverified LONEX profile is
   // implied by the icon alone.
   const social = resolveSocialLinks(settings.social);
+  const phoneHref = settings.contactPhone
+    ? telHref(settings.contactPhone)
+    : null;
 
   const explore = [...categories].sort((a, b) => {
     const rankA = EXPLORE_ORDER.indexOf(a.slug);
@@ -202,24 +200,12 @@ export function SiteFooter({
             </ul>
 
             <dl className="site-footer__contact">
-              {settings.contactPhone ? (
+              {phoneHref ? (
                 <div>
                   <dt>Phone</dt>{" "}
                   <dd>
-                    <a
-                      href={`tel:${settings.contactPhone.replace(/\s+/g, "")}`}
-                    >
+                    <a href={phoneHref}>
                       {formatPhone(settings.contactPhone)}{" "}
-                    </a>
-                  </dd>
-                </div>
-              ) : null}
-              {whatsapp ? (
-                <div>
-                  <dt>WhatsApp</dt>{" "}
-                  <dd>
-                    <a href={whatsapp} target="_blank" rel="noopener noreferrer">
-                      {formatInternational(settings.whatsapp)}{" "}
                     </a>
                   </dd>
                 </div>
@@ -234,7 +220,7 @@ export function SiteFooter({
                   </dd>
                 </div>
               ) : null}
-              {settings.address ? (
+              {settings.locationEnabled && settings.address ? (
                 <div>
                   <dt>Address</dt>{" "}
                   <dd>{settings.address}{" "}</dd>

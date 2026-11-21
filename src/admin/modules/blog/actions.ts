@@ -4,18 +4,18 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { authorizeAction } from "@/admin/core/guards";
 import { flashPath } from "@/admin/core/ui/flash";
+import {
+  deniedState,
+  firstFieldError,
+  gateNewStatus,
+  gateUpdatedStatus,
+  readEntityId,
+} from "@/admin/core/crud/action-helpers";
 import { failure, success, type ActionState } from "@/admin/core/crud/types";
-import { permissionGranted } from "@/admin/core/registry/navigation";
 import { parseBlogForm } from "./schema";
 import { createBlogPost, deleteBlogPost, updateBlogPost } from "./service";
 
-function denied(status: 401 | 403): ActionState {
-  return failure(
-    status === 401
-      ? "Your session expired. Sign in again."
-      : "You do not have permission to change articles.",
-  );
-}
+const FORBIDDEN_MESSAGE = "You do not have permission to change articles.";
 
 function revalidateBlog() {
   revalidatePath("/admin");
@@ -31,22 +31,16 @@ export async function createBlogPostAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const parsed = parseBlogForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
-  const canPublish = permissionGranted(access.permissions, "content.publish");
-  const input = canPublish
-    ? parsed.data
-    : { ...parsed.data, status: "draft" as const };
+  const input = gateNewStatus(access.permissions, parsed.data);
 
   const result = await createBlogPost(access.user.id, input);
 
@@ -65,29 +59,22 @@ export async function updateBlogPostAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
-  const id = Number(formData.get("id"));
+  const id = readEntityId(formData);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!id) {
     return failure("Article not found.");
   }
 
   const parsed = parseBlogForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
-  const canPublish = permissionGranted(access.permissions, "content.publish");
-  const input =
-    canPublish || parsed.data.status !== "draft"
-      ? parsed.data
-      : { ...parsed.data, status: "draft" as const };
+  const input = gateUpdatedStatus(access.permissions, parsed.data);
 
   const result = await updateBlogPost(access.user.id, id, input);
 
@@ -112,12 +99,12 @@ export async function deleteBlogPostAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
-  const id = Number(formData.get("id"));
+  const id = readEntityId(formData);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!id) {
     return failure("Article not found.");
   }
 

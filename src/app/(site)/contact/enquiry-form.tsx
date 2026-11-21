@@ -8,7 +8,7 @@ import {
   type FormEvent,
 } from "react";
 
-import { formatPhone, whatsappHref } from "@/lib/public/contact";
+import { formatPhone, mailtoHref, telHref } from "@/lib/public/contact";
 import {
   CATEGORIES,
   ENQUIRY,
@@ -151,15 +151,15 @@ function AlertIcon() {
  *
  * There is no contact endpoint or mail transport in this project, so the form
  * must not pretend to submit to one. It validates locally, composes a
- * structured message, and hands it to the verified WhatsApp number. The success
- * state only appears when the browser accepted the new tab; a blocked popup is
- * reported honestly with a copy fallback.
+ * structured message, and hands it to the configured enquiry email address via
+ * a mailto: link. The success state only appears when the browser accepted the
+ * new tab; a blocked popup is reported honestly with a copy fallback.
  */
 export function EnquiryForm({
-  whatsapp,
+  email,
   phone,
 }: {
-  whatsapp: string;
+  email: string;
   phone: string;
 }) {
   const [values, setValues] = useState<Values>(INITIAL_VALUES);
@@ -175,13 +175,12 @@ export function EnquiryForm({
   const timer = useRef<number | null>(null);
   const lastStatus = useRef<Status["kind"]>("idle");
 
-  const phoneHref = `tel:${phone.replace(/[^\d+]/g, "")}`;
-  const phoneDisplay = formatPhone(phone);
   const working = status.kind === "working";
   const prepared =
     status.kind === "ready" || status.kind === "blocked"
       ? status.message
       : "";
+  const tel = telHref(phone);
 
   useEffect(() => {
     return () => {
@@ -283,7 +282,7 @@ export function EnquiryForm({
     }
 
     const message = buildMessage(values);
-    const href = whatsapp ? whatsappHref(whatsapp, message) : null;
+    const href = email ? mailtoHref(email, "General Enquiry — LONEX", message) : null;
 
     if (!href) {
       setStatus({ kind: "blocked", href: null, message });
@@ -613,7 +612,7 @@ export function EnquiryForm({
             </span>
             <div className="lxct-status__copy">
               <p className="lxct-status__title">
-                Your enquiry is ready in WhatsApp.
+                Your enquiry is ready to send by email.
               </p>
               <p className="lxct-status__body">
                 Review the message there and press send. Nothing has been sent
@@ -625,9 +624,8 @@ export function EnquiryForm({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="lxct-link"
-                  data-whatsapp
                 >
-                  Open WhatsApp again <span aria-hidden="true">↗</span>
+                  Open email again <span aria-hidden="true">↗</span>
                 </a>
                 <button type="button" onClick={copyMessage} className="lxct-link" data-copy>
                   {copyState === "copied" ? "Copied" : "Copy message"}
@@ -655,11 +653,11 @@ export function EnquiryForm({
               <AlertIcon />
             </span>
             <div className="lxct-status__copy">
-              <p className="lxct-status__title">WhatsApp did not open.</p>
+              <p className="lxct-status__title">Email did not open.</p>
               <p className="lxct-status__body">
                 {status.href
-                  ? `Your browser blocked the new tab. Copy the prepared message and send it to ${phoneDisplay}, or open WhatsApp with the link below.`
-                  : `WhatsApp is not configured on this site. Call ${phoneDisplay} to continue the enquiry.`}
+                  ? `Your browser blocked the new tab. Copy the prepared message and send it to the enquiry email, or open your email client with the link below.`
+                  : `An email address is not configured on this site. Please use the contact form below or call ${formatPhone(phone)} to continue the enquiry.`}
               </p>
               <div className="lxct-status__actions">
                 {status.href ? (
@@ -668,17 +666,16 @@ export function EnquiryForm({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="lxct-link"
-                    data-whatsapp
                   >
-                    Open WhatsApp <span aria-hidden="true">↗</span>
+                    Open email <span aria-hidden="true">↗</span>
                   </a>
                 ) : null}
                 <button type="button" onClick={copyMessage} className="lxct-link" data-copy>
                   {copyState === "copied" ? "Copied" : "Copy message"}
                 </button>
-                {phone ? (
-                  <a href={phoneHref} className="lxct-link">
-                    Call {phoneDisplay}
+                {tel ? (
+                  <a href={tel} className="lxct-link">
+                    Call {formatPhone(phone)}
                   </a>
                 ) : null}
                 <button type="button" onClick={reset} className="lxct-link" data-reset>
@@ -707,7 +704,7 @@ export function EnquiryForm({
               readOnly
               rows={9}
               value={prepared}
-              aria-label="Prepared WhatsApp message"
+              aria-label="Prepared email message"
             />
           </details>
         ) : null}

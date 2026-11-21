@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { ContentImage } from "@/components/public/content-image";
-import { whatsappHref } from "@/lib/public/contact";
-import { getProductEditorial } from "@/lib/public/editorial";
+import { categoryEnquiry } from "@/lib/public/enquiries";
 import {
   CategoryBreadcrumbs,
   CategoryClose,
@@ -12,11 +11,12 @@ import {
   ProductPoints,
   RangeEnquiry,
   UseCaseChips,
+  buildProductViews,
 } from "./parts";
 import type { CategoryPageProps } from "./parts";
 
 const HERO_IMAGE = {
-  src: "/images/lonex-range/move-scooter.webp",
+  src: "/images/lonex-range/scootiespage-bg.png",
   alt: "A black electric scooter parked on a city street beside a modern building",
 };
 
@@ -31,22 +31,15 @@ export function ElectricScootersPage({
   settings,
   editorial,
 }: CategoryPageProps) {
-  const whatsapp = settings.whatsapp
-    ? whatsappHref(
-        settings.whatsapp,
-        "Hello LONEX, I would like to discuss an electric scooter.",
-      )
-    : null;
+  const emailEnquiry = categoryEnquiry(settings.contactEmail, {
+    label: "Electric Scooters",
+    name: "Electric Scooters",
+    path: category.path,
+    intro: "I would like to discuss an electric scooter.",
+    closing: "Please share details about the scooter models available.",
+  });
 
-  const views = products.map((card) => ({
-    card,
-    editorial: getProductEditorial(
-      card.slug,
-      card.name,
-      card.shortDescription,
-      null,
-    ),
-  }));
+  const views = buildProductViews(category, products);
 
   return (
     <>
@@ -271,7 +264,7 @@ export function ElectricScootersPage({
             <RangeEnquiry
               categoryName={category.name}
               note="Tell us the distance, the route and what you need to carry."
-              whatsapp={whatsapp}
+              email={emailEnquiry}
               phone={settings.contactPhone || null}
             />
           </div>
@@ -340,7 +333,7 @@ export function ElectricScootersPage({
         title={editorial.closing.title}
         body={editorial.closing.body}
         categoryName={category.name}
-        whatsapp={whatsapp}
+        email={emailEnquiry}
       />
     </>
   );

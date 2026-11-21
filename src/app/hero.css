@@ -17,6 +17,9 @@
   min-height: 620px;
   background: #0a0908;
   color: #ffffff;
+  /* Used only by the stacked mobile composition: the photograph sits in a
+     panel at this ratio instead of being cropped into a portrait frame. */
+  --lx-hero-media-ratio: 4 / 3;
 }
 
 .lx-hero__stage {
@@ -386,31 +389,52 @@
 }
 
 @media (max-width: 760px) {
+  /* Stacked composition. The photograph becomes a full-width panel at its own
+     ratio and the copy moves below it, so nothing is cropped into a tall
+     portrait frame and no type sits on top of the picture. The panel height is
+     fixed at 4/3 for every slide, which keeps the copy below it from shifting
+     when the slideshow advances. */
   .lx-hero {
-    min-height: 640px;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+    /* The header is sticky and in flow at this width; the hero must not slide
+       underneath it or the top of the panel would be hidden. */
+    margin-top: 0;
+  }
+
+  .lx-hero__stage {
+    position: relative;
+    inset: auto;
+    flex: none;
+    width: 100%;
+    aspect-ratio: var(--lx-hero-media-ratio, 4 / 3);
   }
 
   .lx-hero__shade {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(4, 4, 4, 0.6) 0%,
-        rgba(4, 4, 4, 0.22) 24%,
-        rgba(4, 4, 4, 0.58) 50%,
-        rgba(4, 4, 4, 0.9) 76%,
-        rgba(4, 4, 4, 0.97) 100%
-      ),
-      linear-gradient(
-        90deg,
-        rgba(4, 4, 4, 0.55) 0%,
-        rgba(4, 4, 4, 0.15) 60%,
-        rgba(4, 4, 4, 0.3) 100%
-      );
+    background: linear-gradient(
+      180deg,
+      rgba(4, 4, 4, 0.26) 0%,
+      rgba(4, 4, 4, 0.02) 34%,
+      rgba(4, 4, 4, 0.36) 100%
+    );
+  }
+
+  .lx-hero__shell {
+    height: auto;
+    padding-block: clamp(18px, 3vh, 26px);
+  }
+
+  .lx-hero__main {
+    margin-top: 0;
+    padding-top: 14px;
   }
 
   .lx-hero__bar {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;
+    margin-top: clamp(24px, 4vh, 36px);
   }
 
   .lx-hero__transport {
@@ -443,10 +467,6 @@
 }
 
 @media (max-width: 520px) {
-  .lx-hero {
-    min-height: 620px;
-  }
-
   .lx-hero__kicker {
     gap: 9px;
     letter-spacing: 0.12em;

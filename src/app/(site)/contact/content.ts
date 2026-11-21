@@ -18,7 +18,7 @@ export const HERO = {
   facts: [
     { label: "Based", value: "Lahore, Pakistan" },
     { label: "Range", value: "Solar · Storage · Mobility" },
-    { label: "Channels", value: "Call · Chat · Form" },
+    { label: "Channels", value: "Call · Email · Form" },
   ],
   captionIndex: "01",
   caption: "A home, a family, a route — the same conversation.",
@@ -31,7 +31,7 @@ export const DIRECT = {
   eyebrow: "Direct contact",
   title: "A direct line, if you prefer one.",
   intro:
-    "Phone and WhatsApp reach the same office. Use whichever suits the conversation — a quick question, a site detail, or a longer discussion about a system.",
+    "Phone and email reach the same office. Use whichever suits the conversation — a quick question, a site detail, or a longer discussion about a system.",
   note:
     "No opening hours are listed here. If you are planning a visit, message first and we will confirm the details with you.",
 } as const;
@@ -40,7 +40,7 @@ export const ENQUIRY = {
   eyebrow: "Enquiry",
   title: "Tell us what you are planning.",
   intro:
-    "A few details are enough to start. The form prepares a structured message and opens WhatsApp, where you can read it, change it, and send it yourself.",
+    "A few details are enough to start. The form prepares a structured message and opens your email client, where you can read it, change it, and send it yourself.",
   steps: [
     {
       index: "01",
@@ -50,7 +50,7 @@ export const ENQUIRY = {
     {
       index: "02",
       title: "Review",
-      copy: "The message opens in WhatsApp, complete and editable.",
+      copy: "The message opens in your email client, complete and editable.",
     },
     {
       index: "03",
@@ -59,7 +59,7 @@ export const ENQUIRY = {
     },
   ],
   note:
-    "This form does not send or store anything on the website. It prepares a message for you to review in WhatsApp.",
+    "This form does not send or store anything on the website. It prepares a message for you to review in your email client.",
 } as const;
 
 export const CATEGORIES = [
@@ -90,7 +90,7 @@ export type EnquiryCategory = (typeof CATEGORIES)[number]["id"];
 export const FORM = {
   sheetLabel: "Enquiry form",
   sheetMeta: "All fields required",
-  submit: "Prepare message in WhatsApp",
+  submit: "Prepare message in email",
   working: "Preparing message",
   fields: {
     name: {

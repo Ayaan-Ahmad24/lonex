@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { whatsappHref } from "@/lib/public/contact";
-import { getProductEditorial } from "@/lib/public/editorial";
+import { categoryEnquiry } from "@/lib/public/enquiries";
 import {
   CategoryBreadcrumbs,
   CategoryClose,
@@ -11,6 +10,7 @@ import {
   CommunityPillars,
   RangeEnquiry,
   RichProductCard,
+  buildProductViews,
 } from "./parts";
 import type { CategoryPageProps } from "./parts";
 
@@ -26,22 +26,15 @@ export function GenericCategoryPage({
   settings,
   editorial,
 }: CategoryPageProps) {
-  const whatsapp = settings.whatsapp
-    ? whatsappHref(
-        settings.whatsapp,
-        `Hello LONEX, I would like to discuss ${category.name}.`,
-      )
-    : null;
+  const emailEnquiry = categoryEnquiry(settings.contactEmail, {
+    label: category.name,
+    name: category.name,
+    path: category.path,
+    intro: `I would like to enquire about the ${category.name} range.`,
+    closing: "Please share details about the models available in this range.",
+  });
 
-  const views = products.map((card) => ({
-    card,
-    editorial: getProductEditorial(
-      card.slug,
-      card.name,
-      card.shortDescription,
-      null,
-    ),
-  }));
+  const views = buildProductViews(category, products);
 
   return (
     <>
@@ -191,7 +184,7 @@ export function GenericCategoryPage({
             <RangeEnquiry
               categoryName={category.name}
               note="Tell us what you need the system to do."
-              whatsapp={whatsapp}
+              email={emailEnquiry}
               phone={settings.contactPhone || null}
             />
           </div>
@@ -212,7 +205,7 @@ export function GenericCategoryPage({
         title={editorial.closing.title}
         body={editorial.closing.body}
         categoryName={category.name}
-        whatsapp={whatsapp}
+        email={emailEnquiry}
       />
     </>
   );

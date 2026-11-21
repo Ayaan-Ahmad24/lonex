@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ActionForm } from "@/admin/core/ui/action-form";
 import { Card, CardBody, CardHeader } from "@/admin/core/ui/card";
 import {
@@ -29,6 +30,7 @@ export type SellerFormValues = {
 
 export function SellerForm({ seller }: { seller?: SellerFormValues }) {
   const editing = Boolean(seller);
+  const [isUploading, setIsUploading] = useState(false);
 
   return (
     <ActionForm
@@ -49,6 +51,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               defaultValue={seller?.name ?? ""}
               maxLength={200}
               required
+              disabled={isUploading}
             />
           </FormField>
           <FormField label="City" htmlFor="city" required>
@@ -58,6 +61,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               defaultValue={seller?.city ?? ""}
               maxLength={120}
               required
+              disabled={isUploading}
             />
           </FormField>
           <FormField label="Address" htmlFor="address" className="sm:col-span-2" required>
@@ -68,6 +72,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               maxLength={300}
               rows={2}
               required
+              disabled={isUploading}
             />
           </FormField>
           <FormField label="Phone" htmlFor="phone" required>
@@ -78,6 +83,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               defaultValue={seller?.phone ?? ""}
               maxLength={50}
               required
+              disabled={isUploading}
             />
           </FormField>
           <FormField
@@ -91,6 +97,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               type="tel"
               defaultValue={seller?.whatsapp ?? ""}
               maxLength={50}
+              disabled={isUploading}
             />
           </FormField>
           <FormField
@@ -106,6 +113,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               defaultValue={seller?.googleMapsUrl ?? ""}
               placeholder="https://maps.google.com/..."
               maxLength={500}
+              disabled={isUploading}
             />
           </FormField>
           {/* Full-width image uploader so the preview area stays large. */}
@@ -117,6 +125,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               onImageMediaIdChange={() => {
                 // The hidden input inside SellerImageUploader submits with the form.
               }}
+              onUploadingChange={setIsUploading}
             />
           </div>
           <FormField label="Sort order" htmlFor="sortOrder">
@@ -125,6 +134,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               name="sortOrder"
               type="number"
               defaultValue={seller?.sortOrder ?? 0}
+              disabled={isUploading}
             />
           </FormField>
           <FormField label="Status" htmlFor="status">
@@ -132,6 +142,7 @@ export function SellerForm({ seller }: { seller?: SellerFormValues }) {
               id="status"
               name="status"
               defaultValue={seller?.status ?? "active"}
+              disabled={isUploading}
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>

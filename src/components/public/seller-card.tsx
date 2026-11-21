@@ -1,7 +1,8 @@
 "use client";
 
-import { formatPhone, whatsappHref } from "@/lib/public/contact";
-import type { PublicSeller } from "@/lib/public/dto";
+import { formatPhone, telHref } from "@/lib/public/contact";
+import { sellerEnquiry } from "@/lib/public/enquiries";
+import type { PublicSeller, PublicSettings } from "@/lib/public/dto";
 import { ImagePlaceholder } from "@/components/public/content-image";
 import { useState } from "react";
 
@@ -13,31 +14,42 @@ import { useState } from "react";
  * to an honest placeholder (never a broken image icon) when no image is
  * uploaded or the file is unavailable.
  */
-export function SellerCard({ seller }: { seller: PublicSeller }) {
-  const tel = `tel:${seller.phone.replace(/[^\d+]/g, "")}`;
-  const whatsapp = seller.whatsapp ? whatsappHref(seller.whatsapp) : null;
+export function SellerCard({
+  seller,
+  settings,
+}: {
+  seller: PublicSeller;
+  settings: PublicSettings;
+}) {
+  const tel = telHref(seller.phone);
+  const emailEnquiry = sellerEnquiry(settings.contactEmail, {
+    name: seller.name,
+    city: seller.city,
+    address: seller.address,
+  });
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
     <article className="lxs-entry">
       <div className="lxs-entry__media">
         {seller.image && !imageFailed ? (
-          // Dynamically loaded from the database via /media/:id.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={seller.image.url}
-            alt={seller.image.alt ?? seller.name}
-            width={seller.image.width ?? 400}
-            height={seller.image.height ?? 300}
-            sizes="(max-width: 767px) 100vw, 120px"
-            className="h-20 w-24 rounded-lg border border-lonex-line object-contain bg-lonex-paper"
-            onError={() => setImageFailed(true)}
-          />
+          <span className="lxs-entry__logo">
+            {/* Dynamically loaded from the database via /media/:id. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={seller.image.url}
+              alt={seller.image.alt ?? seller.name}
+              width={seller.image.width ?? 400}
+              height={seller.image.height ?? 300}
+              className="lxs-entry__logo-img"
+              onError={() => setImageFailed(true)}
+            />
+          </span>
         ) : null}
         {(!seller.image || imageFailed) && (
           <ImagePlaceholder
             label="Seller image pending"
-            className="h-20 w-24 rounded-lg border border-lonex-line bg-lonex-paper"
+            className="lxs-entry__logo"
           />
         )}
       </div>
@@ -58,24 +70,28 @@ export function SellerCard({ seller }: { seller: PublicSeller }) {
 
       <div className="lxs-entry__field">
         <span className="lxs-entry__label">Contact</span>
-        <a href={tel} className="lxs-entry__phone">
-          {formatPhone(seller.phone)}
-        </a>
+        {tel ? (
+          <a href={tel} className="lxs-entry__phone">
+            {formatPhone(seller.phone)}
+          </a>
+        ) : null}
       </div>
 
       <div className="lxs-entry__actions">
-        <a href={tel} className="lxs-entry__action">
-          Call
-          <span aria-hidden="true">↗</span>
-        </a>
-        {whatsapp ? (
+        {tel ? (
+          <a href={tel} className="lxs-entry__action">
+            Call
+            <span aria-hidden="true">↗</span>
+          </a>
+        ) : null}
+        {emailEnquiry ? (
           <a
-            href={whatsapp}
+            href={emailEnquiry}
             target="_blank"
             rel="noopener noreferrer"
             className="lxs-entry__action"
           >
-            WhatsApp
+            Email Enquiry
             <span aria-hidden="true">↗</span>
           </a>
         ) : null}

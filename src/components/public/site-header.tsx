@@ -25,6 +25,13 @@ const DESKTOP_QUERY = "(min-width: 960px)";
 
 const CATEGORY_ORDER = ["solar", "batteries", "electric-scooters"] as const;
 
+// The three category landing pages open with a full-bleed photograph, so their
+// header uses the same transparent-over-hero treatment as the homepage. Every
+// other route keeps the standard solid header.
+const HERO_HEADER_ROUTES: ReadonlySet<string> = new Set(
+  CATEGORY_ORDER.map((slug) => `/${slug}`),
+);
+
 const CATEGORY_META: Record<
   string,
   { index: string; verb: string; description: string; image: string }
@@ -46,11 +53,19 @@ const CATEGORY_META: Record<
     index: "03",
     verb: "Move",
     description: "Electric scooters for everyday urban travel.",
-    // The category cover in the CMS is a scooter render. The range photograph
-    // is the real scooter, so the dropdown always uses it for this tile.
-    image: "/images/homepage/range-scooter.webp",
+    // The category cover in the CMS is a scooter render. This tile uses the
+    // real scooter photograph from the media library (asset 264) instead.
+    image: "/media/264",
   },
 };
+
+// These tiles use the local photograph from CATEGORY_META instead of the
+// category cover from the CMS: the batteries cover still carries the
+// pre-branding photograph, and the EV cover is a render rather than a photo.
+const STATIC_TILE_CATEGORIES: ReadonlySet<string> = new Set([
+  "batteries",
+  "electric-scooters",
+]);
 
 type MegaItem = {
   id: number;
@@ -89,12 +104,10 @@ function buildMegaItems(categories: PublicCategory[]): MegaItem[] {
           meta?.description ??
           category.description?.split(". ")[0] ??
           "Explore the range.",
-        // The EV category cover is a scooter; use the real scooter photograph
-        // for that tile.
-        imageSrc:
-          category.slug === "electric-scooters"
-            ? (meta?.image ?? category.cover?.url ?? null)
-            : (category.cover?.url ?? meta?.image ?? null),
+        // Batteries and EV use the local photograph; solar keeps its CMS cover.
+        imageSrc: STATIC_TILE_CATEGORIES.has(category.slug)
+          ? (meta?.image ?? category.cover?.url ?? null)
+          : (category.cover?.url ?? meta?.image ?? null),
       };
     });
 }
@@ -157,6 +170,7 @@ export function SiteHeader({
 }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const overHero = isHome || HERO_HEADER_ROUTES.has(pathname);
   const megaItems = buildMegaItems(categories);
 
   const productsActive = categories.some((category) =>
@@ -299,11 +313,12 @@ export function SiteHeader({
     return () => media.removeEventListener("change", onChange);
   }, []);
 
-  // On the homepage the header starts transparent over the hero and turns
-  // solid as soon as the page scrolls. The listener is passive and batched
-  // into an animation frame, so scrolling stays smooth.
+  // On a hero route the header starts transparent over the photograph and
+  // turns solid as soon as the page scrolls. The listener is passive and
+  // batched into an animation frame, so scrolling stays smooth. Re-syncing on
+  // every route change keeps the state honest after a client navigation.
   useEffect(() => {
-    if (!isHome) {
+    if (!overHero) {
       return;
     }
 
@@ -330,7 +345,7 @@ export function SiteHeader({
       }
       window.removeEventListener("scroll", onScroll);
     };
-  }, [isHome]);
+  }, [overHero, pathname]);
 
   function clearHoverTimer() {
     if (hoverTimer.current !== null) {
@@ -443,8 +458,8 @@ export function SiteHeader({
   return (
     <header
       ref={headerRef}
-      className={`site-header${isHome ? " site-header--over-hero" : ""}${
-        isHome && (headerSolid || openMenu !== null) ? " is-scrolled" : ""
+      className={`site-header${overHero ? " site-header--over-hero" : ""}${
+        overHero && (headerSolid || openMenu !== null) ? " is-scrolled" : ""
       }`}
     >
       <Container className="site-header__bar">

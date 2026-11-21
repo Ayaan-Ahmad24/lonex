@@ -4,8 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { authorizeAction } from "@/admin/core/guards";
 import { flashPath } from "@/admin/core/ui/flash";
+import {
+  deniedState,
+  firstFieldError,
+  gateNewStatus,
+  gateUpdatedStatus,
+  readEntityId,
+} from "@/admin/core/crud/action-helpers";
 import { failure, success, type ActionState } from "@/admin/core/crud/types";
-import { permissionGranted } from "@/admin/core/registry/navigation";
 import { parseCategoryForm } from "./schema";
 import {
   createCategory,
@@ -13,13 +19,7 @@ import {
   updateCategory,
 } from "./service";
 
-function denied(status: 401 | 403): ActionState {
-  return failure(
-    status === 401
-      ? "Your session expired. Sign in again."
-      : "You do not have permission to change categories.",
-  );
-}
+const FORBIDDEN_MESSAGE = "You do not have permission to change categories.";
 
 export async function createCategoryAction(
   _previous: ActionState,
@@ -28,22 +28,16 @@ export async function createCategoryAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const parsed = parseCategoryForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
-  const canPublish = permissionGranted(access.permissions, "content.publish");
-  const input = canPublish
-    ? parsed.data
-    : { ...parsed.data, status: "draft" as const };
+  const input = gateNewStatus(access.permissions, parsed.data);
 
   const result = await createCategory(access.user.id, input);
 
@@ -66,29 +60,22 @@ export async function updateCategoryAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
-  const id = Number(formData.get("id"));
+  const id = readEntityId(formData);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!id) {
     return failure("Category not found.");
   }
 
   const parsed = parseCategoryForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
-  const canPublish = permissionGranted(access.permissions, "content.publish");
-  const input =
-    canPublish || parsed.data.status !== "draft"
-      ? parsed.data
-      : { ...parsed.data, status: "draft" as const };
+  const input = gateUpdatedStatus(access.permissions, parsed.data);
 
   const result = await updateCategory(access.user.id, id, input);
 
@@ -113,12 +100,12 @@ export async function deleteCategoryAction(
   const access = await authorizeAction("content.edit");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
-  const id = Number(formData.get("id"));
+  const id = readEntityId(formData);
 
-  if (!Number.isInteger(id) || id <= 0) {
+  if (!id) {
     return failure("Category not found.");
   }
 

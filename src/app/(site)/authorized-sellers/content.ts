@@ -68,7 +68,8 @@ export const RANGE_LINKS = [
     name: "Electric Scooters",
     href: "/electric-scooters",
     line: "Electric two-wheelers for short urban journeys and everyday errands.",
-    image: "/images/lonex-step-1/move-mobility.webp",
-    alt: "An electric scooter parked in a covered rack",
+    // Media library asset 264: the real scooter in a studio three-quarter view.
+    image: "/media/264",
+    alt: "White LONEX electric scooter in a studio, three-quarter view",
   },
 ] as const;

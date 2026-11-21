@@ -165,16 +165,12 @@ function ordered(rows: Indexed): Record<string, string>[] {
     .map((key) => rows[key]);
 }
 
-function parseBoolean(value: string | undefined): boolean {
-  return value === "on" || value === "true" || value === "1";
-}
-
 export function parseProductForm(formData: FormData): ParsedForm<ProductInput> {
   const images = ordered(collectIndexed(formData, "images"))
     .map((row) => ({
       mediaId: Number(row.mediaId),
       alt: row.alt ?? "",
-      isPrimary: parseBoolean(row.isPrimary),
+      isPrimary: formCheckbox(row.isPrimary ?? null),
     }))
     .filter((row) => Number.isInteger(row.mediaId) && row.mediaId > 0);
 
@@ -183,7 +179,7 @@ export function parseProductForm(formData: FormData): ParsedForm<ProductInput> {
       groupName: row.groupName ?? "",
       label: row.label ?? "",
       value: row.value ?? "",
-      isHighlight: parseBoolean(row.isHighlight),
+      isHighlight: formCheckbox(row.isHighlight ?? null),
     }))
     .filter(
       (row) =>

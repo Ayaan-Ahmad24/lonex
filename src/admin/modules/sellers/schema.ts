@@ -6,6 +6,10 @@ import {
   parseForm,
   type ParsedForm,
 } from "@/lib/validation/form";
+import {
+  optionalHttpsUrlSchema,
+  optionalPhoneSchema,
+} from "@/lib/validation/schemas";
 
 const phoneSchema = z
   .string()
@@ -14,25 +18,10 @@ const phoneSchema = z
   .max(50)
   .regex(/^[0-9+()\-.\s]+$/, "Use digits, spaces and + ( ) - only.");
 
-const optionalPhone = z
-  .string()
-  .trim()
-  .max(50)
-  .refine(
-    (value) => value === "" || /^[0-9+()\-.\s]{6,50}$/.test(value),
-    "Use digits, spaces and + ( ) - only.",
-  )
-  .default("");
-
-const optionalHttps = z
-  .string()
-  .trim()
-  .max(500)
-  .refine(
-    (value) => value === "" || /^https:\/\/[^\s]+$/i.test(value),
-    "Use an https:// URL or leave this blank.",
-  )
-  .default("");
+const optionalPhone = optionalPhoneSchema({
+  message: "Use digits, spaces and + ( ) - only.",
+  minLength: 6,
+});
 
 export const sellerSchema = z.object({
   name: z.string().trim().min(2, "Seller name is required.").max(200),
@@ -40,7 +29,7 @@ export const sellerSchema = z.object({
   address: z.string().trim().min(2, "Address is required.").max(300),
   phone: phoneSchema,
   whatsapp: optionalPhone,
-  googleMapsUrl: optionalHttps,
+  googleMapsUrl: optionalHttpsUrlSchema,
   imageMediaId: z
     .number()
     .int()

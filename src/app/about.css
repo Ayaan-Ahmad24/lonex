@@ -399,14 +399,26 @@
 
 .lxa-story__frame {
   position: relative;
-  height: clamp(340px, 35vw, 520px);
   overflow: hidden;
   background: #171515;
 }
 
 .lxa-story__image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: center 45%;
+}
+
+@media (max-width: 767px) {
+  .lxa-story__frame {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (min-width: 768px) {
+  .lxa-story__frame {
+    aspect-ratio: 16 / 7;
+  }
 }
 
 .lxa-story__caption {
@@ -634,6 +646,12 @@
   aspect-ratio: 1.85 / 1;
 }
 
+@media (max-width: 767px) {
+  .lxa-pillar--move .lxa-pillar__media {
+    aspect-ratio: 5 / 3;
+  }
+}
+
 .lxa-pillar--move .lxa-pillar__body {
   position: absolute;
   bottom: 0;
@@ -725,6 +743,12 @@
 .lxa-approach__image {
   object-fit: cover;
   object-position: center;
+}
+
+@media (max-width: 767px) {
+  .lxa-approach__figure {
+    aspect-ratio: 4 / 3;
+  }
 }
 
 .lxa-approach__figure figcaption {
@@ -900,14 +924,26 @@
 
 .lxa-community__frame {
   position: relative;
-  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: #1a1717;
 }
 
 .lxa-community__image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: center;
+}
+
+@media (max-width: 767px) {
+  .lxa-community__frame {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .lxa-community__frame {
+    aspect-ratio: 3 / 4;
+  }
 }
 
 .lxa-community__figure figcaption {
@@ -947,8 +983,16 @@
 }
 
 .lxa-close__image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  object-position: center 62%;
+  object-position: center 50%;
+}
+
+@media (max-width: 767px) {
+  .lxa-close__image {
+    object-position: center 50%;
+  }
 }
 
 .lxa-close__scrim {

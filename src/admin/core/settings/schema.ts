@@ -1,4 +1,15 @@
 import { z } from "zod";
+import {
+  formCheckbox,
+  formOptionalId,
+  formText,
+  parseForm,
+  type ParsedForm,
+} from "@/lib/validation/form";
+import {
+  optionalHttpsUrlSchema,
+  optionalPhoneSchema,
+} from "@/lib/validation/schemas";
 
 /**
  * Allowlisted public site settings.
@@ -8,22 +19,12 @@ import { z } from "zod";
  * and is never editable through the CMS.
  */
 
-const optionalHttpsUrl = z
-  .string()
-  .trim()
-  .max(500)
-  .refine(
-    (value) => value === "" || /^https:\/\/[^\s]+$/i.test(value),
-    "Use an https:// URL or leave this blank.",
-  )
-  .default("");
-
 export const socialLinksSchema = z.object({
-  facebook: optionalHttpsUrl,
-  instagram: optionalHttpsUrl,
-  x: optionalHttpsUrl,
-  linkedin: optionalHttpsUrl,
-  youtube: optionalHttpsUrl,
+  facebook: optionalHttpsUrlSchema,
+  instagram: optionalHttpsUrlSchema,
+  x: optionalHttpsUrlSchema,
+  linkedin: optionalHttpsUrlSchema,
+  youtube: optionalHttpsUrlSchema,
 });
 
 export type SocialLinks = z.infer<typeof socialLinksSchema>;
@@ -44,26 +45,22 @@ export const siteSettingsSchema = z.object({
       "Enter a valid email address or leave this blank.",
     )
     .default(""),
-  contactPhone: z
-    .string()
-    .trim()
-    .max(50)
-    .refine(
-      (value) => value === "" || /^[0-9+()\-.\s]{3,50}$/.test(value),
-      "Enter a valid phone number or leave this blank.",
-    )
-    .default(""),
-  whatsapp: z
-    .string()
-    .trim()
-    .max(50)
-    .refine(
-      (value) => value === "" || /^[0-9+()\-.\s]{3,50}$/.test(value),
-      "Enter a valid WhatsApp number or leave this blank.",
-    )
-    .default(""),
+  contactPhone: optionalPhoneSchema({
+    message: "Enter a valid phone number or leave this blank.",
+  }),
+  whatsapp: optionalPhoneSchema({
+    message: "Enter a valid WhatsApp number or leave this blank.",
+  }),
   address: z.string().trim().max(300).default(""),
-  googleMapsUrl: optionalHttpsUrl,
+  googleMapsUrl: optionalHttpsUrlSchema,
+
+  /** When false, WhatsApp number and links are hidden from the public site.
+   *  The stored number is preserved and can be re-enabled at any time. */
+  whatsappEnabled: z.boolean().default(false),
+
+  /** When false, the office address and map links are hidden from the public
+   *  site. The stored address is preserved and can be re-enabled at any time. */
+  locationEnabled: z.boolean().default(false),
 
   social: socialLinksSchema,
 
@@ -76,61 +73,31 @@ export type SiteSettings = z.infer<typeof siteSettingsSchema>;
 
 export const SETTINGS_KEY = "site";
 
-function text(value: FormDataEntryValue | null): string {
-  return typeof value === "string" ? value : "";
-}
-
-function optionalId(value: FormDataEntryValue | null): number | null {
-  const raw = text(value);
-  const parsed = Number(raw);
-
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-}
-
-export function parseSettingsForm(
-  formData: FormData,
-):
-  | { ok: true; data: SiteSettings }
-  | { ok: false; errors: Record<string, string> } {
+export function parseSettingsForm(formData: FormData): ParsedForm<SiteSettings> {
   const candidate = {
-    siteName: text(formData.get("siteName")),
-    tagline: text(formData.get("tagline")),
-    description: text(formData.get("description")),
-    logoText: text(formData.get("logoText")),
-    logoMediaId: optionalId(formData.get("logoMediaId")),
-    contactEmail: text(formData.get("contactEmail")),
-    contactPhone: text(formData.get("contactPhone")),
-    whatsapp: text(formData.get("whatsapp")),
-    address: text(formData.get("address")),
-    googleMapsUrl: text(formData.get("googleMapsUrl")),
+    siteName: formText(formData.get("siteName")),
+    tagline: formText(formData.get("tagline")),
+    description: formText(formData.get("description")),
+    logoText: formText(formData.get("logoText")),
+    logoMediaId: formOptionalId(formData.get("logoMediaId")),
+    contactEmail: formText(formData.get("contactEmail")),
+    contactPhone: formText(formData.get("contactPhone")),
+    whatsapp: formText(formData.get("whatsapp")),
+    address: formText(formData.get("address")),
+    googleMapsUrl: formText(formData.get("googleMapsUrl")),
     social: {
-      facebook: text(formData.get("facebook")),
-      instagram: text(formData.get("instagram")),
-      x: text(formData.get("x")),
-      linkedin: text(formData.get("linkedin")),
-      youtube: text(formData.get("youtube")),
+      facebook: formText(formData.get("facebook")),
+      instagram: formText(formData.get("instagram")),
+      x: formText(formData.get("x")),
+      linkedin: formText(formData.get("linkedin")),
+      youtube: formText(formData.get("youtube")),
     },
-    seoTitle: text(formData.get("seoTitle")),
-    seoDescription: text(formData.get("seoDescription")),
-    noIndex: formData.get("noIndex") === "on",
+    seoTitle: formText(formData.get("seoTitle")),
+    seoDescription: formText(formData.get("seoDescription")),
+    noIndex: formCheckbox(formData.get("noIndex")),
   };
 
-  const parsed = siteSettingsSchema.safeParse(candidate);
-
-  if (!parsed.success) {
-    const errors: Record<string, string> = {};
-
-    for (const issue of parsed.error.issues) {
-      const key = issue.path.join(".");
-      if (!errors[key]) {
-        errors[key] = issue.message;
-      }
-    }
-
-    return { ok: false, errors };
-  }
-
-  return { ok: true, data: parsed.data };
+  return parseForm(siteSettingsSchema, candidate);
 }
 
 /** Merge stored settings over deployment defaults without accepting extra keys. */

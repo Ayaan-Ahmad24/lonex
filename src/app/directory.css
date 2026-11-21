@@ -1719,6 +1719,12 @@
     border-color 180ms var(--lx-ease);
 }
 
+/* Keep each crumb whole; the trail wraps between crumbs only. */
+.lxs-crumbs > a,
+.lxs-crumbs > span {
+  white-space: nowrap;
+}
+
 .lxs-crumbs a:hover {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.5);
@@ -1881,7 +1887,9 @@
 
 .lxs-entry {
   display: grid;
-  grid-template-columns: 110px minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr);
+  /* A 180px media column gives wide wordmarks (ii Energy is 2.62:1, Yahya
+     2.20:1) enough horizontal room to stay legible. */
+  grid-template-columns: 180px minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr);
   gap: 20px;
   align-items: start;
   padding-block: clamp(22px, 2.4vw, 30px);
@@ -1896,7 +1904,31 @@
 .lxs-entry__media {
   grid-column: 1;
   display: flex;
-  align-items: start;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* Aspect-ratio aware logo plate: fixed height, flexible width, and the image
+   is contained inside it however wide or tall the supplied file is. */
+.lxs-entry__logo {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 180px;
+  height: 80px;
+  padding-inline: 8px;
+  border: 1px solid var(--lx-line);
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.lxs-entry__logo img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .lxs-entry__identity {
@@ -2589,8 +2621,39 @@
 }
 
 @media (max-width: 767px) {
+  /* Stacked composition: the city photograph is a full-width panel at its own
+     ratio, and the directory copy sits under it on the hero's own ground. */
   .lxs-hero {
+    display: block;
     min-height: 0;
+  }
+
+  .lxs-hero__media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 1000 / 610;
+    z-index: 0;
+  }
+
+  .lxs-hero__scrim {
+    inset: 0 0 auto 0;
+    z-index: 1;
+    aspect-ratio: 1000 / 610;
+    background: linear-gradient(
+      to bottom,
+      rgba(8, 7, 7, 0.34) 0%,
+      rgba(8, 7, 7, 0) 48%,
+      rgba(8, 7, 7, 0.52) 100%
+    );
+  }
+
+  .lxs-hero__rules {
+    display: none;
+  }
+
+  .lxs-hero__inner {
+    z-index: 2;
   }
 
   .lxs-hero__title {

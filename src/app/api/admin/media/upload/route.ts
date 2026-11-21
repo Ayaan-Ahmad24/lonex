@@ -4,6 +4,7 @@ import { authorize } from "@/lib/rbac";
 import { isSameOrigin } from "@/lib/origin";
 import { getServerEnv } from "@/lib/env";
 import { uploadMedia } from "@/admin/core/media/service";
+import { isUploadThrottled, recordUploadAttempt } from "@/lib/security/upload-throttle";
 
 /**
  * Authenticated multipart upload endpoint.
@@ -89,6 +90,19 @@ export async function POST(request: Request) {
       access.status,
     );
   }
+
+  // Rate limiting: 20 uploads per authenticated admin per 5 minutes.
+  const now = Date.now();
+  if (await isUploadThrottled(access.user.id, now)) {
+    return json(
+      {
+        status: "error",
+        message: "Upload rate limit exceeded. Try again later.",
+      },
+      429,
+    );
+  }
+  await recordUploadAttempt(access.user.id, now);
 
   if (!isSameOrigin(request)) {
     return json({ status: "error", message: "Request origin is not allowed." }, 403);

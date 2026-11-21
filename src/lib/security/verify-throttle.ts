@@ -1,8 +1,10 @@
-import { createHash, randomUUID } from "node:crypto";
-import { sql } from "drizzle-orm";
-import { db } from "@/db";
-import { rateLimit } from "@/db/schema";
+import { createHash } from "node:crypto";
 import { parseTrustedProxies } from "@/lib/security/trusted-proxies";
+import {
+  clearCounters,
+  incrementCounter,
+  readCounter,
+} from "./rate-limit-store";
 
 /**
  * Public model-verification throttle.
@@ -55,36 +57,14 @@ export function verificationThrottleKeys(address: string): {
   };
 }
 
-async function readCounter(
-  key: string,
-  now: number,
-): Promise<{ count: number; withinWindow: boolean }> {
-  const [row] = await db
-    .select({ count: rateLimit.count, lastRequest: rateLimit.lastRequest })
-    .from(rateLimit)
-    .where(sql`${rateLimit.key} = ${key}`)
-    .limit(1);
-
-  if (!row) {
-    return { count: 0, withinWindow: false };
-  }
-
-  const windowMs = VERIFY_WINDOW_SECONDS * 1000;
-
-  return {
-    count: Number(row.count),
-    withinWindow: now - Number(row.lastRequest) < windowMs,
-  };
-}
-
 export async function isVerificationThrottled(
   address: string,
   now: number = Date.now(),
 ): Promise<boolean> {
   const { clientKey, globalKey } = verificationThrottleKeys(address);
   const [client, global] = await Promise.all([
-    readCounter(clientKey, now),
-    readCounter(globalKey, now),
+    readCounter(clientKey, VERIFY_WINDOW_SECONDS, now),
+    readCounter(globalKey, VERIFY_WINDOW_SECONDS, now),
   ]);
 
   return (
@@ -98,16 +78,9 @@ export async function recordVerificationAttempt(
   now: number = Date.now(),
 ): Promise<void> {
   const { clientKey, globalKey } = verificationThrottleKeys(address);
-  const windowStart = now - VERIFY_WINDOW_SECONDS * 1000;
 
   for (const key of [clientKey, globalKey]) {
-    await db.execute(sql`
-      INSERT INTO \`rate_limit\` (\`id\`, \`key\`, \`count\`, \`last_request\`)
-      VALUES (${randomUUID()}, ${key}, 1, ${now})
-      ON DUPLICATE KEY UPDATE
-        \`count\` = IF(\`last_request\` < ${windowStart}, 1, \`count\` + 1),
-        \`last_request\` = ${now}
-    `);
+    await incrementCounter(key, VERIFY_WINDOW_SECONDS, now);
   }
 }
 
@@ -115,7 +88,5 @@ export async function recordVerificationAttempt(
 export async function clearVerificationThrottle(address: string): Promise<void> {
   const { clientKey, globalKey } = verificationThrottleKeys(address);
 
-  await db.execute(
-    sql`DELETE FROM \`rate_limit\` WHERE \`key\` IN (${clientKey}, ${globalKey})`,
-  );
+  await clearCounters([clientKey, globalKey]);
 }

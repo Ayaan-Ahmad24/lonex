@@ -108,6 +108,8 @@ export type PublicSettings = {
   whatsapp: string;
   address: string;
   googleMapsUrl: string;
+  whatsappEnabled: boolean;
+  locationEnabled: boolean;
   social: Record<string, string>;
   seoTitle: string;
   seoDescription: string;

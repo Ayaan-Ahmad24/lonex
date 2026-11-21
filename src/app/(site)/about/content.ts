@@ -46,7 +46,7 @@ export const PILLARS = [
     detail:
       "We focus on how the scooter will be used — the length of the journey, the surface, where it will be stored, and how it will be charged — rather than on performance language that rarely survives a daily routine.",
     points: ["Short urban journeys", "Everyday errands and commutes"],
-    image: "/images/v2/move-city.webp",
+    image: "/images/v2/move-city.png",
     alt: "A black electric scooter parked in a covered city rack",
   },
 ] as const;

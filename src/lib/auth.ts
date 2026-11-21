@@ -49,6 +49,7 @@ export const auth = betterAuth({
     authBaseURL,
     "http://localhost:3000",
     "https://*.ngrok-free.app",
+    "https://*.ngrok-free.dev",
   ],
 
   database: drizzleAdapter(db, {

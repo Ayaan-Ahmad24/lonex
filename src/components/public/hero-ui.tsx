@@ -60,9 +60,12 @@ const SLIDES: HeroSlide[] = [
     copy: "Electric scooters for the short trip — quiet, efficient and built for everyday city travel.",
     cta: "Explore mobility",
     href: "/electric-scooters",
-    image: "/images/lonex-step-1/move-mobility.webp",
-    alt: "Electric scooter parked on a city street at dusk — illustrative visual",
-    position: "58% 50%",
+    // The previous slide photograph was an electric bicycle. The range is a
+    // scooter range, so the slide uses the studio scooter plate from the media
+    // library (asset 264, white LONEX scooter, three-quarter view).
+    image: "/media/264",
+    alt: "White LONEX electric scooter, studio three-quarter view — illustrative visual",
+    position: "50% 50%",
   },
 ];
 
@@ -406,10 +409,10 @@ export function HomeHeroUI({ settings }: { settings?: unknown }) {
               </span>
             </Link>
             <Link
-              href="/verify"
+              href="/authorized-sellers"
               className="lx-hero__cta lx-hero__cta--ghost"
             >
-              Verify a model
+              Find Sellers
             </Link>
           </div>
         </div>

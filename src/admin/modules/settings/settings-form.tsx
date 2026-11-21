@@ -143,6 +143,16 @@ export function SettingsForm({
               maxLength={500}
             />
           </FormField>
+          <Checkbox
+            name="whatsappEnabled"
+            label="Show WhatsApp publicly"
+            defaultChecked={Boolean(settings.whatsappEnabled)}
+          />
+          <Checkbox
+            name="locationEnabled"
+            label="Show office location publicly"
+            defaultChecked={Boolean(settings.locationEnabled)}
+          />
         </CardBody>
       </Card>
 

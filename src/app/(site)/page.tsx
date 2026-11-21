@@ -26,9 +26,9 @@ import { ContentImage } from "@/components/public/content-image";
  * Swapping the picture is a file change only: the frame keeps the same
  * aspect ratio, crop and placement, so a replacement needs no design edit.
  */
-const PERSPECTIVE_IMAGE = "/images/lonex-story/story-architecture.webp";
-const PERSPECTIVE_IMAGE_WIDTH = 1320;
-const PERSPECTIVE_IMAGE_HEIGHT = 1650;
+const PERSPECTIVE_IMAGE = "/images/about2nd.png";
+const PERSPECTIVE_IMAGE_WIDTH = 2560;
+const PERSPECTIVE_IMAGE_HEIGHT = 1705;
 
 const PRINCIPLES = [
   {
@@ -71,8 +71,11 @@ const RANGE = [
     verb: "Move",
     label: "Electric Scooters",
     composition: "move",
-    image: "/images/homepage/range-scooter.webp",
-    alt: "A black electric scooter parked on a city street — illustrative visual",
+    // Studio scooter plate from the media library (asset 264): a white LONEX
+    // scooter, three-quarter view, both wheels and the headlight visible and no
+    // third-party model branding.
+    image: "/media/264",
+    alt: "White LONEX electric scooter in a studio, three-quarter view",
     sizes: "(max-width: 900px) 100vw, (max-width: 1440px) 31vw, 420px",
     copy: "Electric scooters for everyday urban travel — quiet, efficient and built around the short trip.",
   },

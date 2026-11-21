@@ -1,7 +1,9 @@
-import { createHash, randomUUID } from "node:crypto";
-import { sql } from "drizzle-orm";
-import { db } from "@/db";
-import { rateLimit } from "@/db/schema";
+import { createHash } from "node:crypto";
+import {
+  clearCounter,
+  incrementCounter,
+  readCounter,
+} from "./rate-limit-store";
 
 /**
  * Per-account sign-in throttle.
@@ -35,44 +37,26 @@ export async function isAccountThrottled(
   email: string,
   now: number = Date.now(),
 ): Promise<boolean> {
-  const key = accountThrottleKey(email);
-  const [row] = await db
-    .select({
-      count: rateLimit.count,
-      lastRequest: rateLimit.lastRequest,
-    })
-    .from(rateLimit)
-    .where(sql`${rateLimit.key} = ${key}`)
-    .limit(1);
+  const counter = await readCounter(
+    accountThrottleKey(email),
+    ACCOUNT_THROTTLE_WINDOW_SECONDS,
+    now,
+  );
 
-  if (!row) {
-    return false;
-  }
-
-  const windowMs = ACCOUNT_THROTTLE_WINDOW_SECONDS * 1000;
-  const withinWindow = now - Number(row.lastRequest) < windowMs;
-
-  return withinWindow && Number(row.count) >= ACCOUNT_THROTTLE_MAX_FAILURES;
+  return counter.withinWindow && counter.count >= ACCOUNT_THROTTLE_MAX_FAILURES;
 }
 
 export async function recordAccountFailure(
   email: string,
   now: number = Date.now(),
 ): Promise<void> {
-  const key = accountThrottleKey(email);
-  const windowStart = now - ACCOUNT_THROTTLE_WINDOW_SECONDS * 1000;
-
-  await db.execute(sql`
-    INSERT INTO \`rate_limit\` (\`id\`, \`key\`, \`count\`, \`last_request\`)
-    VALUES (${randomUUID()}, ${key}, 1, ${now})
-    ON DUPLICATE KEY UPDATE
-      \`count\` = IF(\`last_request\` < ${windowStart}, 1, \`count\` + 1),
-      \`last_request\` = ${now}
-  `);
+  await incrementCounter(
+    accountThrottleKey(email),
+    ACCOUNT_THROTTLE_WINDOW_SECONDS,
+    now,
+  );
 }
 
 export async function clearAccountFailures(email: string): Promise<void> {
-  const key = accountThrottleKey(email);
-
-  await db.execute(sql`DELETE FROM \`rate_limit\` WHERE \`key\` = ${key}`);
+  await clearCounter(accountThrottleKey(email));
 }

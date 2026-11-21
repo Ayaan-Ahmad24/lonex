@@ -11,6 +11,7 @@ type SellerImageUploaderProps = {
   imageUrl: string | null;
   imageAlt: string | null;
   onImageMediaIdChange: (imageMediaId: number | null) => void;
+  onUploadingChange?: (isUploading: boolean) => void;
   accept?: string;
   maxBytes?: number;
 };
@@ -28,17 +29,31 @@ type SellerImageUploaderProps = {
  * key. Replacing or removing an image only changes the seller's reference;
  * the media asset itself is retained (and protected from deletion while
  * referenced) by the existing media service.
+ *
+ * Upload lifecycle guarantees:
+ * - The XHR is sent before any state update, so the request is definitely in
+ *   flight before React re-renders.
+ * - `xhrRef.current` is only cleared by the XHR that created it, preventing
+ *   a completed earlier upload from clobbering a later in-flight reference.
+ * - State updates after unmount are ignored via a mounted flag.
+ * - Removing an image during an in-flight upload aborts the XHR and prevents
+ *   the completed response from resurrecting the removed image.
+ * - `onUploadingChange` notifies the parent when upload state changes so the
+ *   form can disable submission while an upload is in flight.
  */
 export function SellerImageUploader({
   imageMediaId,
   imageUrl,
   imageAlt,
   onImageMediaIdChange,
+  onUploadingChange,
   accept = "image/jpeg,image/png,image/webp",
   maxBytes = 5 * 1024 * 1024,
 }: SellerImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const xhrRef = useRef<XMLHttpRequest | null>(null);
+  const mountedRef = useRef(true);
+  const cancelledRef = useRef(false);
   const [status, setStatus] = useState<UploadStatus>("idle");
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState(0);
@@ -57,6 +72,16 @@ export function SellerImageUploader({
     };
   }, [preview]);
 
+  // Track mount state so state updates after unmount are ignored.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      xhrRef.current?.abort();
+      xhrRef.current = null;
+    };
+  }, []);
+
   // Abort an in-flight upload only on unmount, never on preview changes.
   // Aborting here (when preview changes) would kill the XHR just after it was
   // sent, so onload never fires and the component stays stuck uploading.
@@ -66,15 +91,29 @@ export function SellerImageUploader({
     };
   }, []);
 
+  // Notify the parent when upload state changes.
+  useEffect(() => {
+    if (!mountedRef.current) return;
+    onUploadingChange?.(uploading);
+  }, [uploading, onUploadingChange]);
+
   function onRemove() {
-    setPreview(null);
-    setMessage("");
+    // Mark the current upload (if any) as cancelled so its completion
+    // callback does not resurrect the removed image.
+    cancelledRef.current = true;
+    xhrRef.current?.abort();
+    xhrRef.current = null;
+
+    if (!mountedRef.current) return;
     setStatus("idle");
+    setMessage("");
     setLocalMediaId(null);
     onImageMediaIdChange(null);
   }
 
   function handleFileSelect(file: File) {
+    if (!mountedRef.current) return;
+
     setMessage("");
 
     if (file.size > maxBytes) {
@@ -89,16 +128,23 @@ export function SellerImageUploader({
       return;
     }
 
+    // Abort any in-flight upload when selecting a new file.
+    cancelledRef.current = true;
+    xhrRef.current?.abort();
+    xhrRef.current = null;
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("altText", "");
 
     const xhr = new XMLHttpRequest();
     xhrRef.current = xhr;
+    cancelledRef.current = false;
     xhr.open("POST", "/api/admin/media/upload");
     xhr.setRequestHeader("Accept", "application/json");
 
     xhr.upload.onprogress = (progressEvent) => {
+      if (!mountedRef.current) return;
       if (progressEvent.lengthComputable && progressEvent.total > 0) {
         setProgress(
           Math.min(
@@ -110,6 +156,12 @@ export function SellerImageUploader({
     };
 
     xhr.onload = () => {
+      // Only the XHR that created this reference may clear it, preventing a
+      // completed earlier upload from clobbering a later in-flight reference.
+      if (xhrRef.current !== xhr) return;
+      if (!mountedRef.current) return;
+      if (cancelledRef.current) return;
+
       xhrRef.current = null;
 
       let payload: { status?: string; id?: number; message?: string } = {};
@@ -133,6 +185,10 @@ export function SellerImageUploader({
     };
 
     xhr.onerror = () => {
+      if (xhrRef.current !== xhr) return;
+      if (!mountedRef.current) return;
+      if (cancelledRef.current) return;
+
       xhrRef.current = null;
       setStatus("error");
       setMessage("The upload failed. Check your connection and try again.");

@@ -2,7 +2,7 @@ import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
 import { auditLog, user } from "@/db/schema";
 import type { ListParams, ListResult } from "../crud/types";
-import { pageCountFor } from "../crud/list-params";
+import { clampPage, pageCountFor } from "../crud/list-params";
 
 export type AuditListRow = {
   id: number;
@@ -44,7 +44,7 @@ export async function listAuditEvents(
     .leftJoin(user, eq(user.id, auditLog.actorUserId))
     .where(where);
   const total = Number(countRow?.total ?? 0);
-  const page = Math.min(params.page, pageCountFor(total, params.pageSize));
+  const page = clampPage(params.page, total, params.pageSize);
 
   const rows = await db
     .select({

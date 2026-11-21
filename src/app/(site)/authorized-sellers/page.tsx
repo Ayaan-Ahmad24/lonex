@@ -5,7 +5,8 @@ import { connection } from "next/server";
 
 import { PageMotion } from "@/components/public/page-motion";
 import { SellerCard } from "@/components/public/seller-card";
-import { formatInternational, formatPhone, whatsappHref } from "@/lib/public/contact";
+import { formatInternational, formatPhone, telHref, whatsappHref } from "@/lib/public/contact";
+import { sellerDirectoryEnquiry } from "@/lib/public/enquiries";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
 import { listPublishedSellers, listSellerCities } from "@/lib/public/queries";
@@ -58,6 +59,11 @@ export default async function AuthorizedSellersPage({
         settings.whatsapp,
         "Hello LONEX, I would like help finding an authorized seller.",
       )
+    : null;
+
+  const emailEnquiry = sellerDirectoryEnquiry(settings.contactEmail);
+  const phoneHref = settings.contactPhone
+    ? telHref(settings.contactPhone)
     : null;
 
   const emptyTitle = city
@@ -199,7 +205,7 @@ export default async function AuthorizedSellersPage({
                   <span>Actions</span>
                 </div>
                 {sellers.map((seller) => (
-                  <SellerCard key={seller.id} seller={seller} />
+                  <SellerCard key={seller.id} seller={seller} settings={settings} />
                 ))}
               </div>
             ) : (
@@ -256,32 +262,32 @@ export default async function AuthorizedSellersPage({
                     <Link href="/contact" className="lxv-btn lxv-btn--red">
                       Contact LONEX
                     </Link>
-                    {whatsapp ? (
+                    {emailEnquiry ? (
                       <a
-                        href={whatsapp}
+                        href={emailEnquiry}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="lxv-btn lxv-btn--outline"
                       >
-                        WhatsApp
+                        Email Enquiry
                       </a>
                     ) : null}
                   </div>
 
                   <dl className="lxs-empty__details">
-                    {settings.contactPhone ? (
+                    {phoneHref ? (
                       <div>
                         <dt>Phone</dt>
                         <dd>
                           <a
-                            href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
+                            href={phoneHref}
                           >
                             {formatPhone(settings.contactPhone)}
                           </a>
                         </dd>
                       </div>
                     ) : null}
-                    {settings.address ? (
+                    {settings.locationEnabled && settings.address ? (
                       <div>
                         <dt>Office</dt>
                         <dd>{settings.address}</dd>
@@ -448,32 +454,32 @@ export default async function AuthorizedSellersPage({
                 <Link href="/contact" className="lxv-btn lxv-btn--light">
                   Contact LONEX
                 </Link>
-                {whatsapp ? (
+                {emailEnquiry ? (
                   <a
-                    href={whatsapp}
+                    href={emailEnquiry}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="lxv-btn lxv-btn--ghost-light"
                   >
-                    WhatsApp
+                    Email Enquiry
                   </a>
                 ) : null}
               </div>
 
               <dl className="lxs-close__details">
-                {settings.contactPhone ? (
+                {phoneHref ? (
                   <div>
                     <dt>Phone</dt>
                     <dd>
                       <a
-                        href={`tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`}
+                        href={phoneHref}
                       >
                         {formatPhone(settings.contactPhone)}
                       </a>
                     </dd>
                   </div>
                 ) : null}
-                {settings.whatsapp && whatsapp ? (
+                {settings.whatsappEnabled && settings.whatsapp && whatsapp ? (
                   <div>
                     <dt>WhatsApp</dt>
                     <dd>
@@ -487,7 +493,7 @@ export default async function AuthorizedSellersPage({
                     </dd>
                   </div>
                 ) : null}
-                {settings.address ? (
+                {settings.locationEnabled && settings.address ? (
                   <div>
                     <dt>Office</dt>
                     <dd>{settings.address}</dd>

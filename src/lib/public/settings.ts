@@ -47,6 +47,8 @@ export async function loadPublicSettings(): Promise<PublicSettings> {
     whatsapp: settings.whatsapp,
     address: settings.address,
     googleMapsUrl: settings.googleMapsUrl,
+    whatsappEnabled: settings.whatsappEnabled,
+    locationEnabled: settings.locationEnabled,
     social: settings.social,
     seoTitle: settings.seoTitle,
     seoDescription: settings.seoDescription,

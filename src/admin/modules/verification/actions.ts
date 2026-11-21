@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { authorizeAction } from "@/admin/core/guards";
+import {
+  deniedState,
+  firstFieldError,
+} from "@/admin/core/crud/action-helpers";
 import { failure, success, type ActionState } from "@/admin/core/crud/types";
 import { parseVerificationForm, parseVerificationCodeForm } from "./schema";
 import {
@@ -10,18 +14,13 @@ import {
   setVerificationCode,
 } from "./service";
 
-function denied(status: 401 | 403): ActionState {
-  return failure(
-    status === 401
-      ? "Your session expired. Sign in again."
-      : "You do not have permission to manage model verification codes.",
-  );
-}
+const FORBIDDEN_MESSAGE =
+  "You do not have permission to manage model verification codes.";
 
 function invalid(formData: FormData): string | null {
   const parsed = parseVerificationForm(formData);
 
-  return parsed.ok ? null : (Object.values(parsed.errors)[0] ?? "Invalid product.");
+  return parsed.ok ? null : firstFieldError(parsed.errors, "Invalid product.");
 }
 
 export async function generateVerificationAction(
@@ -31,7 +30,7 @@ export async function generateVerificationAction(
   const access = await authorizeAction("model_codes.manage");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const error = invalid(formData);
@@ -71,7 +70,7 @@ export async function deactivateVerificationAction(
   const access = await authorizeAction("model_codes.manage");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const error = invalid(formData);
@@ -109,7 +108,7 @@ export async function activateVerificationAction(
   const access = await authorizeAction("model_codes.manage");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const error = invalid(formData);
@@ -147,14 +146,14 @@ export async function setVerificationCodeAction(
   const access = await authorizeAction("model_codes.manage");
 
   if (!access.ok) {
-    return denied(access.status);
+    return deniedState(access.status, FORBIDDEN_MESSAGE);
   }
 
   const parsed = parseVerificationCodeForm(formData);
 
   if (!parsed.ok) {
     return failure(
-      Object.values(parsed.errors)[0] ?? "Invalid verification code.",
+      firstFieldError(parsed.errors, "Invalid verification code."),
       parsed.errors,
     );
   }

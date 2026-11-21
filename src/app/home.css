@@ -539,7 +539,6 @@
 .lx-page-hero__figure {
   position: relative;
   margin: clamp(22px, 2.8vw, 36px) 0 0;
-  aspect-ratio: 16 / 7;
   overflow: hidden;
   background: var(--lx-stone);
 }
@@ -548,6 +547,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+@media (min-width: 768px) {
+  .lx-page-hero__figure {
+    aspect-ratio: 16 / 7;
+  }
+}
+
+@media (max-width: 767px) {
+  .lx-page-hero__figure {
+    aspect-ratio: 4 / 3;
+  }
 }
 
 .lx-page-hero__caption {
@@ -1099,7 +1110,6 @@
 .lx-article-cover {
   position: relative;
   margin: clamp(24px, 3.4vw, 42px) 0 0;
-  aspect-ratio: 16 / 7;
   overflow: hidden;
   background: var(--lx-stone);
 }
@@ -1108,6 +1118,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+@media (min-width: 768px) {
+  .lx-article-cover {
+    aspect-ratio: 16 / 7;
+  }
+}
+
+@media (max-width: 767px) {
+  .lx-article-cover {
+    aspect-ratio: 4 / 3;
+  }
 }
 
 .lx-article {
@@ -2374,8 +2396,26 @@ a.lx-def:hover dd {
   object-position: center;
 }
 
+/* The Move plate is a 4:3 studio photograph of the scooter. It is fitted
+   inside the shared 4:5 frame instead of being cropped, so both wheels and the
+   headlight stay in shot. The frame ground follows the photograph's own
+   vertical backdrop (darker above the light, brighter on the reflective floor)
+   so the fitted plate reads as the studio sweep continuing. */
+.lxh-chapter--move .lxh-chapter__media {
+  background: linear-gradient(180deg, #4a4a50 0%, #57575d 56%, #6d6c72 100%);
+}
+
+.lxh-chapter--move .lxh-chapter__image {
+  object-fit: contain;
+}
+
 .lxh-chapter:hover .lxh-chapter__image {
   transform: scale(1.035);
+}
+
+/* A zoom on a fitted plate would clip the wheels, so this card keeps still. */
+.lxh-chapter--move:hover .lxh-chapter__image {
+  transform: none;
 }
 
 .lxh-chapter__image {

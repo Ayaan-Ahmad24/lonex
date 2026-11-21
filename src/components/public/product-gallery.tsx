@@ -110,19 +110,19 @@ export function ProductGallery({
             preload
           />
         </span>
-
-        {total > 0 ? (
-          <>
-            <span className="lxp-gallery__count">
-              {String(active + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-            </span>
-            <span className="lxp-gallery__zoom" aria-hidden="true">
-              Enlarge
-              <span>＋</span>
-            </span>
-          </>
-        ) : null}
       </button>
+
+      {total > 0 ? (
+        <div className="lxp-gallery__bar">
+          <span className="lxp-gallery__count">
+            {String(active + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+          </span>
+          <span className="lxp-gallery__zoom" aria-hidden="true">
+            Enlarge
+            <span>＋</span>
+          </span>
+        </div>
+      ) : null}
 
       {total > 1 ? (
         <div className="lxp-gallery__thumbs" role="group" aria-label={`${productName} images`}>
@@ -135,7 +135,12 @@ export function ProductGallery({
               aria-label={`View image ${index + 1} of ${total}`}
               aria-pressed={index === active}
             >
-              <ContentImage image={image} fallbackLabel="Image" sizes="140px" />
+              <ContentImage
+                image={image}
+                fallbackLabel="Image"
+                sizes="(max-width: 430px) 120px, (max-width: 768px) 180px, 200px"
+                fit="contain"
+              />
             </button>
           ))}
         </div>

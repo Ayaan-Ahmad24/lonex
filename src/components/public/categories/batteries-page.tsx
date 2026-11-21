@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { ContentImage } from "@/components/public/content-image";
-import { whatsappHref } from "@/lib/public/contact";
-import { getProductEditorial } from "@/lib/public/editorial";
+import { categoryEnquiry } from "@/lib/public/enquiries";
 import {
   CategoryBreadcrumbs,
   CategoryClose,
@@ -13,6 +12,7 @@ import {
   ProductPoints,
   RangeEnquiry,
   UseCaseChips,
+  buildProductViews,
 } from "./parts";
 import type { CategoryPageProps, ProductView } from "./parts";
 
@@ -103,22 +103,15 @@ export function BatteriesPage({
   settings,
   editorial,
 }: CategoryPageProps) {
-  const whatsapp = settings.whatsapp
-    ? whatsappHref(
-        settings.whatsapp,
-        "Hello LONEX, I would like to discuss a home battery system.",
-      )
-    : null;
+  const emailEnquiry = categoryEnquiry(settings.contactEmail, {
+    label: "Batteries",
+    name: "Batteries",
+    path: category.path,
+    intro: "I would like to discuss a home battery system.",
+    closing: "Please share details about the battery models available.",
+  });
 
-  const views = products.map((card) => ({
-    card,
-    editorial: getProductEditorial(
-      card.slug,
-      card.name,
-      card.shortDescription,
-      null,
-    ),
-  }));
+  const views = buildProductViews(category, products);
 
   return (
     <>
@@ -300,7 +293,7 @@ export function BatteriesPage({
             <RangeEnquiry
               categoryName={category.name}
               note="Tell us when the building uses the most power."
-              whatsapp={whatsapp}
+              email={emailEnquiry}
               phone={settings.contactPhone || null}
             />
           </div>
@@ -335,7 +328,7 @@ export function BatteriesPage({
         title={editorial.closing.title}
         body={editorial.closing.body}
         categoryName={category.name}
-        whatsapp={whatsapp}
+        email={emailEnquiry}
       />
     </>
   );

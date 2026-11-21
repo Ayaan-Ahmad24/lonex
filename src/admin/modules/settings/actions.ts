@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { authorizeAction } from "@/admin/core/guards";
+import {
+  deniedState,
+  firstFieldError,
+} from "@/admin/core/crud/action-helpers";
 import type { ActionState } from "@/admin/core/crud/types";
 import { failure, success } from "@/admin/core/crud/types";
 import { parseSettingsForm } from "@/admin/core/settings/schema";
@@ -15,20 +19,16 @@ export async function saveSettingsAction(
   const access = await authorizeAction("settings.manage");
 
   if (!access.ok) {
-    return failure(
-      access.status === 401
-        ? "Your session expired. Sign in again."
-        : "You do not have permission to change site settings.",
+    return deniedState(
+      access.status,
+      "You do not have permission to change site settings.",
     );
   }
 
   const parsed = parseSettingsForm(formData);
 
   if (!parsed.ok) {
-    return failure(
-      Object.values(parsed.errors)[0] ?? "Check the highlighted fields.",
-      parsed.errors,
-    );
+    return failure(firstFieldError(parsed.errors), parsed.errors);
   }
 
   const result = await saveSiteSettings(

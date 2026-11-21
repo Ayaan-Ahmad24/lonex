@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
 
   allowedDevOrigins: [
   "*.ngrok-free.app",
+  "*.ngrok-free.dev",
 ],
 
   async headers() {

@@ -5,10 +5,10 @@ import { connection } from "next/server";
 
 import { PageMotion } from "@/components/public/page-motion";
 import {
-  formatInternational,
   formatPhone,
-  whatsappHref,
+  telHref,
 } from "@/lib/public/contact";
+import { generalEnquiry } from "@/lib/public/enquiries";
 import { createPageMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
 import {
@@ -17,7 +17,6 @@ import {
   ENQUIRY,
   HERO,
   LOCATION,
-  WHATSAPP_OPENER,
 } from "./content";
 import { EnquiryForm } from "./enquiry-form";
 import "../../home.css";
@@ -30,13 +29,13 @@ export async function generateMetadata(): Promise<Metadata> {
     settings,
     title: "Contact",
     description:
-      "Talk to LONEX about solar, battery storage and electric mobility — by phone, WhatsApp, or an enquiry prepared on this page.",
+      "Talk to LONEX about solar, battery storage and electric mobility — by phone, email, or an enquiry prepared on this page.",
     path: "/contact",
   });
 }
 
 type ContactRow = {
-  kind: "phone" | "whatsapp" | "office" | "email";
+  kind: "phone" | "office" | "email";
   index: string;
   label: string;
   value: string;
@@ -73,12 +72,10 @@ export default async function ContactPage() {
   await connection();
   const settings = await loadPublicSettings();
 
-  const whatsappLink = settings.whatsapp
-    ? whatsappHref(settings.whatsapp, WHATSAPP_OPENER)
-    : null;
+  const emailLink = generalEnquiry(settings.contactEmail);
   const mapHref = resolveMapHref(settings.address, settings.googleMapsUrl);
   const phoneHref = settings.contactPhone
-    ? `tel:${settings.contactPhone.replace(/[^\d+]/g, "")}`
+    ? telHref(settings.contactPhone)
     : null;
 
   const rows: ContactRow[] = [];
@@ -96,20 +93,22 @@ export default async function ContactPage() {
     });
   }
 
-  if (whatsappLink) {
+  // WhatsApp is intentionally not exposed on the public site. The stored
+  // number remains in the CMS and can be re-enabled through settings.
+  if (settings.contactEmail && emailLink) {
     rows.push({
-      kind: "whatsapp",
+      kind: "email",
       index: "",
-      label: "WhatsApp",
-      value: formatInternational(settings.whatsapp),
-      meta: "Message the office directly",
-      href: whatsappLink,
-      action: "Chat",
-      external: true,
+      label: "Email",
+      value: settings.contactEmail,
+      meta: "Written enquiries",
+      href: emailLink,
+      action: "Write",
+      external: false,
     });
   }
 
-  if (settings.address) {
+  if (settings.locationEnabled && settings.address) {
     rows.push({
       kind: "office",
       index: "",
@@ -119,20 +118,6 @@ export default async function ContactPage() {
       href: mapHref,
       action: "Map",
       external: true,
-    });
-  }
-
-  // Email is shown only when the owner has configured it.
-  if (settings.contactEmail) {
-    rows.push({
-      kind: "email",
-      index: "",
-      label: "Email",
-      value: settings.contactEmail,
-      meta: "Written enquiries",
-      href: `mailto:${settings.contactEmail}`,
-      action: "Write",
-      external: false,
     });
   }
 
@@ -176,14 +161,14 @@ export default async function ContactPage() {
               </div>
 
               <div className="lxct-hero__actions" data-hero-item>
-                {whatsappLink ? (
+                {emailLink ? (
                   <a
-                    href={whatsappLink}
+                    href={emailLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="lxct-btn lxct-btn--red"
                   >
-                    Message on WhatsApp
+                    Send an Email Enquiry
                     <span aria-hidden="true">→</span>
                   </a>
                 ) : null}
@@ -198,19 +183,24 @@ export default async function ContactPage() {
               </div>
 
               <dl className="lxct-hero__facts" data-hero-item>
-                {HERO.facts.map((fact) => (
-                  <div key={fact.label}>
-                    <dt>{fact.label}</dt>
-                    <dd>{fact.value}</dd>
-                  </div>
-                ))}
+                {HERO.facts
+                  .filter(
+                    (fact) =>
+                      fact.label !== "Based" || settings.locationEnabled,
+                  )
+                  .map((fact) => (
+                    <div key={fact.label}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.value}</dd>
+                    </div>
+                  ))}
               </dl>
             </div>
 
             <figure className="lxct-hero__figure" data-hero-item>
               <div className="lxct-hero__media" data-hero-media>
                 <Image
-                  src="/images/lonex-generated-images/lifestyle/family-energy.webp"
+                  src="/images/lonex-generated-images/lifestyle/family-energy.png"
                   alt={HERO.imageAlt}
                   fill
                   preload
@@ -219,7 +209,7 @@ export default async function ContactPage() {
                 />
                 <span className="lxct-hero__stamp" aria-hidden="true">
                   LONEX
-                  <span>Lahore</span>
+                  {settings.locationEnabled && <span>Lahore</span>}
                 </span>
                 <div className="lxct-hero__inset">
                   <Image
@@ -346,7 +336,7 @@ export default async function ContactPage() {
 
             <div className="lxct-enquiry__form" data-reveal>
               <EnquiryForm
-                whatsapp={settings.whatsapp}
+                email={settings.contactEmail}
                 phone={settings.contactPhone}
               />
             </div>
@@ -354,57 +344,59 @@ export default async function ContactPage() {
         </section>
 
         {/* Location --------------------------------------------------- */}
-        <section
-          id="location"
-          className="lxct-location"
-          aria-labelledby="location-title"
-        >
-          <div className="lx-wrap lxct-location__grid" data-reveal-group>
-            <div className="lxct-location__copy" data-reveal>
-              <p className="lxct-eyebrow">{LOCATION.eyebrow}</p>
-              <h2 className="lxct-location__title" id="location-title">
-                {LOCATION.title}
-              </h2>
-              <p className="lxct-location__intro">{LOCATION.intro}</p>
-            </div>
-
-            <div className="lxct-location__plate" data-reveal>
-              <div className="lxct-location__plate-head">
-                <span>Office address</span>
-                <span aria-hidden="true" className="lxct-location__mark">
-                  <span />
-                </span>
+        {settings.locationEnabled && (
+          <section
+            id="location"
+            className="lxct-location"
+            aria-labelledby="location-title"
+          >
+            <div className="lx-wrap lxct-location__grid" data-reveal-group>
+              <div className="lxct-location__copy" data-reveal>
+                <p className="lxct-eyebrow">{LOCATION.eyebrow}</p>
+                <h2 className="lxct-location__title" id="location-title">
+                  {LOCATION.title}
+                </h2>
+                <p className="lxct-location__intro">{LOCATION.intro}</p>
               </div>
 
-              <address className="lxct-location__address">
-                <span className="lxct-location__street">{street}</span>{" "}
-                {locality ? (
-                  <span className="lxct-location__locality">{locality}</span>
-                ) : null}
-              </address>
+              <div className="lxct-location__plate" data-reveal>
+                <div className="lxct-location__plate-head">
+                  <span>Office address</span>
+                  <span aria-hidden="true" className="lxct-location__mark">
+                    <span />
+                  </span>
+                </div>
 
-              <div className="lxct-location__actions">
-                {mapHref ? (
-                  <a
-                    href={mapHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="lxct-btn lxct-btn--dark"
-                  >
-                    {LOCATION.mapLabel}
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                ) : null}
-                {phoneHref ? (
-                  <a href={phoneHref} className="lxct-link">
-                    Call {formatPhone(settings.contactPhone)}
-                  </a>
-                ) : null}
+                <address className="lxct-location__address">
+                  <span className="lxct-location__street">{street}</span>{" "}
+                  {locality ? (
+                    <span className="lxct-location__locality">{locality}</span>
+                  ) : null}
+                </address>
+
+                <div className="lxct-location__actions">
+                  {mapHref ? (
+                    <a
+                      href={mapHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="lxct-btn lxct-btn--dark"
+                    >
+                      {LOCATION.mapLabel}
+                      <span aria-hidden="true">↗</span>
+                    </a>
+                  ) : null}
+                  {phoneHref ? (
+                    <a href={phoneHref} className="lxct-link">
+                      Call {formatPhone(settings.contactPhone)}
+                    </a>
+                  ) : null}
+                </div>
+                <p className="lxct-location__note">{LOCATION.mapNote}</p>
               </div>
-              <p className="lxct-location__note">{LOCATION.mapNote}</p>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Closing ---------------------------------------------------- */}
         <section className="lxct-close" aria-labelledby="closing-title">
@@ -431,14 +423,14 @@ export default async function ContactPage() {
             </div>
 
             <div className="lxct-close__actions" data-reveal>
-              {whatsappLink ? (
+              {emailLink ? (
                 <a
-                  href={whatsappLink}
+                  href={emailLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="lxct-btn lxct-btn--light"
                 >
-                  Message on WhatsApp
+                  Send an Email Enquiry
                   <span aria-hidden="true">→</span>
                 </a>
               ) : null}

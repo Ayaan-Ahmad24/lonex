@@ -13,6 +13,8 @@ export const settingsDefaults: SiteSettings = siteSettingsSchema.parse({
   whatsapp: "",
   address: "",
   googleMapsUrl: "",
+  whatsappEnabled: false,
+  locationEnabled: false,
   social: {
     facebook: "",
     instagram: "",

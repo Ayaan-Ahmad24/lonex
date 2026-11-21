@@ -7,10 +7,10 @@ import { ContentImage } from "@/components/public/content-image";
 import { JsonLd } from "@/components/public/json-ld";
 import { PageMotion } from "@/components/public/page-motion";
 import { ProductGallery } from "@/components/public/product-gallery";
-import { formatPhone, whatsappHref } from "@/lib/public/contact";
+import { formatPhone, telHref } from "@/lib/public/contact";
+import { productEnquiry } from "@/lib/public/enquiries";
 import {
   getProductEditorial,
-  productWhatsAppMessage,
 } from "@/lib/public/editorial";
 import { createPageMetadata, notFoundMetadata } from "@/lib/public/seo";
 import { loadPublicSettings } from "@/lib/public/settings";
@@ -38,9 +38,10 @@ export async function generateMetadata({
   }
 
   const settings = await loadPublicSettings();
-  const { product } = result;
+  const { product, category } = result;
   const editorial = getProductEditorial(
     product.slug,
+    category.slug,
     product.name,
     product.shortDescription,
     product.description,
@@ -80,13 +81,19 @@ export default async function ProductPage({
 
   const editorial = getProductEditorial(
     product.slug,
+    category.slug,
     product.name,
     product.shortDescription,
     product.description,
   );
 
-  const whatsapp = settings.whatsapp
-    ? whatsappHref(settings.whatsapp, productWhatsAppMessage(product.name))
+  const emailEnquiry = productEnquiry(settings.contactEmail, {
+    productName: product.name,
+    categoryName: category.name,
+    path: product.path,
+  });
+  const phoneHref = settings.contactPhone
+    ? telHref(settings.contactPhone)
     : null;
 
   const jsonLd: Record<string, unknown> = {
@@ -155,14 +162,14 @@ export default async function ProductPage({
                 <Link href="#enquire" className="lx-btn lx-btn--red">
                   Enquire about this model
                 </Link>
-                {whatsapp ? (
+                {emailEnquiry ? (
                   <a
-                    href={whatsapp}
+                    href={emailEnquiry}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="lx-btn lx-btn--ghost"
                   >
-                    WhatsApp
+                    Email Enquiry
                   </a>
                 ) : null}
               </div>
@@ -367,6 +374,7 @@ export default async function ProductPage({
                 {related.map((item) => {
                   const itemEditorial = getProductEditorial(
                     item.slug,
+                    category.slug,
                     item.name,
                     item.shortDescription,
                     null,
@@ -425,22 +433,22 @@ export default async function ProductPage({
                 <Link href="/contact" className="lx-btn lx-btn--red">
                   Send an enquiry
                 </Link>
-                {whatsapp ? (
+                {emailEnquiry ? (
                   <a
-                    href={whatsapp}
+                    href={emailEnquiry}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="lx-btn lx-btn--ghost"
                   >
-                    WhatsApp
+                    Email Enquiry
                   </a>
                 ) : null}
               </div>
 
-              {settings.contactPhone ? (
+              {phoneHref ? (
                 <p className="lxp-enquiry__phone" data-reveal>
                   <span>Call</span>
-                  <a href={`tel:${settings.contactPhone.replace(/\s+/g, "")}`}>
+                  <a href={phoneHref}>
                     {formatPhone(settings.contactPhone)}
                   </a>
                 </p>

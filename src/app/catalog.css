@@ -95,6 +95,14 @@
   text-transform: uppercase;
 }
 
+/* Each crumb stays on one line; the trail wraps between crumbs, never through
+   a label. Without this, "Solar / Generate" and similar tags split mid-phrase
+   on narrow screens. */
+.lxc-crumbs > a,
+.lxc-crumbs > span {
+  white-space: nowrap;
+}
+
 .lxc-crumbs a {
   color: inherit;
   text-decoration: none;
@@ -553,6 +561,9 @@
   background: #2c2823;
   color: #fff;
   isolation: isolate;
+  /* The category pages use the homepage's transparent header, so the hero
+     starts at the top of the page and runs behind the sticky bar. */
+  margin-top: calc(-1 * var(--site-header-h) - 1px);
 }
 
 .lxc-hero__media {
@@ -605,7 +616,11 @@
   flex-direction: column;
   gap: clamp(32px, 5vh, 56px);
   width: 100%;
-  padding-block: clamp(28px, 6vh, 56px) clamp(32px, 6vh, 64px);
+  /* Extra top padding clears the transparent header that overlays the hero. */
+  padding-block: calc(
+      var(--site-header-h) + 1px + clamp(28px, 6vh, 56px)
+    )
+    clamp(32px, 6vh, 64px);
 }
 
 .lxc-hero__top {
@@ -940,6 +955,8 @@
   min-height: min(84vh, 780px);
   overflow: hidden;
   isolation: isolate;
+  /* Runs behind the transparent header, as on the homepage. */
+  margin-top: calc(-1 * var(--site-header-h) - 1px);
 }
 
 .lxb-hero__media {
@@ -973,7 +990,11 @@
   flex-direction: column;
   gap: clamp(28px, 5vh, 48px);
   width: 100%;
-  padding-block: clamp(28px, 5vh, 48px) clamp(24px, 4vh, 44px);
+  /* Extra top padding clears the transparent header that overlays the hero. */
+  padding-block: calc(
+      var(--site-header-h) + 1px + clamp(28px, 5vh, 48px)
+    )
+    clamp(24px, 4vh, 44px);
   text-align: center;
 }
 
@@ -1566,6 +1587,8 @@
   background: #2c2823;
   color: #fff;
   isolation: isolate;
+  /* Runs behind the transparent header, as on the homepage. */
+  margin-top: calc(-1 * var(--site-header-h) - 1px);
 }
 
 .lxe-hero__media {
@@ -1593,7 +1616,11 @@
   flex-direction: column;
   gap: clamp(32px, 7vh, 80px);
   width: 100%;
-  padding-block: clamp(24px, 5vh, 48px) 0;
+  /* Extra top padding clears the transparent header that overlays the hero. */
+  padding-block: calc(
+      var(--site-header-h) + 1px + clamp(24px, 5vh, 48px)
+    )
+    0;
 }
 
 .lxe-hero__top {
@@ -2441,11 +2468,83 @@
   }
 }
 
-@media (max-width: 720px) {
-  .lxc-hero {
-    min-height: min(84vh, 680px);
+/* ---------- Stacked mobile heroes ----------
+   Below 760px the catalogue heroes drop the full-bleed overlay. The photograph
+   becomes a full-width panel at its own ratio and the copy follows it on the
+   hero's own ground, so a landscape photograph is never cropped into a tall
+   portrait window and no paragraph sits on top of the picture. */
+@media (max-width: 760px) {
+  .lxc-hero,
+  .lxb-hero,
+  .lxe-hero {
+    display: block;
+    min-height: 0;
+    /* The hero still starts at the very top and runs behind the transparent
+       header, but the photograph itself begins below the bar so the image is
+       never cropped by it. The hero's own dark ground fills the header band. */
+    padding-top: calc(var(--site-header-h) + 1px);
   }
 
+  .lxc-hero__media,
+  .lxb-hero__media,
+  .lxe-hero__media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    z-index: 0;
+  }
+
+  /* The scooter hero source is a 2000 x 874 banner, so the panel keeps its own
+     ratio instead of a 16:9 crop. */
+  .lxe-hero__media {
+    aspect-ratio: 2000 / 874;
+  }
+
+  .lxc-hero__scrim,
+  .lxb-hero__veil,
+  .lxe-hero__wash {
+    inset: calc(var(--site-header-h) + 1px) 0 auto 0;
+    z-index: 1;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(
+      to bottom,
+      rgba(8, 7, 6, 0.3) 0%,
+      rgba(8, 7, 6, 0) 46%,
+      rgba(8, 7, 6, 0.42) 100%
+    );
+  }
+
+  .lxe-hero__wash {
+    aspect-ratio: 2000 / 874;
+  }
+
+  .lxc-hero__rules {
+    display: none;
+  }
+
+  .lxc-hero__inner,
+  .lxb-hero__inner,
+  .lxe-hero__inner {
+    position: relative;
+    z-index: 2;
+    padding-block: clamp(20px, 3.4vw, 30px) clamp(30px, 5vw, 44px);
+  }
+
+  .lxb-hero__centre {
+    padding-top: 0;
+  }
+
+  .lxe-hero {
+    margin-bottom: 0;
+  }
+
+  .lxe-plate {
+    transform: none;
+  }
+}
+
+@media (max-width: 720px) {
   .lxc-hero__copy,
   .lxb-hero__copy,
   .lxe-plate__copy,
@@ -2523,11 +2622,6 @@
 }
 
 @media (max-width: 560px) {
-  .lxc-hero {
-    min-height: 0;
-    padding-top: clamp(96px, 18vh, 150px);
-  }
-
   .lxc-hero__inner {
     gap: 28px;
     padding-bottom: 36px;
@@ -2535,16 +2629,6 @@
 
   .lxc-hero__title {
     font-size: clamp(2.4rem, 11vw, 3.4rem);
-  }
-
-  .lxb-hero {
-    min-height: 0;
-    padding-top: clamp(88px, 16vh, 140px);
-  }
-
-  .lxe-hero {
-    min-height: 0;
-    padding-top: clamp(190px, 36vh, 300px);
   }
 
   .lxe-hero__inner {
@@ -2822,37 +2906,33 @@
   transform: scale(1.02);
 }
 
+/* The counter and the enlarge hint live in a metadata row under the stage so
+   they can never sit on top of the poster artwork or its footer. */
+.lxp-gallery__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -2px;
+}
+
 .lxp-gallery__count {
-  position: absolute;
-  left: 14px;
-  bottom: 14px;
-  padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--lx-ink);
+  color: var(--lx-muted);
   font-family: var(--lx-mono);
   font-size: 0.625rem;
   letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
 }
 
 .lxp-gallery__zoom {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--lx-ink);
+  color: var(--lx-muted);
   font-family: var(--lx-mono);
   font-size: 0.625rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  transition: background 180ms var(--lx-ease);
-}
-
-.lxp-gallery__stage:hover .lxp-gallery__zoom {
-  background: #fff;
 }
 
 .lxp-gallery__thumbs {
@@ -2864,7 +2944,7 @@
 .lxp-gallery__thumb {
   position: relative;
   width: 76px;
-  aspect-ratio: 1;
+  aspect-ratio: 4 / 3;
   padding: 0;
   border: 1px solid var(--lx-line);
   background: #f5efee;
@@ -2873,8 +2953,10 @@
   transition: border-color 180ms var(--lx-ease);
 }
 
+/* Thumbnails are a contact sheet, not crops: the whole poster or photograph is
+   visible in each 4:3 tile. */
 .lxp-gallery__thumb img {
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 500ms var(--lx-ease);
 }
 

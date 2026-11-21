@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { whatsappHref } from "@/lib/public/contact";
-import { getProductEditorial } from "@/lib/public/editorial";
-import { CategoryClose, CategoryBreadcrumbs, CategoryHead, CommunityHeading, CommunityPillars, RangeEnquiry, RichProductCard } from "./parts";
+import { categoryEnquiry } from "@/lib/public/enquiries";
+import { CategoryClose, CategoryBreadcrumbs, CategoryHead, CommunityHeading, CommunityPillars, RangeEnquiry, RichProductCard, buildProductViews } from "./parts";
 import type { CategoryPageProps } from "./parts";
 
 const HERO_IMAGE = {
@@ -27,19 +26,15 @@ export function SolarPage({
   settings,
   editorial,
 }: CategoryPageProps) {
-  const whatsapp = settings.whatsapp
-    ? whatsappHref(settings.whatsapp, "Hello LONEX, I would like to discuss a solar installation.")
-    : null;
+  const emailEnquiry = categoryEnquiry(settings.contactEmail, {
+    label: "Solar",
+    name: "Solar",
+    path: category.path,
+    intro: "I would like to discuss a solar installation.",
+    closing: "Please share details about the solar models available.",
+  });
 
-  const views = products.map((card) => ({
-    card,
-    editorial: getProductEditorial(
-      card.slug,
-      card.name,
-      card.shortDescription,
-      null,
-    ),
-  }));
+  const views = buildProductViews(category, products);
 
   return (
     <>
@@ -202,7 +197,7 @@ export function SolarPage({
             <RangeEnquiry
               categoryName={category.name}
               note="Share the roof, the load and the outcome you have in mind."
-              whatsapp={whatsapp}
+              email={emailEnquiry}
               phone={settings.contactPhone || null}
             />
           </div>
@@ -241,7 +236,7 @@ export function SolarPage({
         title={editorial.closing.title}
         body={editorial.closing.body}
         categoryName={category.name}
-        whatsapp={whatsapp}
+        email={emailEnquiry}
       />
     </>
   );

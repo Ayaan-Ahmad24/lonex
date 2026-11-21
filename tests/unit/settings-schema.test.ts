@@ -17,6 +17,8 @@ const valid: SiteSettings = {
   whatsapp: "+92 300 1234567",
   address: "1 Example Street",
   googleMapsUrl: "https://maps.example/1",
+  whatsappEnabled: false,
+  locationEnabled: false,
   social: {
     facebook: "https://facebook.com/example",
     instagram: "",
